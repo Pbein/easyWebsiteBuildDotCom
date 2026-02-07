@@ -1,0 +1,256 @@
+# Theme System Specification
+
+## Overview
+
+The theme system is what prevents every generated website from looking the same. It translates the brand personality captured during intake into a complete set of CSS Custom Properties (design tokens) that all components consume.
+
+## Design Token Categories
+
+### Color Tokens
+```
+--color-primary           Main brand color
+--color-primary-light     Lighter shade for hover states, backgrounds
+--color-primary-dark      Darker shade for active states, text
+--color-secondary         Supporting brand color
+--color-secondary-light
+--color-accent            Highlight/attention color
+--color-background        Page background
+--color-surface           Card/component backgrounds
+--color-surface-elevated  Elevated surfaces (modals, dropdowns)
+--color-text              Primary text
+--color-text-secondary    Secondary/muted text
+--color-text-on-primary   Text on primary color backgrounds
+--color-text-on-dark      Text on dark backgrounds
+--color-border            Default border color
+--color-border-light      Subtle borders
+--color-success
+--color-warning
+--color-error
+```
+
+### Typography Tokens
+```
+--font-heading            Heading font family
+--font-body               Body text font family
+--font-accent             Special/decorative font (optional)
+--font-mono               Code/technical font
+
+--text-xs through --text-7xl    Font size scale
+--leading-tight/normal/relaxed  Line height scale
+--tracking-tight/normal/wide    Letter spacing scale
+--weight-normal/medium/semibold/bold  Font weight scale
+```
+
+### Spacing Tokens
+```
+--space-section           Between major sections (4-8rem)
+--space-component         Between components within a section (2-4rem)
+--space-element           Between elements within a component (1-2rem)
+--space-tight             Small gaps (0.5-1rem)
+--container-max           Maximum content width (1024-1440px)
+--container-narrow        Narrow content width (640-768px)
+```
+
+### Shape Tokens
+```
+--radius-sm/md/lg/xl/full     Border radius scale
+--border-width                Default border width
+```
+
+### Shadow Tokens
+```
+--shadow-sm/md/lg/xl          Shadow scale
+--shadow-color                Shadow color (for colored shadows)
+```
+
+### Animation Tokens
+```
+--transition-fast/base/slow   Transition duration
+--ease-default                Default easing function
+--animation-distance          How far elements move in animations
+--animation-scale             Scale factor for zoom animations
+```
+
+## Personality Vector → Theme Mapping
+
+The 6-axis personality vector [minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic] maps to tokens:
+
+### Axis 1: Minimal (0) ↔ Rich (1)
+- **0.0-0.3**: Large spacing, no shadows, no borders, monochrome palette, thin borders
+- **0.4-0.6**: Moderate spacing, subtle shadows, accent color, standard borders
+- **0.7-1.0**: Compact spacing, layered shadows, multiple accent colors, decorative borders, background textures
+
+### Axis 2: Playful (0) ↔ Serious (1)
+- **0.0-0.3**: Rounded fonts (rounded sans-serif), high saturation, large radius, bouncy easing
+- **0.4-0.6**: Clean sans-serif, moderate saturation, medium radius
+- **0.7-1.0**: Serif or geometric sans, desaturated tones, small or no radius, subtle easing
+
+### Axis 3: Warm (0) ↔ Cool (1)
+- **0.0-0.3**: Warm neutrals (cream, tan, warm gray), warm hue rotation, earth tones
+- **0.4-0.6**: Neutral gray palette, balanced hues
+- **0.7-1.0**: Cool neutrals (blue-gray, slate), cool hue rotation, steel/ice tones
+
+### Axis 4: Light (0) ↔ Bold (1)
+- **0.0-0.3**: Thin font weights, high whitespace ratio, subtle contrast, light backgrounds
+- **0.4-0.6**: Medium weights, balanced contrast, standard backgrounds
+- **0.7-1.0**: Heavy weights, high contrast, dark backgrounds possible, strong visual weight
+
+### Axis 5: Classic (0) ↔ Modern (1)
+- **0.0-0.3**: Serif heading fonts, ornamental details, traditional proportions, warm palettes
+- **0.4-0.6**: Transitional serif or clean sans, balanced approach
+- **0.7-1.0**: Geometric sans-serif, minimal ornamentation, contemporary proportions, monospace accents
+
+### Axis 6: Calm (0) ↔ Dynamic (1)
+- **0.0-0.3**: Slow transitions, minimal animation, static layouts, subtle hover effects
+- **0.4-0.6**: Standard transitions, entry animations, smooth scrolling
+- **0.7-1.0**: Fast transitions, scroll-triggered animations, parallax effects, interactive elements
+
+## Curated Font Pairings
+
+### Serious + Classic (Luxury)
+- Cormorant Garamond / Outfit
+- Playfair Display / Source Sans 3
+- Libre Baskerville / Nunito Sans
+
+### Serious + Modern (Corporate)
+- Sora / DM Sans
+- General Sans / Cabinet Grotesk
+- Manrope / Karla
+
+### Playful + Modern (Creative)
+- Clash Display / Satoshi
+- Cabinet Grotesk / General Sans
+- Space Grotesk / Outfit (use sparingly)
+
+### Classic + Warm (Traditional)
+- Lora / Merriweather Sans
+- Crimson Pro / Open Sans
+- Spectral / Work Sans
+
+### Bold + Dynamic (Impact)
+- Bebas Neue / Barlow
+- Oswald / Lato
+- Anton / Nunito
+
+### Minimal + Cool (Tech)
+- JetBrains Mono (accents) / Inter (body exception for tech)
+- IBM Plex Mono / IBM Plex Sans
+- Fira Code (accents) / DM Sans
+
+## Theme Presets
+
+### Preset: Luxury Dark
+```
+personality: [0.6, 0.9, 0.3, 0.8, 0.3, 0.5]
+colors: deep navy, gold accents, cream text, rich shadows
+fonts: Cormorant Garamond / Outfit
+radius: small (2-4px)
+spacing: generous
+animations: slow, elegant
+```
+
+### Preset: Luxury Light
+```
+personality: [0.5, 0.8, 0.2, 0.5, 0.3, 0.4]
+colors: ivory/cream base, muted gold, charcoal text, soft shadows
+fonts: Playfair Display / Source Sans 3
+radius: none to small
+spacing: very generous
+animations: subtle
+```
+
+### Preset: Modern Clean
+```
+personality: [0.2, 0.6, 0.6, 0.5, 0.9, 0.4]
+colors: white base, single accent color, near-black text
+fonts: Sora / DM Sans
+radius: medium (6-8px)
+spacing: generous
+animations: smooth, functional
+```
+
+### Preset: Bold Creative
+```
+personality: [0.7, 0.3, 0.4, 0.9, 0.8, 0.9]
+colors: vibrant primaries, high contrast, unexpected combinations
+fonts: Clash Display / Satoshi
+radius: mixed (sharp + rounded)
+spacing: dynamic (varies by section)
+animations: energetic, scroll-triggered
+```
+
+### Preset: Warm Professional
+```
+personality: [0.4, 0.5, 0.2, 0.5, 0.5, 0.4]
+colors: warm whites, terracotta/sage accents, brown-black text
+fonts: Lora / Merriweather Sans
+radius: medium-large (8-12px)
+spacing: comfortable
+animations: gentle
+```
+
+### Preset: Editorial
+```
+personality: [0.5, 0.7, 0.5, 0.7, 0.7, 0.3]
+colors: high contrast, black/white with single bold accent
+fonts: Libre Baskerville / Nunito Sans
+radius: none
+spacing: structured (grid-based)
+animations: minimal, typography-focused
+```
+
+### Preset: Tech Forward
+```
+personality: [0.4, 0.7, 0.8, 0.6, 1.0, 0.7]
+colors: dark backgrounds, gradient accents, neon highlights
+fonts: JetBrains Mono (accents) / DM Sans
+radius: medium (6-8px)
+spacing: moderate
+animations: smooth, with glow effects
+```
+
+## Theme Application
+
+Components consume tokens via CSS custom properties:
+
+```tsx
+// Component uses tokens — never hardcoded values
+<h1 style={{
+  fontFamily: 'var(--font-heading)',
+  fontSize: 'var(--text-5xl)',
+  color: 'var(--color-text)',
+  letterSpacing: 'var(--tracking-tight)'
+}}>
+  {headline}
+</h1>
+```
+
+Or via Tailwind with custom properties:
+
+```tsx
+<h1 className="font-[family-name:var(--font-heading)] text-[length:var(--text-5xl)] text-[color:var(--color-text)]">
+  {headline}
+</h1>
+```
+
+The preferred approach is extending Tailwind config to map tokens:
+
+```js
+// tailwind.config.ts (for generated sites)
+theme: {
+  extend: {
+    colors: {
+      primary: 'var(--color-primary)',
+      secondary: 'var(--color-secondary)',
+      accent: 'var(--color-accent)',
+      // ... etc
+    },
+    fontFamily: {
+      heading: 'var(--font-heading)',
+      body: 'var(--font-body)',
+    }
+  }
+}
+```
+
+This way components use normal Tailwind classes (`text-primary`, `font-heading`) but the actual values come from the theme tokens.
