@@ -1,5 +1,16 @@
 # Assembly Engine Documentation
 
+> **Implementation Status (as of Feb 2026):** Design spec only — not yet implemented. The assembly engine is planned for Phase 4.
+>
+> **Foundational pieces already built:**
+>
+> - Theme resolution — `generateThemeFromVector()` maps personality vectors to complete token sets (Layer 3, fully working)
+> - Component library — 10 MVP components with manifest descriptors, personality fit ranges, and variant metadata
+> - Manifest index — `getManifestById()`, `getManifestsByCategory()`, `getManifestsBySiteType()` lookup utilities ready for component selection
+> - Preview rendering — `/preview` page demonstrates a manually assembled site with live theme switching, serving as the prototype for Step 6 output
+>
+> **Not yet built:** Automated spec-to-site composition, variant matching logic, AI content generation, build/deploy pipeline, visual editor.
+
 ## Overview
 
 The Assembly Engine is the system that takes a Site Intent Document (produced by the intake flow) and composes it into a complete, themed, deployable website using components from the library.
@@ -31,6 +42,7 @@ Site Intent Document
 Input: `personalityVector` + optional `themeOverrides` from the spec.
 
 Process:
+
 1. Check if there's a proven theme that closely matches the personality vector (cosine similarity > 0.95)
 2. If yes, load that theme's token set
 3. If no, generate tokens from the personality vector using the mapping rules in THEME_SYSTEM.md
@@ -42,6 +54,7 @@ Process:
 Input: `pages[]` with `components[]` from the spec.
 
 Process:
+
 1. For each page in the spec, iterate through its component placements
 2. Look up each `componentId` in the component library manifest index
 3. Verify the component exists and has the specified variant
@@ -54,6 +67,7 @@ Process:
 Input: Resolved components + personality vector + content availability.
 
 Process:
+
 1. For each component, select the optimal variant based on:
    - Personality vector fit (from manifest's `personalityFit` ranges)
    - Available content (don't use image variants if no images provided)
@@ -67,6 +81,7 @@ Process:
 Input: Configured components in page order.
 
 Process:
+
 1. Wrap each component in a Section container with appropriate spacing
 2. Apply section-level theming (alternating backgrounds, accent sections)
 3. Insert navigation at top, footer at bottom
@@ -78,6 +93,7 @@ Process:
 Input: Content from intake + business description + AI generation.
 
 Process:
+
 1. Place user-provided content directly (images, text, service lists)
 2. For missing content, use Claude to generate:
    - Headlines and subheadlines matching brand voice
@@ -92,6 +108,7 @@ Process:
 Input: Complete page layouts with content.
 
 Process:
+
 1. Generate a live, interactive preview using the actual React components
 2. Apply the resolved theme tokens as CSS custom properties
 3. Load fonts, apply animations
@@ -109,17 +126,20 @@ The user reviews the preview and can:
 **Approve** → Proceed to build/deploy
 
 **Request theme changes:**
+
 - "Make it darker" → Adjust background/surface tokens, increase contrast
 - "Warmer colors" → Shift warm_cool axis, regenerate palette
 - "Different fonts" → Present 3 alternative pairings from the curated list
 
 **Request component changes:**
+
 - "Use a different hero" → Show alternative hero variants with preview
 - "Add a team section" → Insert team component at suggested position
 - "Remove the testimonials" → Remove component, close gap
 - "Move the CTA above the footer" → Reorder component placement
 
 **Request content changes:**
+
 - "Change the headline" → Direct text editing
 - "Use a different image" → Image selector from library or upload
 - "Rewrite the about section" → AI regeneration with adjustment prompt
@@ -129,6 +149,7 @@ Each change is applied in real-time to the preview. The system stores change pat
 ### Step 8: Build & Deploy
 
 **For subscription (hosted) sites:**
+
 1. Generate the Next.js project in a build directory
 2. Install component library as dependency
 3. Write page files with component compositions
@@ -138,6 +159,7 @@ Each change is applied in real-time to the preview. The system stores change pat
 7. Set up custom domain if provided
 
 **For one-time purchase (exported) sites:**
+
 1. Same generation as above
 2. Bundle all component source code (no external dependency)
 3. Include README with setup/deployment instructions
@@ -147,6 +169,7 @@ Each change is applied in real-time to the preview. The system stores change pat
 ## Site Intent Document → Page Composition Example
 
 ### Input Spec (med spa example):
+
 ```json
 {
   "siteType": "business",
@@ -182,17 +205,18 @@ Each change is applied in real-time to the preview. The system stores change pat
 ```
 
 ### Generated Output (Home Page):
+
 ```tsx
 // Generated: app/page.tsx
-import { NavCentered } from '@/components/library/navigation/nav-centered';
-import { HeroParallax } from '@/components/library/hero/hero-parallax';
-import { ContentFeatures } from '@/components/library/content/content-features';
-import { CommerceServices } from '@/components/library/commerce/commerce-services';
-import { ProofBeforeAfter } from '@/components/library/social-proof/proof-beforeafter';
-import { ProofTestimonials } from '@/components/library/social-proof/proof-testimonials';
-import { CtaBanner } from '@/components/library/cta/cta-banner';
-import { FooterStandard } from '@/components/library/footer/footer-standard';
-import { Section } from '@/components/library/layout/section';
+import { NavCentered } from "@/components/library/navigation/nav-centered";
+import { HeroParallax } from "@/components/library/hero/hero-parallax";
+import { ContentFeatures } from "@/components/library/content/content-features";
+import { CommerceServices } from "@/components/library/commerce/commerce-services";
+import { ProofBeforeAfter } from "@/components/library/social-proof/proof-beforeafter";
+import { ProofTestimonials } from "@/components/library/social-proof/proof-testimonials";
+import { CtaBanner } from "@/components/library/cta/cta-banner";
+import { FooterStandard } from "@/components/library/footer/footer-standard";
+import { Section } from "@/components/library/layout/section";
 
 export default function HomePage() {
   return (
@@ -221,6 +245,7 @@ export default function HomePage() {
 ## Future: Visual Editor Integration
 
 For subscription sites, the visual editor would allow:
+
 1. Direct text editing (click to edit any text)
 2. Image swapping (click any image to replace)
 3. Component reordering (drag to rearrange sections)

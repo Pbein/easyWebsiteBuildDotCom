@@ -1,0 +1,67 @@
+{
+  "id": "footer-standard",
+  "category": "footer",
+  "name": "Standard Footer",
+  "description": "Multi-column footer with logo, tagline, link columns, social icons, and copyright bar.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    { "name": "columns", "type": "FooterColumn[]", "description": "2-4 link columns" }
+  ],
+  "optionalProps": [
+    { "name": "logo", "type": "ImageSource" },
+    { "name": "logoText", "type": "string" },
+    { "name": "tagline", "type": "string" },
+    { "name": "socialLinks", "type": "SocialLink[]" },
+    { "name": "copyright", "type": "string" },
+    { "name": "bottomLinks", "type": "LinkItem[]" },
+    { "name": "variant", "type": "string", "description": "multi-column" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "tracking-wide",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-full",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "multi-column",
+      "name": "Multi-Column",
+      "description": "Logo + tagline left, link columns right"
+    }
+  ],
+  "tags": ["universal", "footer", "navigation", "branding"]
+}

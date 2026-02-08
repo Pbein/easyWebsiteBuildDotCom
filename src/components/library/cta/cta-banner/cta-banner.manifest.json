@@ -1,0 +1,75 @@
+{
+  "id": "cta-banner",
+  "category": "cta",
+  "name": "CTA Banner",
+  "description": "Bold call-to-action banner that demands attention. Available in full-width and contained card variants with multiple background options.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.2, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    { "name": "headline", "type": "string", "description": "Banner headline" },
+    { "name": "ctaPrimary", "type": "CTAButton", "description": "Primary CTA button" }
+  ],
+  "optionalProps": [
+    { "name": "subheadline", "type": "string" },
+    { "name": "ctaSecondary", "type": "CTAButton" },
+    {
+      "name": "backgroundVariant",
+      "type": "string",
+      "description": "primary, dark, gradient, image"
+    },
+    { "name": "backgroundImage", "type": "ImageSource" },
+    { "name": "variant", "type": "string", "description": "full-width or contained" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-primary-dark",
+    "color-secondary",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-on-primary",
+    "color-text-on-dark",
+    "color-border",
+    "font-heading",
+    "font-body",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-lg",
+    "radius-xl",
+    "shadow-lg",
+    "shadow-xl",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-component"
+  ],
+  "variants": [
+    { "id": "full-width", "name": "Full Width", "description": "Edge-to-edge banner" },
+    { "id": "contained", "name": "Contained", "description": "Card-style banner within container" }
+  ],
+  "tags": ["universal", "conversion", "cta", "attention"]
+}

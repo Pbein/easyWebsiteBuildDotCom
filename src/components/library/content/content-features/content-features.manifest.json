@@ -1,0 +1,79 @@
+{
+  "id": "content-features",
+  "category": "content",
+  "name": "Feature Grid",
+  "description": "Grid of feature cards with icons, titles, and descriptions. Ideal for showcasing product features, services, or key benefits.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "features",
+      "type": "FeatureItem[]",
+      "description": "Array of 3-6 feature items with icon, title, description"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Section subheadline" },
+    { "name": "columns", "type": "number", "description": "Grid columns: 2, 3, or 4" },
+    { "name": "variant", "type": "string", "description": "Visual variant: icon-cards" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "icon-cards",
+      "name": "Icon Cards",
+      "description": "Feature cards with icon, title, and description"
+    }
+  ],
+  "tags": ["universal", "features", "grid", "cards"]
+}

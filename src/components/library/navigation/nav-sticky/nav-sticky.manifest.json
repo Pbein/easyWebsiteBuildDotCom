@@ -1,0 +1,61 @@
+{
+  "id": "nav-sticky",
+  "category": "navigation",
+  "name": "Sticky Navigation",
+  "description": "Fixed-position navigation bar that transitions from transparent to solid on scroll. Supports logo, links, and CTA button with responsive mobile menu.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    { "name": "links", "type": "LinkItem[]", "description": "Main navigation links" }
+  ],
+  "optionalProps": [
+    { "name": "logo", "type": "ImageSource", "description": "Brand logo image" },
+    { "name": "logoText", "type": "string", "description": "Text-only logo fallback" },
+    { "name": "cta", "type": "CTAButton", "description": "Call to action button" },
+    { "name": "variant", "type": "string", "description": "Visual style: transparent or solid" },
+    { "name": "sticky", "type": "boolean", "description": "Fix to viewport top" }
+  ],
+  "consumedTokens": [
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-primary",
+    "color-primary-light",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "weight-medium",
+    "weight-semibold",
+    "radius-md",
+    "radius-lg",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "shadow-md",
+    "container-max"
+  ],
+  "variants": [
+    {
+      "id": "transparent",
+      "name": "Transparent Background",
+      "description": "Starts transparent, solidifies on scroll"
+    },
+    {
+      "id": "solid",
+      "name": "Solid Background",
+      "description": "Always has a solid background color"
+    }
+  ],
+  "tags": ["universal", "responsive", "sticky", "mobile-menu"]
+}

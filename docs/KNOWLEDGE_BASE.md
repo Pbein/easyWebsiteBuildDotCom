@@ -1,5 +1,15 @@
 # Knowledge Base — Evolving Decision Tree & Learning System
 
+> **Implementation Status (as of Feb 2026):** Design spec only — not yet implemented. The knowledge base is planned for Phase 6.
+>
+> **Foundational pieces already built:**
+>
+> - Convex schema includes `intakeResponses` table for storing intake flow data
+> - Component manifest system with `personalityFit` ranges provides the matching data the knowledge base will query
+> - Theme presets serve as seed data for the theme library
+>
+> **Not yet built:** Semantic embeddings, vector search, path lifecycle management, proven recipe storage, content pattern extraction, analytics dashboard.
+
 ## Overview
 
 The Knowledge Base is what makes EasyWebsiteBuild smarter over time. Every client interaction enriches the system — new decision paths get discovered, proven component configurations get cataloged, successful themes get preserved, and content patterns get templatized.
@@ -15,11 +25,11 @@ Every point in the intake flow where a user makes a choice or provides input cre
 ```typescript
 interface IntentPath {
   id: string;
-  step: IntakeStep;                // Which step in the flow
-  question: string;                // The question that was asked
-  userInput: string;               // What the user said/selected
+  step: IntakeStep; // Which step in the flow
+  question: string; // The question that was asked
+  userInput: string; // What the user said/selected
   inputType: "deterministic" | "ai_interpreted";
-  aiInterpretation?: string;       // What the AI understood (if AI was used)
+  aiInterpretation?: string; // What the AI understood (if AI was used)
   resultingDecisions: {
     componentsSelected?: string[];
     themeAdjustments?: Partial<ThemeTokens>;
@@ -27,15 +37,15 @@ interface IntentPath {
     contentStructure?: Record<string, unknown>;
     variantsChosen?: Record<string, string>;
   };
-  embedding: number[];             // Semantic embedding for similarity search
-  usageCount: number;              // How many times this path has been taken
-  confirmationCount: number;       // How many times users approved the result
-  confirmationRate: number;        // confirmationCount / usageCount
+  embedding: number[]; // Semantic embedding for similarity search
+  usageCount: number; // How many times this path has been taken
+  confirmationCount: number; // How many times users approved the result
+  confirmationRate: number; // confirmationCount / usageCount
   status: "candidate" | "proven" | "deprecated";
   createdAt: Date;
   promotedAt?: Date;
   lastUsedAt: Date;
-  parentPathId?: string;           // Which previous decision led here
+  parentPathId?: string; // Which previous decision led here
 }
 ```
 
@@ -60,16 +70,17 @@ A "recipe" is a specific component + variant + configuration that was approved b
 ```typescript
 interface ProvenRecipe {
   id: string;
-  name: string;                     // "Luxury Spa Parallax Hero"
-  componentId: string;              // "hero-parallax"
-  variant: string;                  // "with-subject"
+  name: string; // "Luxury Spa Parallax Hero"
+  componentId: string; // "hero-parallax"
+  variant: string; // "with-subject"
   configuration: {
     props: Record<string, unknown>;
     spacing: string;
     sectionBackground: string;
     animationSettings: Record<string, unknown>;
   };
-  contentStructure: {               // Template for content shape
+  contentStructure: {
+    // Template for content shape
     headline: { pattern: string; example: string };
     subheadline: { pattern: string; example: string };
     // ... etc
@@ -98,15 +109,15 @@ Every approved theme (the complete set of design tokens) gets saved:
 ```typescript
 interface SavedTheme {
   id: string;
-  name: string;                    // Auto-generated or user-named
-  personalityVector: number[];     // The personality it was generated from
-  tokens: ThemeTokens;             // Complete token set
-  presetBase: string;              // Which preset it started from
+  name: string; // Auto-generated or user-named
+  personalityVector: number[]; // The personality it was generated from
+  tokens: ThemeTokens; // Complete token set
+  presetBase: string; // Which preset it started from
   overrides: Partial<ThemeTokens>; // What was customized
-  industry: string[];              // Industries it's been used for
+  industry: string[]; // Industries it's been used for
   usageCount: number;
   approvalRate: number;
-  screenshots: string[];           // Preview thumbnails
+  screenshots: string[]; // Preview thumbnails
 }
 ```
 
@@ -119,15 +130,15 @@ When AI generates copy that users approve, the patterns get extracted and stored
 ```typescript
 interface ContentPattern {
   id: string;
-  componentId: string;             // Which component this is for
-  field: string;                   // "headline", "subheadline", "cta_text"
-  pattern: string;                 // "[Aspirational Verb] Your [Outcome]"
-  examples: string[];              // ["Discover Your Radiance", "Unlock Your Potential"]
+  componentId: string; // Which component this is for
+  field: string; // "headline", "subheadline", "cta_text"
+  pattern: string; // "[Aspirational Verb] Your [Outcome]"
+  examples: string[]; // ["Discover Your Radiance", "Unlock Your Potential"]
   context: {
     siteType: SiteType;
     industry: string;
     conversionGoal: ConversionGoal;
-    personalityTone: number;       // playful_serious axis value
+    personalityTone: number; // playful_serious axis value
   };
   approvalRate: number;
   usageCount: number;
@@ -135,6 +146,7 @@ interface ContentPattern {
 ```
 
 Example patterns for a luxury med spa:
+
 - Hero headline: "[Discover/Experience/Embrace] [Aspirational Noun] at [Business Name]"
 - Service card title: "[Treatment Name]: [Benefit-Focused Subtitle]"
 - CTA: "[Action Verb] Your [Outcome] Today" → "Begin Your Transformation Today"
@@ -146,8 +158,8 @@ Full page recipes — the exact sequence of components that works for a specific
 ```typescript
 interface PageTemplate {
   id: string;
-  name: string;                    // "Luxury Service Homepage v3"
-  pageType: string;                // "homepage", "services", "about", "contact"
+  name: string; // "Luxury Service Homepage v3"
+  pageType: string; // "homepage", "services", "about", "contact"
   siteType: SiteType;
   industry: string[];
   componentSequence: {
@@ -192,21 +204,23 @@ For semantic similarity matching, the system uses text embeddings to compare use
 
 ### Similarity Thresholds
 
-| Threshold | Action |
-|-----------|--------|
-| ≥ 0.97 | Exact match — use directly |
-| 0.92 - 0.97 | Strong match — use with confidence |
+| Threshold   | Action                                            |
+| ----------- | ------------------------------------------------- |
+| ≥ 0.97      | Exact match — use directly                        |
+| 0.92 - 0.97 | Strong match — use with confidence                |
 | 0.85 - 0.92 | Partial match — use as starting point, AI refines |
-| < 0.85 | No match — full AI interpretation |
+| < 0.85      | No match — full AI interpretation                 |
 
 ## Feedback Loop Integration
 
 ### Explicit Feedback
+
 - User approves/rejects preview → updates confirmation rates
 - User requests specific changes → stored as improvement signals
 - User rates final site satisfaction → overall quality score
 
 ### Implicit Feedback
+
 - Time spent on each intake step → identifies confusing questions
 - Number of change requests → measures first-pass accuracy
 - Which components get removed most often → identifies poor matches
@@ -215,14 +229,17 @@ For semantic similarity matching, the system uses text embeddings to compare use
 ## Data Hygiene
 
 ### Deduplication
+
 Similar paths (similarity > 0.97) get merged, combining their usage counts and confirmation rates.
 
 ### Pruning
+
 - Candidate paths with 0 usage for 90+ days get archived
 - Deprecated paths get archived after 30 days
 - Asset entries with 0 usage for 180+ days get flagged for review
 
 ### Privacy
+
 - User-specific content (business names, descriptions) is stripped before storing patterns
 - Only structural patterns and design decisions are preserved
 - User data is kept in project records, not in the knowledge base
@@ -230,6 +247,7 @@ Similar paths (similarity > 0.97) get merged, combining their usage counts and c
 ## Metrics & Monitoring
 
 Key metrics to track:
+
 - **Deterministic hit rate**: % of decisions served without AI calls (target: increases over time)
 - **First-pass approval rate**: % of previews approved without changes (target: > 70%)
 - **Average AI calls per project**: Should decrease as the knowledge base grows

@@ -1,0 +1,55 @@
+{
+  "id": "section",
+  "category": "layout",
+  "name": "Section Wrapper",
+  "description": "Universal section wrapper providing consistent spacing, background control, and container constraints. Used as the outer shell for every content block.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [{ "name": "children", "type": "ReactNode", "description": "Section content" }],
+  "optionalProps": [
+    { "name": "as", "type": "string", "description": "HTML element tag" },
+    {
+      "name": "background",
+      "type": "string",
+      "description": "Background style: default, surface, elevated, primary, dark, none"
+    },
+    { "name": "contained", "type": "boolean", "description": "Constrain to max-width" },
+    { "name": "narrow", "type": "boolean", "description": "Use narrow container" },
+    {
+      "name": "spacing",
+      "type": "string",
+      "description": "Vertical padding: none, sm, md, lg, xl"
+    },
+    { "name": "borderTop", "type": "boolean", "description": "Top border line" },
+    { "name": "borderBottom", "type": "boolean", "description": "Bottom border line" }
+  ],
+  "consumedTokens": [
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-primary",
+    "color-text",
+    "color-text-on-primary",
+    "color-text-on-dark",
+    "color-border",
+    "color-border-light",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight",
+    "container-max",
+    "container-narrow",
+    "transition-base",
+    "ease-default",
+    "animation-distance"
+  ],
+  "variants": [{ "id": "default", "name": "Standard Section" }],
+  "tags": ["universal", "layout", "container", "spacing"]
+}

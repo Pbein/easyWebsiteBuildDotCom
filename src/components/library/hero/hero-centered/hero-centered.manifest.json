@@ -1,0 +1,96 @@
+{
+  "id": "hero-centered",
+  "category": "hero",
+  "name": "Centered Text Hero",
+  "description": "Full-width hero section with centered headline, subheadline, and CTA buttons. Supports background images with gradient overlay or dynamic gradient mesh backgrounds.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    { "name": "headline", "type": "string", "description": "Primary headline text" }
+  ],
+  "optionalProps": [
+    { "name": "subheadline", "type": "string", "description": "Supporting subheadline" },
+    { "name": "ctaPrimary", "type": "CTAButton", "description": "Primary CTA button" },
+    { "name": "ctaSecondary", "type": "CTAButton", "description": "Secondary CTA button" },
+    {
+      "name": "backgroundImage",
+      "type": "ImageSource",
+      "description": "Background image for with-bg-image variant"
+    },
+    { "name": "overlayOpacity", "type": "number", "description": "Dark overlay opacity (0-1)" },
+    {
+      "name": "height",
+      "type": "string",
+      "description": "Section height: viewport, large, medium"
+    },
+    { "name": "textAlign", "type": "string", "description": "Text alignment: center or left" },
+    { "name": "badge", "type": "string", "description": "Small badge text above headline" },
+    {
+      "name": "variant",
+      "type": "string",
+      "description": "Visual variant: with-bg-image or gradient-bg"
+    }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-primary-dark",
+    "color-secondary",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-text-on-dark",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-5xl",
+    "text-6xl",
+    "text-7xl",
+    "leading-tight",
+    "leading-normal",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-full",
+    "shadow-lg",
+    "shadow-xl",
+    "transition-fast",
+    "transition-base",
+    "transition-slow",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "with-bg-image",
+      "name": "Background Image",
+      "description": "Full background image with dark gradient overlay"
+    },
+    {
+      "id": "gradient-bg",
+      "name": "Gradient Mesh",
+      "description": "Dynamic gradient mesh from theme colors, no image"
+    }
+  ],
+  "tags": ["universal", "hero", "centered", "prominent"]
+}

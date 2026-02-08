@@ -1,5 +1,14 @@
 # Theme System Specification
 
+> **Implementation Status (as of Feb 2026):** Fully implemented.
+>
+> - **87 CSS Custom Properties** across 6 categories (colors, typography, spacing, shape, shadows, animation)
+> - **Token map** (`src/lib/theme/token-map.ts`) — camelCase ↔ CSS variable mapping with `tokensToCSSProperties()` and `tokensToCSSString()` converters. Accepts `Partial<ThemeTokens>`.
+> - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation and 10 curated font pairings scored by personality fit
+> - **ThemeProvider + useTheme** (`src/lib/theme/ThemeProvider.tsx`) — React context that injects tokens as CSS custom properties on a wrapper `<div>`, supports nested overrides
+> - **3 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional
+> - **Preview page** (`/preview`) — live theme switching across all 10 components with preset selector + custom personality vector sliders
+
 ## Overview
 
 The theme system is what prevents every generated website from looking the same. It translates the brand personality captured during intake into a complete set of CSS Custom Properties (design tokens) that all components consume.
@@ -7,6 +16,7 @@ The theme system is what prevents every generated website from looking the same.
 ## Design Token Categories
 
 ### Color Tokens
+
 ```
 --color-primary           Main brand color
 --color-primary-light     Lighter shade for hover states, backgrounds
@@ -29,6 +39,7 @@ The theme system is what prevents every generated website from looking the same.
 ```
 
 ### Typography Tokens
+
 ```
 --font-heading            Heading font family
 --font-body               Body text font family
@@ -42,6 +53,7 @@ The theme system is what prevents every generated website from looking the same.
 ```
 
 ### Spacing Tokens
+
 ```
 --space-section           Between major sections (4-8rem)
 --space-component         Between components within a section (2-4rem)
@@ -52,18 +64,21 @@ The theme system is what prevents every generated website from looking the same.
 ```
 
 ### Shape Tokens
+
 ```
 --radius-sm/md/lg/xl/full     Border radius scale
 --border-width                Default border width
 ```
 
 ### Shadow Tokens
+
 ```
 --shadow-sm/md/lg/xl          Shadow scale
 --shadow-color                Shadow color (for colored shadows)
 ```
 
 ### Animation Tokens
+
 ```
 --transition-fast/base/slow   Transition duration
 --ease-default                Default easing function
@@ -76,31 +91,37 @@ The theme system is what prevents every generated website from looking the same.
 The 6-axis personality vector [minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic] maps to tokens:
 
 ### Axis 1: Minimal (0) ↔ Rich (1)
+
 - **0.0-0.3**: Large spacing, no shadows, no borders, monochrome palette, thin borders
 - **0.4-0.6**: Moderate spacing, subtle shadows, accent color, standard borders
 - **0.7-1.0**: Compact spacing, layered shadows, multiple accent colors, decorative borders, background textures
 
 ### Axis 2: Playful (0) ↔ Serious (1)
+
 - **0.0-0.3**: Rounded fonts (rounded sans-serif), high saturation, large radius, bouncy easing
 - **0.4-0.6**: Clean sans-serif, moderate saturation, medium radius
 - **0.7-1.0**: Serif or geometric sans, desaturated tones, small or no radius, subtle easing
 
 ### Axis 3: Warm (0) ↔ Cool (1)
+
 - **0.0-0.3**: Warm neutrals (cream, tan, warm gray), warm hue rotation, earth tones
 - **0.4-0.6**: Neutral gray palette, balanced hues
 - **0.7-1.0**: Cool neutrals (blue-gray, slate), cool hue rotation, steel/ice tones
 
 ### Axis 4: Light (0) ↔ Bold (1)
+
 - **0.0-0.3**: Thin font weights, high whitespace ratio, subtle contrast, light backgrounds
 - **0.4-0.6**: Medium weights, balanced contrast, standard backgrounds
 - **0.7-1.0**: Heavy weights, high contrast, dark backgrounds possible, strong visual weight
 
 ### Axis 5: Classic (0) ↔ Modern (1)
+
 - **0.0-0.3**: Serif heading fonts, ornamental details, traditional proportions, warm palettes
 - **0.4-0.6**: Transitional serif or clean sans, balanced approach
 - **0.7-1.0**: Geometric sans-serif, minimal ornamentation, contemporary proportions, monospace accents
 
 ### Axis 6: Calm (0) ↔ Dynamic (1)
+
 - **0.0-0.3**: Slow transitions, minimal animation, static layouts, subtle hover effects
 - **0.4-0.6**: Standard transitions, entry animations, smooth scrolling
 - **0.7-1.0**: Fast transitions, scroll-triggered animations, parallax effects, interactive elements
@@ -108,38 +129,45 @@ The 6-axis personality vector [minimal_rich, playful_serious, warm_cool, light_b
 ## Curated Font Pairings
 
 ### Serious + Classic (Luxury)
+
 - Cormorant Garamond / Outfit
 - Playfair Display / Source Sans 3
 - Libre Baskerville / Nunito Sans
 
 ### Serious + Modern (Corporate)
+
 - Sora / DM Sans
 - General Sans / Cabinet Grotesk
 - Manrope / Karla
 
 ### Playful + Modern (Creative)
+
 - Clash Display / Satoshi
 - Cabinet Grotesk / General Sans
 - Space Grotesk / Outfit (use sparingly)
 
 ### Classic + Warm (Traditional)
+
 - Lora / Merriweather Sans
 - Crimson Pro / Open Sans
 - Spectral / Work Sans
 
 ### Bold + Dynamic (Impact)
+
 - Bebas Neue / Barlow
 - Oswald / Lato
 - Anton / Nunito
 
 ### Minimal + Cool (Tech)
+
 - JetBrains Mono (accents) / Inter (body exception for tech)
 - IBM Plex Mono / IBM Plex Sans
 - Fira Code (accents) / DM Sans
 
 ## Theme Presets
 
-### Preset: Luxury Dark
+### Preset: Luxury Dark ✅ Implemented
+
 ```
 personality: [0.6, 0.9, 0.3, 0.8, 0.3, 0.5]
 colors: deep navy, gold accents, cream text, rich shadows
@@ -150,6 +178,7 @@ animations: slow, elegant
 ```
 
 ### Preset: Luxury Light
+
 ```
 personality: [0.5, 0.8, 0.2, 0.5, 0.3, 0.4]
 colors: ivory/cream base, muted gold, charcoal text, soft shadows
@@ -159,7 +188,8 @@ spacing: very generous
 animations: subtle
 ```
 
-### Preset: Modern Clean
+### Preset: Modern Clean ✅ Implemented
+
 ```
 personality: [0.2, 0.6, 0.6, 0.5, 0.9, 0.4]
 colors: white base, single accent color, near-black text
@@ -170,6 +200,7 @@ animations: smooth, functional
 ```
 
 ### Preset: Bold Creative
+
 ```
 personality: [0.7, 0.3, 0.4, 0.9, 0.8, 0.9]
 colors: vibrant primaries, high contrast, unexpected combinations
@@ -179,7 +210,8 @@ spacing: dynamic (varies by section)
 animations: energetic, scroll-triggered
 ```
 
-### Preset: Warm Professional
+### Preset: Warm Professional ✅ Implemented
+
 ```
 personality: [0.4, 0.5, 0.2, 0.5, 0.5, 0.4]
 colors: warm whites, terracotta/sage accents, brown-black text
@@ -190,6 +222,7 @@ animations: gentle
 ```
 
 ### Preset: Editorial
+
 ```
 personality: [0.5, 0.7, 0.5, 0.7, 0.7, 0.3]
 colors: high contrast, black/white with single bold accent
@@ -200,6 +233,7 @@ animations: minimal, typography-focused
 ```
 
 ### Preset: Tech Forward
+
 ```
 personality: [0.4, 0.7, 0.8, 0.6, 1.0, 0.7]
 colors: dark backgrounds, gradient accents, neon highlights
@@ -215,12 +249,14 @@ Components consume tokens via CSS custom properties:
 
 ```tsx
 // Component uses tokens — never hardcoded values
-<h1 style={{
-  fontFamily: 'var(--font-heading)',
-  fontSize: 'var(--text-5xl)',
-  color: 'var(--color-text)',
-  letterSpacing: 'var(--tracking-tight)'
-}}>
+<h1
+  style={{
+    fontFamily: "var(--font-heading)",
+    fontSize: "var(--text-5xl)",
+    color: "var(--color-text)",
+    letterSpacing: "var(--tracking-tight)",
+  }}
+>
   {headline}
 </h1>
 ```

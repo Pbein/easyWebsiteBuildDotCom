@@ -1,0 +1,71 @@
+{
+  "id": "content-split",
+  "category": "content",
+  "name": "Split Content",
+  "description": "Full-width rows of alternating text and image content. Each row flips the image side for visual rhythm.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 0.8],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 0.8]
+  },
+  "requiredProps": [
+    {
+      "name": "sections",
+      "type": "ContentSplitSection[]",
+      "description": "Array of 2-4 content sections with headline, body, image"
+    }
+  ],
+  "optionalProps": [
+    {
+      "name": "imageStyle",
+      "type": "string",
+      "description": "Image corner style: rounded, sharp, overlap"
+    },
+    { "name": "variant", "type": "string", "description": "Visual variant: alternating" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-md",
+    "shadow-lg",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element"
+  ],
+  "variants": [
+    { "id": "alternating", "name": "Alternating", "description": "Image alternates sides per row" }
+  ],
+  "tags": ["services", "about", "alternating", "image-text"]
+}

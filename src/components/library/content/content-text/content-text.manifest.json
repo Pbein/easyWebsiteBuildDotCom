@@ -1,0 +1,59 @@
+{
+  "id": "content-text",
+  "category": "content",
+  "name": "Text Block",
+  "description": "Simple, typography-focused text section with optional eyebrow and headline. Constrained width for optimal readability.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [{ "name": "body", "type": "string", "description": "Body text content" }],
+  "optionalProps": [
+    { "name": "headline", "type": "string" },
+    { "name": "textAlign", "type": "string", "description": "center or left" },
+    { "name": "maxWidth", "type": "string", "description": "narrow, medium, wide" },
+    { "name": "eyebrow", "type": "string", "description": "Small uppercase text above headline" },
+    { "name": "variant", "type": "string", "description": "Visual variant: centered" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-accent",
+    "color-background",
+    "color-text",
+    "color-text-secondary",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "tracking-wide",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    { "id": "centered", "name": "Centered", "description": "Centered text with constrained width" }
+  ],
+  "tags": ["universal", "text", "typography", "simple"]
+}

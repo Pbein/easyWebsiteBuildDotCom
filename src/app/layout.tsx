@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/platform/Navbar";
-import { Footer } from "@/components/platform/Footer";
+import { Toaster } from "sonner";
+import { ConditionalLayout } from "@/components/platform/ConditionalLayout";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
@@ -39,11 +39,21 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${spaceGrotesk.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased noise-bg`}
+        className={`${spaceGrotesk.variable} ${outfit.variable} ${jetbrainsMono.variable} noise-bg antialiased`}
       >
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <ConditionalLayout>{children}</ConditionalLayout>
+        <Toaster
+          theme="dark"
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "var(--color-bg-elevated)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text-primary)",
+              fontFamily: "var(--font-body)",
+            },
+          }}
+        />
       </body>
     </html>
   );

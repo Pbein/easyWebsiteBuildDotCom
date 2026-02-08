@@ -1,5 +1,12 @@
 # Intake Flow Design — Intent Capture System
 
+> **Implementation Status (as of Feb 2026):**
+>
+> - **Demo intake flow built** at `/demo` — 4-step experience (site type selection, goals, business description, personality A/B comparisons)
+> - **State management** — Zustand store with localStorage persistence tracks intake progress
+> - **Convex storage** — `intakeResponses` table with `saveResponse` mutation and `getBySession` query stores completed responses
+> - **Not yet built:** Steps 5-6 (AI-powered deep discovery and spec/preview generation), Claude API integration, full 6-step flow. These are planned for Phase 3.
+
 ## Overview
 
 The intake flow is the guided discovery experience that replaces the traditional "pick a template" approach. It extracts what a client actually needs through structured questions, visual comparisons, and AI-powered conversation.
@@ -7,10 +14,12 @@ The intake flow is the guided discovery experience that replaces the traditional
 ## User Experience Flow
 
 ### Step 1: Welcome & Quick Start
+
 **Screen**: Clean welcome screen with a single question
 **Question**: "What kind of website are you building?"
 
 Options presented as visual cards with icons:
+
 - 🏢 Business Website — "Showcase your business and attract clients"
 - 📅 Booking Website — "Let customers book appointments or services"
 - 🛍️ Online Store — "Sell products directly online"
@@ -26,9 +35,11 @@ Options presented as visual cards with icons:
 - ❓ Something else — (Free text → AI interpretation)
 
 ### Step 2: Primary Goal
+
 **Screen**: Based on Step 1 selection, show the most relevant goals
 
 For Business Website:
+
 - "Get people to contact me" → Contact/inquiry conversion
 - "Get people to book a consultation" → Booking conversion
 - "Showcase my services and build trust" → Information + credibility
@@ -36,6 +47,7 @@ For Business Website:
 - "Something else" → Free text
 
 For Portfolio:
+
 - "Get hired / freelance work" → Professional showcase
 - "Get gallery/label/publisher attention" → Industry showcase
 - "Build my audience/following" → Fan engagement
@@ -43,11 +55,13 @@ For Portfolio:
 - "Something else" → Free text
 
 ### Step 3: Industry & Context
+
 **Screen**: Text input with smart suggestions
 
 "Tell us about your business or project in a sentence or two."
 
 Examples shown as placeholder text:
+
 - "I'm opening a luxury med spa in Miami"
 - "I'm a wedding photographer based in Portland"
 - "We sell handmade ceramics online"
@@ -55,6 +69,7 @@ Examples shown as placeholder text:
 The AI extracts: industry, location, scale, target audience, competitive positioning.
 
 ### Step 4: Brand Personality
+
 **Screen**: Series of visual A/B comparisons (5-6 rounds)
 
 Each round shows two rendered website sections side by side, representing opposite poles of a personality axis. User clicks the one that feels more like their brand, or adjusts a slider between them.
@@ -86,6 +101,7 @@ Right: A dynamic section with motion, scroll effects, interactive elements
 Each choice maps to a value on the 0-1 axis. Clicking "left" = 0.1-0.3, "slightly left" = 0.3-0.4, "center" = 0.5, etc.
 
 ### Step 5: Deep Discovery (AI-Powered)
+
 **Screen**: Chat-like interface with AI-generated questions
 
 Based on all previous answers, Claude generates 3-5 targeted questions. These are presented one at a time in a conversational format.
@@ -108,15 +124,18 @@ Question 5: "Describe the feeling someone should have when they first visit your
 → User types: "Like they're stepping into a five-star hotel. Luxurious, exclusive, trustworthy."
 
 ### Step 6: Preview & Proposal
+
 **Screen**: Full rendered preview of the proposed website
 
 The system generates:
+
 1. A visual preview using real components with placeholder/AI-generated content
 2. A proposed sitemap sidebar showing all pages
 3. Theme details (color palette, font pairing, style notes)
 4. Component breakdown per page
 
 User can:
+
 - Approve and proceed
 - Request changes ("make it darker", "use a different hero style", "add a team section")
 - Go back and adjust personality or answers
@@ -165,7 +184,7 @@ interface AIQuestion {
   question: string;
   type: "text" | "select" | "multiselect";
   options?: string[];
-  purpose: string;  // What this answer will be used for
+  purpose: string; // What this answer will be used for
 }
 ```
 
@@ -188,17 +207,14 @@ intakePaths: defineTable({
   embedding: v.optional(v.array(v.float64())),
   usageCount: v.number(),
   confirmationRate: v.number(),
-  status: v.union(
-    v.literal("candidate"),
-    v.literal("proven"),
-    v.literal("deprecated")
-  ),
-})
+  status: v.union(v.literal("candidate"), v.literal("proven"), v.literal("deprecated")),
+});
 ```
 
 ### AI Integration Points
 
 **Step 3 — Industry Extraction:**
+
 ```
 System: Extract industry, target audience, location, and business scale
 from this description. Return structured JSON.
@@ -206,6 +222,7 @@ User input: "{businessDescription}"
 ```
 
 **Step 5 — Question Generation:**
+
 ```
 System: You are helping build a website. Based on the following client
 profile, generate 3-5 targeted discovery questions that will help us
@@ -222,6 +239,7 @@ Return questions as JSON array.
 ```
 
 **Step 6 — Spec Generation:**
+
 ```
 System: Based on the complete intake data, generate a Site Intent Document
 that specifies pages, component selections with variants, and content
@@ -237,6 +255,7 @@ Return a complete SiteIntentDocument as JSON.
 ## Progressive Disclosure
 
 The flow should feel light and fast. Principles:
+
 - One question per screen (mobile-first)
 - Visual choices over text whenever possible
 - Progress indicator showing completion percentage
@@ -247,20 +266,24 @@ The flow should feel light and fast. Principles:
 ## Edge Cases
 
 **User selects "Something else" at any step:**
+
 - Show text input
 - AI interprets and maps to closest known category
 - Store as candidate path for future promotion
 
 **User has strong existing brand:**
+
 - Option to upload brand guidelines, logo, colors
 - System extracts tokens from uploaded assets
 - Personality assessment adjusts to complement existing brand
 
 **User is unsure about answers:**
+
 - Provide "I'm not sure" option on personality questions (maps to 0.5 center)
 - AI can suggest based on industry norms: "Most luxury service businesses prefer..."
 
 **User wants to skip ahead:**
+
 - Allow skipping to preview with defaults filled in
 - Skipped questions use industry-standard defaults
 - Note which defaults were used so they can refine later
