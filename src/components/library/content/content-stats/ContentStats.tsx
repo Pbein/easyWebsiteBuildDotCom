@@ -134,7 +134,7 @@ export function ContentStats({
         {/* Section header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-16 text-center"
+            className="mb-8 text-center md:mb-16"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -177,7 +177,7 @@ export function ContentStats({
               <motion.div
                 key={i}
                 className={cn(
-                  "flex flex-col items-center px-8 py-6 md:py-0",
+                  "flex flex-col items-center px-4 py-6 md:px-8 md:py-0",
                   i > 0 && "md:border-l"
                 )}
                 style={{
@@ -194,7 +194,7 @@ export function ContentStats({
                 <span
                   style={{
                     fontFamily: "var(--font-heading)",
-                    fontSize: "var(--text-4xl)",
+                    fontSize: "clamp(var(--text-2xl), 5vw, var(--text-4xl))",
                     fontWeight: "var(--weight-bold)",
                     lineHeight: "var(--leading-tight)",
                     letterSpacing: "var(--tracking-tight)",
@@ -226,7 +226,7 @@ export function ContentStats({
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
-                className="group relative flex flex-col items-center p-8 text-center transition-all"
+                className="group relative flex flex-col items-center p-5 text-center transition-all md:p-8"
                 style={{
                   backgroundColor: "var(--color-surface)",
                   borderRadius: "var(--radius-xl)",
@@ -272,7 +272,7 @@ export function ContentStats({
                 <span
                   style={{
                     fontFamily: "var(--font-heading)",
-                    fontSize: "var(--text-4xl)",
+                    fontSize: "clamp(var(--text-2xl), 5vw, var(--text-4xl))",
                     fontWeight: "var(--weight-bold)",
                     lineHeight: "var(--leading-tight)",
                     letterSpacing: "var(--tracking-tight)",
@@ -306,7 +306,7 @@ export function ContentStats({
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
-                className="group relative flex flex-col items-center p-8 text-center transition-all"
+                className="group relative flex flex-col items-center p-5 text-center transition-all md:p-8"
                 style={{
                   backgroundColor: "var(--color-surface)",
                   borderRadius: "var(--radius-xl)",
@@ -352,7 +352,7 @@ export function ContentStats({
                 <span
                   style={{
                     fontFamily: "var(--font-heading)",
-                    fontSize: "var(--text-4xl)",
+                    fontSize: "clamp(var(--text-2xl), 5vw, var(--text-4xl))",
                     fontWeight: "var(--weight-bold)",
                     lineHeight: "var(--leading-tight)",
                     letterSpacing: "var(--tracking-tight)",

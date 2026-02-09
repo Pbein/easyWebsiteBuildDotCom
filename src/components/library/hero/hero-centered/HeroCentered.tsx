@@ -1,89 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
 import type { HeroCenteredProps } from "./hero-centered.types";
-
-const HEIGHT_MAP = {
-  viewport: "100vh",
-  large: "80vh",
-  medium: "60vh",
-} as const;
-
-const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-element)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
-
-function CTAButtonEl({
-  text,
-  href,
-  variant = "primary",
-  external,
-}: {
-  text: string;
-  href: string;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  external?: boolean;
-}) {
-  const baseStyle: React.CSSProperties = {
-    fontFamily: "var(--font-body)",
-    fontSize: "var(--text-base)",
-    fontWeight: "var(--weight-semibold)",
-    borderRadius: "var(--radius-lg)",
-    transitionProperty: "background-color, color, border-color, box-shadow",
-    transitionDuration: "var(--transition-fast)",
-    transitionTimingFunction: "var(--ease-default)",
-  };
-
-  const variantStyles: Record<string, React.CSSProperties> = {
-    primary: {
-      backgroundColor: "var(--color-primary)",
-      color: "var(--color-text-on-primary)",
-    },
-    secondary: {
-      backgroundColor: "var(--color-surface)",
-      color: "var(--color-text)",
-      border: "1px solid var(--color-border)",
-    },
-    outline: {
-      backgroundColor: "transparent",
-      color: "var(--color-primary)",
-      border: "1px solid var(--color-primary)",
-    },
-    ghost: {
-      backgroundColor: "transparent",
-      color: "var(--color-primary)",
-    },
-  };
-
-  return (
-    <a
-      href={href}
-      className="inline-flex items-center justify-center px-7 py-3.5"
-      style={{ ...baseStyle, ...variantStyles[variant] }}
-      onMouseEnter={(e) => {
-        if (variant === "primary") {
-          e.currentTarget.style.backgroundColor = "var(--color-primary-light)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (variant === "primary") {
-          e.currentTarget.style.backgroundColor = "var(--color-primary)";
-        }
-      }}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-    >
-      {text}
-    </a>
-  );
-}
+import { HEIGHT_MAP, SPACING_MAP, CTAButtonEl } from "./shared";
+import { WithBgImage } from "./variants/with-bg-image";
+import { GradientBg } from "./variants/gradient-bg";
 
 /**
  * HeroCentered — full-width hero with centered text content.
@@ -133,57 +57,11 @@ export function HeroCentered({
     >
       {/* Background: image variant */}
       {isImageVariant && (
-        <>
-          <Image
-            src={backgroundImage.src}
-            alt={backgroundImage.alt}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity * 0.6}) 0%, rgba(0,0,0,${overlayOpacity}) 60%, rgba(0,0,0,${overlayOpacity * 1.2 > 1 ? 1 : overlayOpacity * 1.2}) 100%)`,
-            }}
-          />
-        </>
+        <WithBgImage backgroundImage={backgroundImage} overlayOpacity={overlayOpacity} />
       )}
 
       {/* Background: gradient mesh variant */}
-      {variant === "gradient-bg" && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: "var(--color-background)" }}
-          />
-          <div
-            className="absolute -top-1/2 -left-1/4 h-full w-3/4 opacity-30"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, var(--color-primary) 0%, transparent 70%)",
-              filter: "blur(80px)",
-            }}
-          />
-          <div
-            className="absolute -right-1/4 -bottom-1/3 h-3/4 w-2/3 opacity-25"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, var(--color-secondary) 0%, transparent 70%)",
-              filter: "blur(90px)",
-            }}
-          />
-          <div
-            className="absolute top-1/4 right-1/3 h-1/2 w-1/2 opacity-15"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, var(--color-accent) 0%, transparent 60%)",
-              filter: "blur(100px)",
-            }}
-          />
-        </div>
-      )}
+      {variant === "gradient-bg" && <GradientBg />}
 
       {/* Content */}
       <div

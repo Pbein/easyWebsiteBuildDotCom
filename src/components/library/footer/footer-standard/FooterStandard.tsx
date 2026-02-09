@@ -108,7 +108,7 @@ export function FooterStandard({
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Main footer grid */}
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-12">
           {/* Brand column */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export function FooterStandard({
 
         {/* Bottom bar */}
         <div
-          className="mt-16 flex flex-col items-center justify-between gap-4 py-6 md:flex-row"
+          className="mt-8 flex flex-col items-center justify-between gap-4 py-6 md:mt-16 md:flex-row"
           style={{ borderTop: "1px solid var(--color-border-light)" }}
         >
           {copyright && (

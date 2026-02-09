@@ -57,7 +57,7 @@ export function ContentSplit({
         className="mx-auto flex flex-col px-6"
         style={{
           maxWidth: "var(--container-max)",
-          gap: "var(--space-section)",
+          gap: "clamp(var(--space-component), 4vw, var(--space-section))",
         }}
       >
         {sections.map((section, i) => (
@@ -176,7 +176,7 @@ function SplitRow({
   );
 
   return (
-    <div ref={ref} className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+    <div ref={ref} className="grid items-center gap-6 md:grid-cols-2 md:gap-16">
       {imgOnRight ? (
         <>
           {textContent}

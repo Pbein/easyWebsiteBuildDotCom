@@ -69,7 +69,7 @@ export function ContentFeatures({
         {/* Section header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-16 text-center"
+            className="mb-8 text-center md:mb-16"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -110,7 +110,7 @@ export function ContentFeatures({
           {features.map((feature, i) => (
             <motion.div
               key={i}
-              className="group relative flex flex-col p-8 transition-all"
+              className="group relative flex flex-col p-5 transition-all md:p-8"
               style={{
                 backgroundColor: "var(--color-surface)",
                 borderRadius: "var(--radius-xl)",

@@ -40,6 +40,20 @@ export function MediaGallery({
 
   const [activeFilter, setActiveFilter] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [masonryColumns, setMasonryColumns] = useState<number>(columns);
+
+  // Responsive masonry columns
+  useEffect(() => {
+    function updateColumns(): void {
+      const w = window.innerWidth;
+      if (w < 640) setMasonryColumns(1);
+      else if (w < 1024) setMasonryColumns(Math.min(columns, 2));
+      else setMasonryColumns(columns);
+    }
+    updateColumns();
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, [columns]);
 
   const themeStyle = theme ? (tokensToCSSProperties(theme) as React.CSSProperties) : undefined;
   const paddingY = SPACING_MAP[spacing];
@@ -96,7 +110,7 @@ export function MediaGallery({
         {/* Section header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-16 text-center"
+            className="mb-8 text-center md:mb-16"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -209,7 +223,7 @@ export function MediaGallery({
         {variant === "masonry" && (
           <div
             style={{
-              columns: columns,
+              columns: masonryColumns,
               columnGap: "1rem",
             }}
           >

@@ -581,7 +581,7 @@ export function TeamGrid({
         {/* Section header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-16 text-center"
+            className="mb-8 text-center md:mb-16"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -618,7 +618,7 @@ export function TeamGrid({
         )}
 
         {/* Members grid */}
-        <div className={cn("grid gap-8", COLUMNS_MAP[columns])}>
+        <div className={cn("grid gap-5 md:gap-8", COLUMNS_MAP[columns])}>
           {members.map((member, i) => {
             switch (variant) {
               case "minimal":

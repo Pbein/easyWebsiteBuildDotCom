@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
@@ -40,7 +40,7 @@ function TestimonialCard({
 }) {
   return (
     <div
-      className="flex h-full flex-col p-8"
+      className="flex h-full flex-col p-5 md:p-8"
       style={{
         backgroundColor: "var(--color-surface)",
         borderRadius: "var(--radius-xl)",
@@ -141,13 +141,30 @@ export function ProofTestimonials({
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [perPage, setPerPage] = useState(3);
+
+  // Responsive perPage: 1 on mobile, 2 on tablet, 3 on desktop
+  useEffect(() => {
+    function updatePerPage(): void {
+      const w = window.innerWidth;
+      let next: number;
+      if (w < 768) next = 1;
+      else if (w < 1024) next = 2;
+      else next = 3;
+      setPerPage((prev) => {
+        if (prev !== next) setPage(0);
+        return next;
+      });
+    }
+    updatePerPage();
+    window.addEventListener("resize", updatePerPage);
+    return () => window.removeEventListener("resize", updatePerPage);
+  }, []);
 
   const themeStyle = theme ? (tokensToCSSProperties(theme) as React.CSSProperties) : undefined;
 
   const paddingY = SPACING_MAP[spacing];
 
-  // Determine visible cards per page based on screen width (use 3 as default for SSR)
-  const perPage = 3;
   const totalPages = Math.ceil(testimonials.length / perPage);
 
   const goTo = useCallback(
@@ -190,7 +207,7 @@ export function ProofTestimonials({
       <div className="mx-auto px-6" style={{ maxWidth: "var(--container-max)" }}>
         {/* Header + nav arrows */}
         <motion.div
-          className="mb-12 flex items-end justify-between"
+          className="mb-6 flex items-end justify-between md:mb-12"
           initial={animate ? { opacity: 0, y: 20 } : false}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -267,7 +284,7 @@ export function ProofTestimonials({
         </motion.div>
 
         {/* Carousel */}
-        <div className="relative min-h-[280px]">
+        <div className="relative min-h-[200px] md:min-h-[280px]">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={page}

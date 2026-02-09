@@ -46,7 +46,7 @@ function VerticalItem({
 
   return (
     <div
-      className="relative flex gap-6"
+      className="relative flex gap-3 md:gap-6"
       style={{ paddingBottom: isLast ? "0" : "var(--space-component)" }}
     >
       {/* Left rail: dot / icon + connector line */}
@@ -188,7 +188,7 @@ function AlternatingItem({
   return (
     <div className="relative" style={{ paddingBottom: isLast ? "0" : "var(--space-component)" }}>
       {/* Mobile: single-column layout (same as vertical) */}
-      <div className="flex gap-6 md:hidden">
+      <div className="flex gap-3 md:hidden">
         {/* Left rail */}
         <div
           className="relative flex flex-col items-center"
@@ -530,7 +530,7 @@ export function ContentTimeline({
         {/* Section header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-16 text-center"
+            className="mb-8 text-center md:mb-16"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}

@@ -394,7 +394,7 @@ export function ProofBeforeAfter({
         {/* Header */}
         {(headline || subheadline) && (
           <motion.div
-            className="mb-12 text-center"
+            className="mb-6 text-center md:mb-12"
             initial={animate ? { opacity: 0, y: 20 } : false}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}

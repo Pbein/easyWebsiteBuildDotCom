@@ -102,7 +102,7 @@ export function HeroSplit({
           className="mt-4"
           style={{
             fontFamily: "var(--font-body)",
-            fontSize: "var(--text-xl)",
+            fontSize: "clamp(var(--text-base), 2vw, var(--text-xl))",
             lineHeight: "var(--leading-normal)",
             color: "var(--color-text-secondary)",
           }}
@@ -156,7 +156,7 @@ export function HeroSplit({
           {ctaPrimary && (
             <a
               href={ctaPrimary.href}
-              className="inline-flex items-center justify-center px-7 py-3.5 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-3 transition-colors md:px-7 md:py-3.5"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-base)",
@@ -180,7 +180,7 @@ export function HeroSplit({
           {ctaSecondary && (
             <a
               href={ctaSecondary.href}
-              className="inline-flex items-center justify-center px-7 py-3.5 transition-colors"
+              className="inline-flex items-center justify-center px-5 py-3 transition-colors md:px-7 md:py-3.5"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-base)",
@@ -247,7 +247,7 @@ export function HeroSplit({
       aria-label={headline}
     >
       <div
-        className="mx-auto grid items-center gap-12 px-6 md:grid-cols-2 md:gap-16"
+        className="mx-auto grid items-center gap-6 px-6 md:grid-cols-2 md:gap-16"
         style={{ maxWidth: "var(--container-max)" }}
       >
         {imgOnRight ? (

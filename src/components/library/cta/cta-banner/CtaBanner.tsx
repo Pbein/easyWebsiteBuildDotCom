@@ -74,7 +74,7 @@ export function CtaBanner({
     >
       <motion.div
         className={cn(
-          "relative flex flex-col items-center justify-center px-8 py-20 text-center md:px-16 md:py-24",
+          "relative flex flex-col items-center justify-center px-5 py-12 text-center md:px-16 md:py-24",
           isContained ? "overflow-hidden" : ""
         )}
         style={{
@@ -133,7 +133,7 @@ export function CtaBanner({
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
               href={ctaPrimary.href}
-              className="inline-flex items-center justify-center px-8 py-4 transition-all"
+              className="inline-flex items-center justify-center px-5 py-3 transition-all md:px-8 md:py-4"
               style={{
                 fontFamily: "var(--font-body)",
                 fontSize: "var(--text-base)",
@@ -163,7 +163,7 @@ export function CtaBanner({
             {ctaSecondary && (
               <a
                 href={ctaSecondary.href}
-                className="inline-flex items-center justify-center px-8 py-4 transition-colors"
+                className="inline-flex items-center justify-center px-5 py-3 transition-colors md:px-8 md:py-4"
                 style={{
                   fontFamily: "var(--font-body)",
                   fontSize: "var(--text-base)",

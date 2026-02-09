@@ -287,7 +287,7 @@ export function FormContact({
 
               <button
                 type="submit"
-                className="mt-4 inline-flex items-center justify-center gap-2 px-8 py-3.5 transition-all"
+                className="mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 transition-all md:px-8 md:py-3.5"
                 style={{
                   fontFamily: "var(--font-body)",
                   fontSize: "var(--text-base)",
