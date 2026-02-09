@@ -93,8 +93,11 @@ easywebsitebuild/
 │   │   │   ├── ConditionalLayout.tsx  # Route-aware Navbar/Footer visibility
 │   │   │   ├── ConvexClientProvider.tsx # Convex React provider (wraps app)
 │   │   │   ├── intake/          # Intake flow step components
-│   │   │   │   ├── Step5Discovery.tsx # AI-powered discovery questionnaire
-│   │   │   │   ├── Step6Loading.tsx   # Animated generation loading screen
+│   │   │   │   ├── Step5Emotion.tsx   # Emotional goals selection (Step 5)
+│   │   │   │   ├── Step6Voice.tsx     # Voice tone + narrative prompts (Step 6)
+│   │   │   │   ├── Step7Culture.tsx   # Brand archetype + anti-references (Step 7)
+│   │   │   │   ├── Step5Discovery.tsx # AI-powered discovery questionnaire (Step 8)
+│   │   │   │   ├── Step6Loading.tsx   # Animated generation loading screen (Step 9)
 │   │   │   │   └── index.ts
 │   │   │   └── preview/         # Preview UI components
 │   │   │       ├── PreviewSidebar.tsx # Spec metadata sidebar
@@ -119,21 +122,24 @@ easywebsitebuild/
 │       │   ├── spec.types.ts    # SiteIntentDocument, PageSpec, ComponentPlacement
 │       │   ├── component-registry.ts  # componentId → React component mapping (18 components)
 │       │   ├── font-loader.ts   # Runtime Google Fonts loader with deduplication
-│       │   ├── AssemblyRenderer.tsx    # Spec → live site renderer
+│       │   ├── AssemblyRenderer.tsx    # Spec → live site renderer (+ emotional overrides)
 │       │   └── index.ts         # Barrel export
 │       ├── export/              # Export pipeline
 │       │   ├── generate-project.ts    # SiteIntentDocument → static HTML/CSS files
 │       │   ├── create-zip.ts          # JSZip bundling + browser download
 │       │   └── index.ts               # Barrel export
 │       ├── stores/
-│       │   └── intake-store.ts  # Zustand store with localStorage persistence
-│       └── theme/               # Theme system
-│           ├── types.ts         # ThemeTokens interface (87 tokens, 6 categories)
-│           ├── token-map.ts     # Token → CSS property mapping
-│           ├── generate-theme.ts # Personality → tokens generation (chroma-js)
-│           ├── presets.ts       # 7 presets
-│           ├── ThemeProvider.tsx # React context + CSS variable injection
-│           └── index.ts         # Barrel export
+│       │   └── intake-store.ts  # Zustand store with localStorage persistence (9-step flow)
+│       ├── theme/               # Theme system
+│       │   ├── types.ts         # ThemeTokens interface (87 tokens, 6 categories)
+│       │   ├── token-map.ts     # Token → CSS property mapping
+│       │   ├── generate-theme.ts # Personality → tokens generation (chroma-js)
+│       │   ├── emotional-overrides.ts # Emotion/anti-reference → token adjustments
+│       │   ├── presets.ts       # 7 presets
+│       │   ├── ThemeProvider.tsx # React context + CSS variable injection
+│       │   └── index.ts         # Barrel export
+│       └── types/               # Shared type definitions
+│           └── brand-character.ts # Brand character types + display constants
 ├── convex/                      # Convex backend (excluded from tsconfig)
 │   ├── schema.ts                # Database schema (9 tables)
 │   ├── siteSpecs.ts             # Site spec CRUD (saveSiteSpec, getSiteSpec)
@@ -188,7 +194,7 @@ easywebsitebuild/
 ### Phase 1: Platform Website & Foundation — COMPLETE
 
 - Homepage (`/`) — product landing page with hero, features, how-it-works, CTA sections
-- Demo (`/demo`) — 6-step guided intake flow (site type → goal → description → personality → AI discovery → generation)
+- Demo (`/demo`) — 9-step guided intake flow (site type → goal → description → personality → emotion → voice → culture → AI discovery → generation)
 - Documentation (`/docs`) — comprehensive specs rendered from markdown content
 - Platform UI — Navbar, Footer, AnimatedSection, ConditionalLayout (hides chrome on /preview and /demo/preview)
 
@@ -236,13 +242,40 @@ easywebsitebuild/
   - `create-zip.ts` → JSZip bundling → downloadable ZIP
   - Export button wired in PreviewToolbar (demo/preview page)
 
-### Next: Phase 5 — Visual Editor, Multi-Page Support & Deployment Pipeline
+### Phase 4C: Brand Character System — COMPLETE
 
-- Visual editor (inline editing, component reordering)
-- Multi-page site support
-- Full Next.js project generation
-- Vercel deployment via API
-- Preview sharing
+- **3 New Intake Steps** (Steps 5-7, expanding flow from 6 to 9 steps):
+  - Step 5 — Emotional Goals: 10 emotion cards, select 1-2 primary feelings
+  - Step 6 — Voice & Narrative: 3 A/B/C voice comparisons + 3 optional narrative prompts
+  - Step 7 — Culture & Anti-References: 6 brand archetype cards + 8 anti-reference toggle chips
+- **Brand Character Types** (`src/lib/types/brand-character.ts`): EmotionalGoal, VoiceTone, BrandArchetype, AntiReference types + display data constants
+- **Store & Schema Updates**: 5 new fields in Zustand store + Convex siteSpecs table (all optional, backward compatible)
+- **AI Prompt Integration**: generateQuestions + generateSiteSpec updated with character context
+- **Deterministic Fallback Enhancement**: Voice-keyed headlines (`getVoiceKeyedHeadline`), voice-keyed CTAs (`getVoiceKeyedCtaText`), anti-reference CTA checks
+- **Emotional Theme Overrides** (`src/lib/theme/emotional-overrides.ts`): Adjusts spacing, transitions, animation, radius based on emotional goals + anti-references
+- **Preview UI**: Sidebar shows Emotional Goals, Voice & Character, and Anti-References sections
+- **Progress Indicator**: Segmented progress bar (Setup | Character | Discovery) replaces 6 circles
+
+### Phase 4D: Mobile Responsiveness — COMPLETE
+
+- **16 of 18 components** updated with mobile-first responsive patterns (NavSticky and ContentText already mobile-friendly)
+- **Responsive spacing**: Section headers `mb-8 md:mb-16`, card padding `p-5 md:p-8`, gap reduction on mobile
+- **Font size clamping**: `clamp(var(--text-2xl), 5vw, var(--text-4xl))` for stat numbers and pricing
+- **CTA button sizing**: `px-5 py-3 md:px-7 md:py-3.5` prevents overflow at 375px
+- **Responsive carousel**: ProofTestimonials uses `useState` + `resize` listener for perPage (1/2/3 by breakpoint)
+- **Responsive masonry**: MediaGallery adapts column count by viewport width
+- **Overflow fix**: CommerceServices tiered card `scale(1.05)` removed to prevent horizontal scroll
+
+### Next: Phase 5 — Multi-Page Generation & Core Quality
+
+> Priorities informed by [docs/STRATEGIC_ROADMAP.md](docs/STRATEGIC_ROADMAP.md) — honest assessment, impact × feasibility ranking, integration-first strategy.
+
+- **Multi-page generation & routing** (highest impact — every real site needs multiple pages)
+- **Real image handling** (descriptive placeholders → stock photo API → user upload)
+- **Next.js project export upgrade** (proper App Router project, not static HTML/CSS)
+- Then: Refinement chat MVP, Vercel deployment, user accounts
+- Later: Integrations (booking, commerce, blog/CMS) via third-party services — we build the UI, they handle functionality
+- Visual editor deferred to Phase 9 (high effort, lower immediate impact)
 
 ## Component Library (18 Components)
 
@@ -262,11 +295,11 @@ easywebsitebuild/
 | `cta-banner`         | full-width, contained             | 4 bg options                      |
 | `form-contact`       | simple                            | Validation + success state        |
 | `footer-standard`    | multi-column                      | Social icons, copyright           |
-| `proof-testimonials` | carousel                          | Star ratings, pagination          |
+| `proof-testimonials` | carousel                          | Responsive perPage (1/2/3)        |
 | `proof-beforeafter`  | slider, side-by-side              | Uses `comparisons` (not `items`)  |
 | `team-grid`          | cards, minimal, hover-reveal      | Uses `image` (not `avatar`)       |
 | `commerce-services`  | card-grid, list, tiered           | Uses `name` (not `title`)         |
-| `media-gallery`      | grid, masonry, lightbox           | Filter tabs, keyboard nav         |
+| `media-gallery`      | grid, masonry, lightbox           | Responsive masonry columns        |
 
 ## Theme Presets (7 Total)
 
@@ -288,17 +321,25 @@ easywebsitebuild/
 - Component manifests use `number[]` (not tuple) for `personalityFit` for JSON compatibility
 - ContentFeatures uses `lucide-react` dynamic icon lookup via `* as LucideIcons`
 - ContentText uses `dangerouslySetInnerHTML` for body (supports basic HTML)
+- **Mobile-first responsive**: All spacing/padding uses `mobile md:desktop` pattern (e.g., `mb-8 md:mb-16`, `p-5 md:p-8`)
+- **Font clamping**: Large display text uses `clamp()` to prevent overflow on narrow viewports
+- **Responsive behavior**: Components with viewport-dependent layout (carousel perPage, masonry columns) use `useState` + `resize` listener
 
 ## Important Patterns
 
 - **Bridge pattern**: Steps 1-4 use local React state, `bridgeToStore()` syncs to Zustand at Step 4→5
 - **Dual-path generation**: AI-first with deterministic fallback in both `generateQuestions` and `generateSiteSpec`
 - **COMPONENT_REGISTRY**: Maps componentId strings to React components; `UNWRAPPED_COMPONENTS` for nav/footer
-- **AssemblyRenderer**: Generates theme from personalityVector, loads Google Fonts, renders in ThemeProvider
+- **AssemblyRenderer**: Generates theme from personalityVector, applies emotional overrides if character data present, loads Google Fonts, renders in ThemeProvider
 - **ConditionalLayout**: Hides platform Navbar/Footer on `/preview` and `/demo/preview` routes
 - **ConvexClientProvider**: Wraps entire app in `layout.tsx` — required for `useQuery`/`useAction` hooks
-- **Step 5 staleness detection**: `questionsInputKey` fingerprint computed from siteType|goal|businessName|description
+- **Step 8 staleness detection**: `questionsInputKey` fingerprint computed from siteType|goal|businessName|description|emotionalGoals|voiceProfile|brandArchetype
 - **Export pipeline**: `generateProject()` → `ExportResult` → `createProjectZip()` → `downloadBlob()`
+- **Brand character flow**: Steps 5-7 capture emotional goals, voice tone (A/B/C comparison), brand archetype, and anti-references — all stored in Zustand + Convex
+- **Voice-keyed content**: Deterministic fallback produces different headlines/CTAs per voice mode (warm/polished/direct), with anti-reference constraints
+- **Emotional overrides**: `applyEmotionalOverrides()` adjusts spacing, transitions, animation intensity, radius based on emotional goals and anti-references
+- **Responsive carousel**: ProofTestimonials `perPage` adapts via `useState` + `resize` listener — 1 (mobile), 2 (tablet), 3 (desktop); page resets on breakpoint change
+- **Responsive masonry**: MediaGallery `masonryColumns` adapts via `useState<number>` + `resize` listener — 1 (<640px), min(columns, 2) (640-1023px), columns (>=1024px)
 
 ## Content Field Naming (Critical for Spec Generation)
 
@@ -353,9 +394,54 @@ npx convex deploy    # Deploy Convex functions
 - The `/preview` and `/demo/preview` routes hide platform Navbar/Footer via `ConditionalLayout` component
 - Platform design uses dark theme with amber/gold accent (#e8a849) + teal secondary (#3ecfb4)
 - AI integration uses `@anthropic-ai/sdk` — requires `ANTHROPIC_API_KEY` env var; both actions have comprehensive deterministic fallbacks
-- Intake flow uses a bridge pattern: Steps 1-4 use local React state, then `bridgeToStore()` syncs to Zustand at Step 4→5 transition
-- Assembly engine renders sites client-side — `AssemblyRenderer` is a `"use client"` component
+- Intake flow is 9 steps: Setup (1-4) → Character (5-7) → Discovery (8) → Generation (9); bridge pattern syncs Steps 1-4 local state to Zustand at Step 4→5 transition
+- Brand character data (emotional goals, voice profile, archetype, anti-references, narrative prompts) flows through AI prompts and deterministic fallback for differentiated output
+- Assembly engine renders sites client-side — `AssemblyRenderer` is a `"use client"` component; applies emotional theme overrides when character data is present
 - `COMPONENT_REGISTRY` in `component-registry.ts` maps 18 componentId strings to React components; `UNWRAPPED_COMPONENTS` set tracks components that handle their own layout (nav-sticky, footer-standard)
 - `ConvexClientProvider` wraps the entire app in `layout.tsx` — required for `useQuery`/`useAction` hooks in any component
 - Demo preview page at `/demo/preview?session=<sessionId>` fetches spec from Convex by sessionId
 - Export pipeline generates static HTML/CSS ZIP via JSZip — triggered from PreviewToolbar export button
+
+## Testing Philosophy & Failure Protocol
+
+### Test Failure Protocol
+
+When a test fails, follow this decision tree **IN ORDER**:
+
+1. **Is the test correct?** Read the test carefully. Does it test a real requirement or expected behavior? Check if the test matches the documented spec, the component's type interface, or the function's documented contract.
+2. **If the test IS correct → fix the source code.** The test is telling you something is broken. Find the root cause in the source code and fix it there. Do NOT modify the test to match broken behavior.
+3. **If the test is WRONG → fix the test, but explain why.** If the test was written with incorrect assumptions (wrong expected value, wrong API usage, testing an implementation detail that legitimately changed), fix the test AND add a comment explaining what was wrong with the original test.
+4. **If it's ambiguous → ask.** If you're not sure whether the test or the source code is "right," flag it with a comment and keep moving. Don't silently change either one.
+
+### What Counts as a Band-Aid (DO NOT DO THESE)
+
+- ❌ Changing `expect(result).toBe('Book Now')` to `expect(result).toBe('Shop Now')` because the function returns `'Shop Now'` — if the function is supposed to return `'Book Now'` for a booking site, the function is broken, not the test.
+- ❌ Wrapping a failing assertion in try/catch and swallowing the error
+- ❌ Changing `toHaveLength(6)` to `toHaveLength(5)` because one item is missing — find out WHY it's missing
+- ❌ Adding `skip` or `todo` to a failing test without explanation
+- ❌ Removing a test entirely because it's "too strict"
+- ❌ Loosening a specific assertion to a vague one (e.g., changing `toContain('Book Now')` to `toBeTruthy()`)
+
+### What Counts as a Legitimate Test Fix
+
+- ✅ The test used a wrong function signature (the API changed intentionally and the test wasn't updated)
+- ✅ The test hardcoded a value that was never part of the contract (e.g., testing exact hex color output when only "valid hex" matters)
+- ✅ The test is testing an implementation detail that changed, not a behavior (e.g., testing internal state structure instead of public output)
+- ✅ The test has a typo or logic error (wrong variable name, incorrect assertion method)
+
+### Root Cause Principle
+
+When fixing a bug exposed by a test:
+
+- Fix it at the **DEEPEST level** where the problem originates
+- If a component shows wrong data, but the data comes from a generator function, fix the generator — not the component
+- If a theme generates wrong colors, but the issue is in the personality-to-hue mapping, fix the mapping function — not the color output post-hoc
+- After fixing the root cause, verify that the fix doesn't break other tests
+
+### Writing Good Tests
+
+- **Test behavior, not implementation.** Test "returns a valid hex color" not "calls chroma.hex()". Test "business name appears in nav" not "logoText prop is set".
+- **Test the contract.** If a function's documented purpose is "generate theme from personality vector," test that it returns a valid theme for various vectors — not that it uses a specific internal algorithm.
+- **Use descriptive test names.** Not `test('works')` but `test('generateThemeFromVector returns dark background for luxury preset vector')`.
+- **One assertion per concept.** Multiple `expect()` calls are fine if they test the same concept. Don't test theme generation AND component rendering in the same test.
+- **Edge cases matter.** Test boundary values (all zeros, all ones, empty strings, missing optional fields). These are where bugs live.

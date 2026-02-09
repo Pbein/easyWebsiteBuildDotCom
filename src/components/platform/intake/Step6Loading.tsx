@@ -18,8 +18,19 @@ const LOADING_PHASES = [
 
 export function Step6Loading(): React.ReactElement {
   const router = useRouter();
-  const { sessionId, siteType, goal, businessName, description, personality, aiResponses, reset } =
-    useIntakeStore();
+  const sessionId = useIntakeStore((s) => s.sessionId);
+  const siteType = useIntakeStore((s) => s.siteType);
+  const goal = useIntakeStore((s) => s.goal);
+  const businessName = useIntakeStore((s) => s.businessName);
+  const description = useIntakeStore((s) => s.description);
+  const personality = useIntakeStore((s) => s.personality);
+  const aiResponses = useIntakeStore((s) => s.aiResponses);
+  const emotionalGoals = useIntakeStore((s) => s.emotionalGoals);
+  const voiceProfile = useIntakeStore((s) => s.voiceProfile);
+  const narrativePrompts = useIntakeStore((s) => s.narrativePrompts);
+  const brandArchetype = useIntakeStore((s) => s.brandArchetype);
+  const antiReferences = useIntakeStore((s) => s.antiReferences);
+  const reset = useIntakeStore((s) => s.reset);
 
   const [phase, setPhase] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +52,11 @@ export function Step6Loading(): React.ReactElement {
         description: description || "",
         personality,
         aiResponses,
+        emotionalGoals: emotionalGoals.length > 0 ? emotionalGoals : undefined,
+        voiceProfile: voiceProfile || undefined,
+        brandArchetype: brandArchetype || undefined,
+        antiReferences: antiReferences.length > 0 ? antiReferences : undefined,
+        narrativePrompts: Object.keys(narrativePrompts).length > 0 ? narrativePrompts : undefined,
       });
 
       // Navigate to preview on success
@@ -64,6 +80,11 @@ export function Step6Loading(): React.ReactElement {
     description,
     personality,
     aiResponses,
+    emotionalGoals,
+    voiceProfile,
+    narrativePrompts,
+    brandArchetype,
+    antiReferences,
     router,
   ]);
 

@@ -31,6 +31,11 @@ interface SiteIntentDocument {
     generatedAt: number;
     method: "ai" | "deterministic";
   };
+  emotionalGoals?: string[];
+  voiceProfile?: string;
+  brandArchetype?: string;
+  antiReferences?: string[];
+  narrativePrompts?: Record<string, string>;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -643,8 +648,15 @@ function generateDeterministicSpec(args: {
   description: string;
   personality: number[];
   aiResponses: Record<string, string>;
+  emotionalGoals?: string[];
+  voiceProfile?: string;
+  brandArchetype?: string;
+  antiReferences?: string[];
+  narrativePrompts?: Record<string, string>;
 }): SiteIntentDocument {
   const { sessionId, siteType, goal, description, personality } = args;
+  const voiceTone = (args.voiceProfile || "polished") as "warm" | "polished" | "direct";
+  const antiRefs = args.antiReferences || [];
 
   // Use explicitly provided business name, fall back to extraction from description
   const businessName = args.businessName || extractBusinessName(description);
@@ -660,6 +672,9 @@ function generateDeterministicSpec(args: {
   const components: ComponentPlacement[] = [];
   let order = 0;
 
+  // Voice-keyed CTA text
+  const ctaText = getVoiceKeyedCtaText(goal, voiceTone, antiRefs);
+
   // Nav
   components.push({
     componentId: "nav-sticky",
@@ -673,12 +688,12 @@ function generateDeterministicSpec(args: {
         { label: "Services", href: "#services" },
         { label: "Contact", href: "#contact" },
       ],
-      cta: { text: getCtaText(goal), href: "#contact" },
+      cta: { text: ctaText, href: "#contact" },
     },
   });
 
-  // Hero
-  const headline = industry.headline(businessName);
+  // Hero — voice-keyed headline
+  const headline = getVoiceKeyedHeadline(businessName, siteType, voiceTone);
   if (heroComponent === "hero-centered") {
     components.push({
       componentId: "hero-centered",
@@ -687,7 +702,7 @@ function generateDeterministicSpec(args: {
       content: {
         headline,
         subheadline: tagline,
-        ctaPrimary: { text: getCtaText(goal), href: "#contact" },
+        ctaPrimary: { text: ctaText, href: "#contact" },
         ctaSecondary: { text: "Learn More", href: "#about" },
       },
     });
@@ -699,7 +714,7 @@ function generateDeterministicSpec(args: {
       content: {
         headline,
         subheadline: description.slice(0, 200),
-        ctaPrimary: { text: getCtaText(goal), href: "#contact" },
+        ctaPrimary: { text: ctaText, href: "#contact" },
         ctaSecondary: { text: "Learn More", href: "#about" },
         image: {
           src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
@@ -742,7 +757,7 @@ function generateDeterministicSpec(args: {
       order: order++,
       content: {
         headline: "By the Numbers",
-        stats: getStatsForSiteType(siteType, businessName),
+        stats: getStatsForSiteType(siteType),
       },
     });
   }
@@ -826,7 +841,7 @@ function generateDeterministicSpec(args: {
     content: {
       headline: getCtaHeadline(goal),
       subheadline: "Take the next step and see what we can do for you.",
-      ctaPrimary: { text: getCtaText(goal), href: "#contact" },
+      ctaPrimary: { text: ctaText, href: "#contact" },
       backgroundVariant: "primary",
     },
   });
@@ -905,7 +920,102 @@ function generateDeterministicSpec(args: {
       generatedAt: Date.now(),
       method: "deterministic",
     },
+    emotionalGoals: args.emotionalGoals,
+    voiceProfile: args.voiceProfile,
+    brandArchetype: args.brandArchetype,
+    antiReferences: args.antiReferences,
+    narrativePrompts: args.narrativePrompts,
   };
+}
+
+function getVoiceKeyedHeadline(
+  businessName: string,
+  siteType: string,
+  voiceTone: "warm" | "polished" | "direct"
+): string {
+  const headlinesByVoice: Record<string, Record<string, string>> = {
+    warm: {
+      business: `Hey, welcome to ${businessName} — we're glad you're here`,
+      portfolio: `${businessName} — Let's create something beautiful together`,
+      ecommerce: `${businessName} — Find something you'll love`,
+      booking: `${businessName} — Your next great experience starts here`,
+      blog: `${businessName} — Pull up a chair, let's talk`,
+      personal: `Hey, I'm ${businessName} — nice to meet you`,
+      educational: `${businessName} — Learn at your own pace, your own way`,
+      nonprofit: `${businessName} — Together, we're making it happen`,
+      event: `${businessName} — Come be part of something special`,
+      landing: `${businessName} — We think you'll love this`,
+    },
+    polished: {
+      business: `${businessName} — Where Excellence Meets Precision`,
+      portfolio: `${businessName} — Refined Creative Vision`,
+      ecommerce: `${businessName} — A Curated Collection Awaits`,
+      booking: `${businessName} — Reserve Your Premium Experience`,
+      blog: `${businessName} — Perspectives Worth Your Attention`,
+      personal: `${businessName} — Crafting Impact Through Expertise`,
+      educational: `${businessName} — Elevating Skills, Transforming Careers`,
+      nonprofit: `${businessName} — Measurable Impact, Meaningful Change`,
+      event: `${businessName} — An Experience Designed to Inspire`,
+      landing: `${businessName} — The Intelligent Choice`,
+    },
+    direct: {
+      business: `${businessName}. Better results, less hassle.`,
+      portfolio: `${businessName}. Work that speaks for itself.`,
+      ecommerce: `${businessName}. Quality products. Fair prices. Done.`,
+      booking: `${businessName}. Book it. Show up. Love it.`,
+      blog: `${businessName}. No fluff. Just substance.`,
+      personal: `I'm ${businessName}. Let's get to work.`,
+      educational: `${businessName}. Learn what matters. Skip what doesn't.`,
+      nonprofit: `${businessName}. Real impact. Real numbers.`,
+      event: `${businessName}. Show up. Be changed.`,
+      landing: `${businessName}. See why thousands switched.`,
+    },
+  };
+
+  return headlinesByVoice[voiceTone]?.[siteType] || headlinesByVoice.polished.business;
+}
+
+function getVoiceKeyedCtaText(
+  goal: string,
+  voiceTone: "warm" | "polished" | "direct",
+  antiRefs: string[]
+): string {
+  const isSalesy = antiRefs.includes("salesy");
+
+  const ctasByVoice: Record<string, Record<string, string>> = {
+    warm: {
+      contact: "Let's chat",
+      book: isSalesy ? "See what's available" : "Book your spot",
+      showcase: "Take a look around",
+      sell: isSalesy ? "Browse the collection" : "Shop now",
+      hire: "Let's work together",
+      attention: "See the work",
+      audience: "Come along",
+      convert: "Join us",
+    },
+    polished: {
+      contact: "Schedule a Consultation",
+      book: "Reserve Your Experience",
+      showcase: "Explore Our Portfolio",
+      sell: "Shop the Collection",
+      hire: "Discuss Your Project",
+      attention: "View Selected Works",
+      audience: "Subscribe",
+      convert: "Get Started",
+    },
+    direct: {
+      contact: "Get in touch",
+      book: "Book now",
+      showcase: "See the work",
+      sell: "Shop now",
+      hire: "Hire me",
+      attention: "See portfolio",
+      audience: "Follow",
+      convert: "Sign up",
+    },
+  };
+
+  return ctasByVoice[voiceTone]?.[goal] || ctasByVoice.polished.contact || "Get Started";
 }
 
 function extractBusinessName(description: string): string {
@@ -927,25 +1037,6 @@ function extractBusinessName(description: string): string {
     return words.slice(0, 2).join(" ");
   }
   return "My Business";
-}
-
-function getCtaText(goal: string): string {
-  const ctas: Record<string, string> = {
-    contact: "Get in Touch",
-    book: "Book Now",
-    showcase: "View Our Work",
-    sell: "Shop Now",
-    hire: "Hire Me",
-    attention: "View Portfolio",
-    audience: "Follow Along",
-    products: "Shop Now",
-    digital: "Browse Products",
-    subscriptions: "Subscribe",
-    marketplace: "Explore",
-    inform: "Learn More",
-    convert: "Sign Up",
-  };
-  return ctas[goal] || "Get Started";
 }
 
 function getServicesEyebrow(siteType: string): string {
@@ -981,8 +1072,7 @@ function getCtaHeadline(goal: string): string {
 }
 
 function getStatsForSiteType(
-  siteType: string,
-  _businessName: string
+  siteType: string
 ): Array<{ value: number; label: string; suffix?: string }> {
   const statsMap: Record<string, Array<{ value: number; label: string; suffix?: string }>> = {
     business: [
@@ -1251,12 +1341,25 @@ export const generateSiteSpec = action({
     description: v.string(),
     personality: v.array(v.float64()),
     aiResponses: v.any(),
+    emotionalGoals: v.optional(v.array(v.string())),
+    voiceProfile: v.optional(v.string()),
+    brandArchetype: v.optional(v.string()),
+    antiReferences: v.optional(v.array(v.string())),
+    narrativePrompts: v.optional(v.any()),
   },
   handler: async (ctx, args): Promise<SiteIntentDocument> => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
+    const characterArgs = {
+      emotionalGoals: args.emotionalGoals,
+      voiceProfile: args.voiceProfile,
+      brandArchetype: args.brandArchetype,
+      antiReferences: args.antiReferences,
+      narrativePrompts: args.narrativePrompts as Record<string, string> | undefined,
+    };
+
     if (!apiKey) {
-      const spec = generateDeterministicSpec(args);
+      const spec = generateDeterministicSpec({ ...args, ...characterArgs });
       await ctx.runMutation(internal.siteSpecs.saveSiteSpecInternal, {
         sessionId: spec.sessionId,
         siteType: spec.siteType,
@@ -1266,6 +1369,11 @@ export const generateSiteSpec = action({
         tagline: spec.tagline,
         pages: spec.pages,
         metadata: spec.metadata,
+        emotionalGoals: spec.emotionalGoals,
+        voiceProfile: spec.voiceProfile,
+        brandArchetype: spec.brandArchetype,
+        antiReferences: spec.antiReferences,
+        narrativePrompts: spec.narrativePrompts,
       });
       return spec;
     }
@@ -1277,10 +1385,71 @@ export const generateSiteSpec = action({
         .map(([key, val]) => `${key}: ${val}`)
         .join("\n");
 
+      // Build character context for AI prompt
+      const characterPromptLines: string[] = [];
+      if (args.emotionalGoals?.length) {
+        characterPromptLines.push(
+          `EMOTIONAL GOALS: ${args.emotionalGoals.join(", ")}. The design should evoke these emotions through color, spacing, typography, and copy tone.`
+        );
+      }
+      if (args.voiceProfile) {
+        const voiceRules: Record<string, string> = {
+          warm: "Use conversational, friendly language. Contractions OK. Address visitors directly. Headlines should feel like a friend talking.",
+          polished:
+            "Use refined, elegant language. No contractions. Headlines should feel curated and intentional. Professional but not stiff.",
+          direct:
+            "Use short, punchy language. No fluff. Headlines should be statements, not questions. Every word must earn its place.",
+        };
+        characterPromptLines.push(
+          `VOICE PROFILE: ${args.voiceProfile}. ${voiceRules[args.voiceProfile] || ""}`
+        );
+      }
+      if (args.brandArchetype) {
+        const archetypeRules: Record<string, string> = {
+          guide:
+            "Position the brand as a trusted advisor who walks alongside the customer. Use language of guidance, clarity, and support.",
+          expert:
+            "Position the brand as the authority. Lead with credentials, data, and proof. Confident but not arrogant.",
+          creative:
+            "Position the brand as an innovator. Use bold, unexpected language. Break conventions in copy structure.",
+          caretaker:
+            "Position the brand as nurturing and protective. Use language of care, safety, and personal attention.",
+          rebel:
+            "Position the brand as a challenger. Use language that questions norms. Conversational, edgy, unapologetic.",
+          artisan:
+            "Position the brand as a craftsperson. Emphasize process, quality, and intentionality. Every detail matters.",
+        };
+        characterPromptLines.push(
+          `BRAND ARCHETYPE: ${args.brandArchetype}. ${archetypeRules[args.brandArchetype] || ""}`
+        );
+      }
+      if (args.antiReferences?.length) {
+        characterPromptLines.push(
+          `ANTI-REFERENCES (MUST AVOID): ${args.antiReferences.join(", ")}. The site must NEVER feel like any of these. This constrains design choices, copy tone, and component selection.`
+        );
+      }
+      const narrativeData = args.narrativePrompts as Record<string, string> | undefined;
+      if (narrativeData && Object.values(narrativeData).some((v) => v)) {
+        characterPromptLines.push(
+          "NARRATIVE PROMPTS (use as raw copy material — weave into headlines, testimonials, about sections):"
+        );
+        if (narrativeData.come_because)
+          characterPromptLines.push(`  - Why people come: "${narrativeData.come_because}"`);
+        if (narrativeData.frustrated_with)
+          characterPromptLines.push(`  - Customer frustration: "${narrativeData.frustrated_with}"`);
+        if (narrativeData.after_feel)
+          characterPromptLines.push(`  - Post-experience feeling: "${narrativeData.after_feel}"`);
+      }
+
+      const characterSection =
+        characterPromptLines.length > 0
+          ? `\n\nBRAND CHARACTER CONTEXT:\n${characterPromptLines.join("\n")}\n\nCOPY QUALITY RULES:\n- No generic filler text. Every headline must be specific to this business.\n- Headlines must be evocative, not merely descriptive. "Premium Grooming, Downtown Austin" not "Welcome to Our Barbershop".\n- Match the voice profile EXACTLY in every piece of copy.\n- If narrative prompts are provided, use them as direct raw material for headlines, subheadlines, and body copy.\n- Anti-references are hard constraints — if "salesy" is listed, never use aggressive CTAs or urgency language.`
+          : "";
+
       const message = await client.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
-        system: `You are a website assembly AI. The business is called "${args.businessName}". Use this name consistently in all content (nav logoText, footer logoText, headlines, etc.).
+        system: `You are a website assembly AI. The business is called "${args.businessName}". Use this name consistently in all content (nav logoText, footer logoText, headlines, etc.).${characterSection}
 
 Given client intake data, generate a SiteIntentDocument — a JSON spec that determines exactly which components and content make up their website.
 
@@ -1393,6 +1562,10 @@ Goal: ${args.goal}
 Description: ${args.description}
 Personality Vector: [${args.personality.join(", ")}]
 (axes: minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic)
+${args.emotionalGoals?.length ? `Emotional Goals: ${args.emotionalGoals.join(", ")}` : ""}
+${args.voiceProfile ? `Voice: ${args.voiceProfile}` : ""}
+${args.brandArchetype ? `Archetype: ${args.brandArchetype}` : ""}
+${args.antiReferences?.length ? `Anti-references: ${args.antiReferences.join(", ")}` : ""}
 
 Discovery Responses:
 ${aiResponsesSummary}
@@ -1430,6 +1603,11 @@ Generate the SiteIntentDocument for ${args.businessName}.`,
           generatedAt: Date.now(),
           method: "ai",
         },
+        emotionalGoals: args.emotionalGoals,
+        voiceProfile: args.voiceProfile,
+        brandArchetype: args.brandArchetype,
+        antiReferences: args.antiReferences,
+        narrativePrompts: characterArgs.narrativePrompts,
       };
 
       await ctx.runMutation(internal.siteSpecs.saveSiteSpecInternal, {
@@ -1441,12 +1619,17 @@ Generate the SiteIntentDocument for ${args.businessName}.`,
         tagline: spec.tagline,
         pages: spec.pages,
         metadata: spec.metadata,
+        emotionalGoals: spec.emotionalGoals,
+        voiceProfile: spec.voiceProfile,
+        brandArchetype: spec.brandArchetype,
+        antiReferences: spec.antiReferences,
+        narrativePrompts: spec.narrativePrompts,
       });
 
       return spec;
     } catch (error) {
       console.error("Failed to generate AI spec, falling back to deterministic:", error);
-      const spec = generateDeterministicSpec(args);
+      const spec = generateDeterministicSpec({ ...args, ...characterArgs });
       await ctx.runMutation(internal.siteSpecs.saveSiteSpecInternal, {
         sessionId: spec.sessionId,
         siteType: spec.siteType,
@@ -1456,6 +1639,11 @@ Generate the SiteIntentDocument for ${args.businessName}.`,
         tagline: spec.tagline,
         pages: spec.pages,
         metadata: spec.metadata,
+        emotionalGoals: spec.emotionalGoals,
+        voiceProfile: spec.voiceProfile,
+        brandArchetype: spec.brandArchetype,
+        antiReferences: spec.antiReferences,
+        narrativePrompts: spec.narrativePrompts,
       });
       return spec;
     }

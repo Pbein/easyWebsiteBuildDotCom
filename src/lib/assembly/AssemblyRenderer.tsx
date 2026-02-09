@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import type { SiteIntentDocument } from "./spec.types";
 import { getComponent, UNWRAPPED_COMPONENTS } from "./component-registry";
 import { loadGoogleFonts } from "./font-loader";
-import { generateThemeFromVector, ThemeProvider } from "@/lib/theme";
+import { generateThemeFromVector, ThemeProvider, applyEmotionalOverrides } from "@/lib/theme";
 import type { PersonalityVector } from "@/lib/theme";
 import { Section } from "@/components/library";
 
@@ -30,7 +30,12 @@ export function AssemblyRenderer({
 }: AssemblyRendererProps): React.ReactElement {
   const pv = spec.personalityVector as PersonalityVector;
 
-  const theme = useMemo(() => generateThemeFromVector(pv), [pv]);
+  const theme = useMemo(() => {
+    const baseTheme = generateThemeFromVector(pv);
+    return spec.emotionalGoals?.length
+      ? applyEmotionalOverrides(baseTheme, spec.emotionalGoals, spec.antiReferences || [])
+      : baseTheme;
+  }, [pv, spec.emotionalGoals, spec.antiReferences]);
 
   // Load fonts when theme is ready
   useEffect(() => {

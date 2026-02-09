@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { X, FileText, Layers, Palette, RotateCcw } from "lucide-react";
+import { X, FileText, Layers, Palette, RotateCcw, Heart, Mic, Ban } from "lucide-react";
 import type { SiteIntentDocument } from "@/lib/assembly";
 import { generateThemeFromVector } from "@/lib/theme";
 import type { PersonalityVector } from "@/lib/theme";
@@ -53,7 +53,7 @@ export function PreviewSidebar({
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-[#9496a8] transition-colors hover:text-white"
+            className="p-1 text-[#9496a8] transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
             title="Close sidebar"
           >
             <X className="h-4 w-4" />
@@ -86,7 +86,7 @@ export function PreviewSidebar({
             <button
               key={page.slug}
               onClick={() => onPageChange(page.slug)}
-              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
                 activePage === page.slug
                   ? "bg-[#e8a849]/10 text-[#e8a849]"
                   : "text-[#c0c1cc] hover:bg-[rgba(255,255,255,0.04)] hover:text-white"
@@ -186,6 +186,111 @@ export function PreviewSidebar({
         </div>
       </div>
 
+      {/* Emotional Goals */}
+      {spec.emotionalGoals && spec.emotionalGoals.length > 0 && (
+        <div className="border-b border-[rgba(255,255,255,0.06)] p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Heart className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span
+              className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Emotional Goals
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {spec.emotionalGoals.map((goal) => (
+              <span
+                key={goal}
+                className="rounded-full bg-[#e8a849]/10 px-2.5 py-1 text-[10px] font-medium text-[#e8a849] capitalize"
+              >
+                {goal}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Voice & Character */}
+      {(spec.voiceProfile || spec.brandArchetype) && (
+        <div className="border-b border-[rgba(255,255,255,0.06)] p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Mic className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span
+              className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Voice & Character
+            </span>
+          </div>
+          <div className="space-y-2">
+            {spec.voiceProfile && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[#9496a8]">Voice:</span>
+                <span className="rounded-full bg-[#3ecfb4]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#3ecfb4] capitalize">
+                  {spec.voiceProfile}
+                </span>
+              </div>
+            )}
+            {spec.brandArchetype && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[#9496a8]">Archetype:</span>
+                <span className="rounded-full bg-[#c084fc]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#c084fc] capitalize">
+                  {spec.brandArchetype}
+                </span>
+              </div>
+            )}
+            {spec.narrativePrompts && Object.values(spec.narrativePrompts).some((v) => v) && (
+              <div className="mt-2 space-y-1.5">
+                {spec.narrativePrompts.come_because && (
+                  <p className="text-[10px] leading-relaxed text-[#9496a8]">
+                    <span className="text-[#c0c1cc]">Why:</span> &ldquo;
+                    {spec.narrativePrompts.come_because}&rdquo;
+                  </p>
+                )}
+                {spec.narrativePrompts.frustrated_with && (
+                  <p className="text-[10px] leading-relaxed text-[#9496a8]">
+                    <span className="text-[#c0c1cc]">Pain:</span> &ldquo;
+                    {spec.narrativePrompts.frustrated_with}&rdquo;
+                  </p>
+                )}
+                {spec.narrativePrompts.after_feel && (
+                  <p className="text-[10px] leading-relaxed text-[#9496a8]">
+                    <span className="text-[#c0c1cc]">After:</span> &ldquo;
+                    {spec.narrativePrompts.after_feel}&rdquo;
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Anti-References */}
+      {spec.antiReferences && spec.antiReferences.length > 0 && (
+        <div className="border-b border-[rgba(255,255,255,0.06)] p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Ban className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span
+              className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Avoid
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {spec.antiReferences.map((ref) => (
+              <span
+                key={ref}
+                className="rounded-full bg-red-500/8 px-2.5 py-1 text-[10px] font-medium text-red-400/70 capitalize"
+              >
+                NOT: {ref}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="mt-auto p-4">
         <button
@@ -193,7 +298,7 @@ export function PreviewSidebar({
             resetStore();
             router.push("/demo");
           }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-xs font-medium text-[#9496a8] transition-all hover:border-[rgba(255,255,255,0.2)] hover:text-white"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2 text-xs font-medium text-[#9496a8] transition-colors hover:border-[rgba(255,255,255,0.2)] hover:text-white focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           Start Over

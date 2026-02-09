@@ -27,9 +27,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EasyWebsiteBuild — AI-Powered Website Assembly",
+  title: {
+    default: "EasyWebsiteBuild — AI-Powered Website Assembly",
+    template: "%s | EasyWebsiteBuild",
+  },
   description:
     "Stop choosing templates. Start building with intelligence. EasyWebsiteBuild assembles professional websites from modular components using AI-driven decisions.",
+  metadataBase: new URL("https://easywebsitebuild.com"),
+  openGraph: {
+    siteName: "EasyWebsiteBuild",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -38,10 +46,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.ReactElement {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
       <body
         className={`${spaceGrotesk.variable} ${outfit.variable} ${jetbrainsMono.variable} noise-bg antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-lg focus:bg-[var(--color-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[var(--color-bg-primary)]"
+        >
+          Skip to main content
+        </a>
         <ConvexClientProvider>
           <ConditionalLayout>{children}</ConditionalLayout>
         </ConvexClientProvider>

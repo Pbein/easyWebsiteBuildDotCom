@@ -22,7 +22,13 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useIntakeStore } from "@/lib/stores/intake-store";
-import { Step5Discovery, Step6Loading } from "@/components/platform/intake";
+import {
+  Step5Emotion,
+  Step6Voice,
+  Step7Culture,
+  Step5Discovery,
+  Step6Loading,
+} from "@/components/platform/intake";
 
 /* ------------------------------------------------------------------ */
 /*  Types & Data                                                       */
@@ -378,24 +384,22 @@ export default function DemoPage(): React.ReactElement {
   const [personalityStep, setPersonalityStep] = useState(0);
   const [placeholderIndex] = useState(() => Math.floor(Math.random() * placeholders.length));
 
-  const store = useIntakeStore();
+  const setSiteType = useIntakeStore((s) => s.setSiteType);
+  const setGoal = useIntakeStore((s) => s.setGoal);
+  const setBusinessName = useIntakeStore((s) => s.setBusinessName);
+  const setDescription = useIntakeStore((s) => s.setDescription);
 
-  const totalSteps = 6;
+  const totalSteps = 9;
 
   /** Bridge local state → Zustand store at step 4→5 boundary */
   const bridgeToStore = useCallback((): void => {
-    store.setSiteType(state.siteType || "business");
-    store.setGoal(state.goal || "contact");
-    store.setBusinessName(state.businessName);
-    store.setDescription(state.description);
-    // Set each personality axis
-    state.personality.forEach((value, i) => {
-      // We need direct store mutation for personality without incrementing personalityStep each time
-      const newPersonality = [...useIntakeStore.getState().personality];
-      newPersonality[i] = value;
-      useIntakeStore.setState({ personality: newPersonality });
-    });
-  }, [state, store]);
+    setSiteType(state.siteType || "business");
+    setGoal(state.goal || "contact");
+    setBusinessName(state.businessName);
+    setDescription(state.description);
+    // Set all personality axes in a single store update
+    useIntakeStore.setState({ personality: [...state.personality] });
+  }, [state, setSiteType, setGoal, setBusinessName, setDescription]);
 
   const goNext = useCallback((): void => {
     if (step === 4 && personalityStep >= personalityAxes.length) {
@@ -411,6 +415,7 @@ export default function DemoPage(): React.ReactElement {
 
   const goBack = useCallback((): void => {
     if (step === 5) {
+      // Back from Emotion → Personality
       setDirection(-1);
       setStep(4);
       return;
@@ -434,7 +439,7 @@ export default function DemoPage(): React.ReactElement {
     }
   };
 
-  // Steps 5 and 6 manage their own navigation
+  // Steps 5-7 have their own nav; steps 8-9 manage their own navigation
   const showNavButtons = step <= 4;
 
   const stepLabels: Record<number, string> = {
@@ -442,9 +447,19 @@ export default function DemoPage(): React.ReactElement {
     2: "Primary Goal",
     3: "Your Business",
     4: `Brand Personality (${personalityStep}/${personalityAxes.length})`,
-    5: "Discovery",
-    6: "Generating",
+    5: "First Impression",
+    6: "Brand Voice",
+    7: "Visual Culture",
+    8: "Discovery",
+    9: "Generating",
   };
+
+  // Progress segments: Setup (1-4) | Character (5-7) | Discovery (8) | Generate (9, hidden)
+  const progressGroups = [
+    { label: "Setup", steps: [1, 2, 3, 4] },
+    { label: "Character", steps: [5, 6, 7] },
+    { label: "Discovery", steps: [8] },
+  ];
 
   return (
     <div className="min-h-screen pt-20 pb-16">
@@ -467,33 +482,44 @@ export default function DemoPage(): React.ReactElement {
           </p>
         </motion.div>
 
-        {/* Progress Bar */}
-        {step <= 5 && (
+        {/* Progress Bar — segmented by group */}
+        {step <= 8 && (
           <div className="mx-auto mb-12 max-w-lg">
-            <div className="mb-2 flex justify-between">
-              {Array.from({ length: totalSteps }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 ${
-                      i + 1 < step
-                        ? "bg-[var(--color-accent)] text-[var(--color-bg-primary)]"
-                        : i + 1 === step
-                          ? "border-2 border-[var(--color-accent)] text-[var(--color-accent)]"
-                          : "border border-[var(--color-border)] text-[var(--color-text-tertiary)]"
-                    }`}
-                    style={{ fontFamily: "var(--font-heading)" }}
-                  >
-                    {i + 1 < step ? <Check className="h-4 w-4" /> : i + 1}
-                  </div>
-                  {i < totalSteps - 1 && (
-                    <div
-                      className={`hidden h-px w-8 transition-all duration-300 sm:block md:w-14 ${
-                        i + 1 < step ? "bg-[var(--color-accent)]" : "bg-[var(--color-border)]"
+            <div className="mb-2 flex gap-1.5">
+              {progressGroups.map((group) => {
+                const groupStart = group.steps[0];
+                const groupEnd = group.steps[group.steps.length - 1];
+                const isComplete = step > groupEnd;
+                const isActive = step >= groupStart && step <= groupEnd;
+                const progress = isComplete
+                  ? 1
+                  : isActive
+                    ? (step - groupStart) / group.steps.length
+                    : 0;
+
+                return (
+                  <div key={group.label} className="flex-1">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-500"
+                        style={{ width: `${progress * 100}%` }}
+                      />
+                    </div>
+                    <p
+                      className={`mt-1.5 text-center text-[10px] font-medium transition-colors ${
+                        isActive
+                          ? "text-[var(--color-accent)]"
+                          : isComplete
+                            ? "text-[var(--color-text-secondary)]"
+                            : "text-[var(--color-text-tertiary)]"
                       }`}
-                    />
-                  )}
-                </div>
-              ))}
+                      style={{ fontFamily: "var(--font-heading)" }}
+                    >
+                      {group.label}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
             <p
               className="mt-3 text-center text-xs text-[var(--color-text-tertiary)]"
@@ -555,14 +581,50 @@ export default function DemoPage(): React.ReactElement {
               />
             )}
             {step === 5 && (
-              <Step5Discovery
+              <Step5Emotion
                 onComplete={() => {
                   setDirection(1);
                   setStep(6);
                 }}
+                onBack={() => {
+                  setDirection(-1);
+                  setStep(4);
+                }}
               />
             )}
-            {step === 6 && <Step6Loading />}
+            {step === 6 && (
+              <Step6Voice
+                onComplete={() => {
+                  setDirection(1);
+                  setStep(7);
+                }}
+                onBack={() => {
+                  setDirection(-1);
+                  setStep(5);
+                }}
+              />
+            )}
+            {step === 7 && (
+              <Step7Culture
+                onComplete={() => {
+                  setDirection(1);
+                  setStep(8);
+                }}
+                onBack={() => {
+                  setDirection(-1);
+                  setStep(6);
+                }}
+              />
+            )}
+            {step === 8 && (
+              <Step5Discovery
+                onComplete={() => {
+                  setDirection(1);
+                  setStep(9);
+                }}
+              />
+            )}
+            {step === 9 && <Step6Loading />}
           </motion.div>
         </AnimatePresence>
 
@@ -572,7 +634,7 @@ export default function DemoPage(): React.ReactElement {
             <button
               onClick={goBack}
               disabled={step === 1}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-200 hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -580,20 +642,23 @@ export default function DemoPage(): React.ReactElement {
             <button
               onClick={goNext}
               disabled={!canProceed()}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-6 py-2.5 text-sm font-semibold text-[var(--color-bg-primary)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] disabled:cursor-not-allowed disabled:opacity-30"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-6 py-2.5 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
             >
-              {step === 4 && canProceed() ? "Continue to Discovery" : "Continue"}
+              {step === 4 && canProceed() ? "Continue" : "Continue"}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        {/* Back button for step 5 */}
-        {step === 5 && (
+        {/* Back button for Discovery (step 8) */}
+        {step === 8 && (
           <div className="mx-auto mt-12 flex max-w-2xl justify-start">
             <button
-              onClick={goBack}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-200 hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
+              onClick={() => {
+                setDirection(-1);
+                setStep(7);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -635,7 +700,7 @@ function Step1SiteType({
             <button
               key={type.id}
               onClick={() => onSelect(type.id)}
-              className={`group card-glow relative rounded-xl border p-4 text-left transition-all duration-200 ${
+              className={`group card-glow relative rounded-xl border p-4 text-left transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
                 isSelected
                   ? "border-[var(--color-accent)] bg-[var(--color-accent-glow)]"
                   : "border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent)]"
@@ -704,7 +769,7 @@ function Step2Goal({
             <button
               key={goal.id}
               onClick={() => onSelect(goal.id)}
-              className={`group relative rounded-xl border p-6 text-left transition-all duration-200 ${
+              className={`group relative rounded-xl border p-6 text-left transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
                 isSelected
                   ? "border-[var(--color-accent)] bg-[var(--color-accent-glow)]"
                   : "border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent)]"
@@ -762,6 +827,7 @@ function Step3Description({
       {/* Business Name Input */}
       <div className="mb-5">
         <label
+          htmlFor="business-name"
           className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]"
           style={{ fontFamily: "var(--font-heading)" }}
         >
@@ -769,10 +835,12 @@ function Step3Description({
         </label>
         <input
           type="text"
+          id="business-name"
+          name="business-name"
           value={businessName}
           onChange={(e) => onBusinessNameChange(e.target.value)}
           placeholder="e.g. Luxe Cuts Barbershop, Acme Design Studio"
-          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] px-5 py-3 text-base text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-all duration-200 focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
+          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] px-5 py-3 text-base text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-colors duration-200 focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
           style={{ fontFamily: "var(--font-body)" }}
           autoFocus
         />
@@ -781,17 +849,20 @@ function Step3Description({
       {/* Description Textarea */}
       <div className="relative">
         <label
+          htmlFor="description"
           className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           Describe what you do
         </label>
         <textarea
+          id="description"
+          name="description"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={4}
-          className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-base leading-relaxed text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-all duration-200 focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
+          className="w-full resize-none rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-base leading-relaxed text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-colors duration-200 focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
           style={{ fontFamily: "var(--font-body)" }}
         />
         <div className="absolute right-4 bottom-3 text-xs text-[var(--color-text-tertiary)]">
@@ -805,7 +876,7 @@ function Step3Description({
           <button
             key={p}
             onClick={() => onChange(p)}
-            className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+            className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
           >
             {p.slice(0, 40)}...
           </button>
@@ -900,7 +971,7 @@ function Step4Personality({
         {/* Left pole */}
         <button
           onClick={() => setSliderValue(0.2)}
-          className={`group relative rounded-xl border p-6 text-left transition-all duration-200 ${
+          className={`group relative rounded-xl border p-6 text-left transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
             sliderValue < 0.4
               ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]"
               : "border-[var(--color-border)] hover:border-[var(--color-border-accent)]"
@@ -934,7 +1005,7 @@ function Step4Personality({
         {/* Right pole */}
         <button
           onClick={() => setSliderValue(0.8)}
-          className={`group relative rounded-xl border p-6 text-left transition-all duration-200 ${
+          className={`group relative rounded-xl border p-6 text-left transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
             sliderValue > 0.6
               ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]"
               : "border-[var(--color-border)] hover:border-[var(--color-border-accent)]"
@@ -981,6 +1052,8 @@ function Step4Personality({
           step={0.1}
           value={sliderValue}
           onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+          name="personality-slider"
+          aria-label={axis.label}
           className="h-2 w-full cursor-pointer appearance-none rounded-full accent-[var(--color-accent)]"
           style={{
             background: `linear-gradient(to right, var(--color-bg-tertiary), var(--color-accent-dim) ${sliderValue * 100}%, var(--color-bg-tertiary) ${sliderValue * 100}%)`,
@@ -996,7 +1069,7 @@ function Step4Personality({
       <div className="mt-8 text-center">
         <button
           onClick={() => onUpdate(currentAxis, sliderValue)}
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-card)] px-6 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all duration-200 hover:border-[var(--color-accent)]"
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-card)] px-6 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] transition-colors duration-200 hover:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
         >
           Confirm &amp; Next Axis
           <ArrowRight className="h-4 w-4" />

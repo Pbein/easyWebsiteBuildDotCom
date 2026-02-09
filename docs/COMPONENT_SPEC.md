@@ -17,7 +17,9 @@ The component library is the core building block system for EasyWebsiteBuild. Ev
 
 ## Component File Structure
 
-Each component follows this structure:
+Components use one of two patterns:
+
+**Standard pattern** (14 components — single-file implementation):
 
 ```
 src/components/library/[category]/[component-name]/
@@ -27,6 +29,33 @@ src/components/library/[category]/[component-name]/
 ├── manifest.json                    # Manifest for assembly engine (siteTypes, personalityFit, variants, tags)
 └── [component-name].tokens.ts      # Token consumption declarations (consumedTokens array)
 ```
+
+**Variant-extracted pattern** (4 components — shared base + variant subdirectory):
+
+```
+src/components/library/[category]/[component-name]/
+├── index.ts                         # Public export (unchanged)
+├── [ComponentName].tsx              # Thin dispatcher — imports shared + variants
+├── shared.tsx                       # Shared constants, utilities, and sub-components
+├── variants/
+│   ├── [variant-a].tsx              # Individual variant implementation
+│   ├── [variant-b].tsx
+│   └── ...
+├── [component-name].types.ts       # TypeScript interfaces (unchanged)
+├── manifest.json                    # Manifest (unchanged)
+└── [component-name].tokens.ts      # Token consumption declarations (unchanged)
+```
+
+**Components using the variant-extracted pattern:**
+
+| Component           | Variants in `variants/`                           |
+| ------------------- | ------------------------------------------------- |
+| `hero-centered`     | `with-bg-image.tsx`, `gradient-bg.tsx`            |
+| `commerce-services` | `card-grid.tsx`, `list.tsx`, `tiered.tsx`         |
+| `team-grid`         | `cards.tsx`, `minimal.tsx`, `hover-reveal.tsx`    |
+| `media-gallery`     | `grid.tsx`, `masonry.tsx`, `lightbox-overlay.tsx` |
+
+The main `[ComponentName].tsx` becomes a thin dispatcher (~50-70 lines) that handles common logic (section wrapper, theme injection, spacing) and delegates variant rendering to the appropriate file. The `shared.tsx` file contains constants (spacing maps, column maps), utility functions, and small shared sub-components used across variants.
 
 **Shared files:**
 

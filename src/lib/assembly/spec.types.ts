@@ -34,4 +34,10 @@ export interface SiteIntentDocument {
     generatedAt: number;
     method: "ai" | "deterministic";
   };
+  /** Brand character data (optional for backward compatibility) */
+  emotionalGoals?: string[];
+  voiceProfile?: string;
+  brandArchetype?: string;
+  antiReferences?: string[];
+  narrativePrompts?: Record<string, string>;
 }

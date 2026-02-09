@@ -78,7 +78,13 @@ function AccordionItemRow({
           cursor: "pointer",
           background: "none",
           border: "none",
-          outline: "none",
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.outline = "2px solid var(--color-primary)";
+          e.currentTarget.style.outlineOffset = "-2px";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.outline = "none";
         }}
       >
         <span

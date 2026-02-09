@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   Blocks,
@@ -32,6 +29,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/platform/AnimatedSection";
+import { MotionFade } from "@/components/platform/MotionFade";
 
 /* ------------------------------------------------------------------ */
 /*  Hero Section                                                       */
@@ -50,10 +48,9 @@ function HeroSection(): React.ReactElement {
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 pt-24 pb-32 text-center">
         {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+        <MotionFade
+          y={20}
+          delay={0.2}
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-border-accent)] bg-[var(--color-accent-glow)] px-4 py-1.5"
         >
           <Zap className="h-3.5 w-3.5 text-[var(--color-accent)]" />
@@ -63,65 +60,60 @@ function HeroSection(): React.ReactElement {
           >
             AI-Powered Website Assembly
           </span>
-        </motion.div>
+        </MotionFade>
 
         {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.35 }}
-          className="mb-6 text-5xl leading-[0.95] font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          <span className="text-[var(--color-text-primary)]">Websites Built by</span>
-          <br />
-          <span className="bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-accent-light)] to-[var(--color-teal)] bg-clip-text text-transparent">
-            Intelligence
-          </span>
-          <span className="text-[var(--color-text-primary)]">,</span>
-          <br />
-          <span className="text-[var(--color-text-primary)]">Not Templates</span>
-        </motion.h1>
+        <MotionFade y={30} delay={0.35} duration={0.8}>
+          <h1
+            className="mb-6 text-5xl leading-[0.95] font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            <span className="text-[var(--color-text-primary)]">Websites Built by</span>
+            <br />
+            <span className="bg-gradient-to-r from-[var(--color-accent)] via-[var(--color-accent-light)] to-[var(--color-teal)] bg-clip-text text-transparent">
+              Intelligence
+            </span>
+            <span className="text-[var(--color-text-primary)]">,</span>
+            <br />
+            <span className="text-[var(--color-text-primary)]">Not Templates</span>
+          </h1>
+        </MotionFade>
 
         {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.55 }}
-          className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[var(--color-text-secondary)] md:text-xl"
-        >
-          Describe your vision. Our AI assembles a professional website from modular components — no
-          drag-and-drop, no cookie-cutter layouts. Every site is unique, every decision is
-          intelligent.
-        </motion.p>
+        <MotionFade y={20} delay={0.55} duration={0.7}>
+          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-[var(--color-text-secondary)] md:text-xl">
+            Describe your vision. Our AI assembles a professional website from modular components —
+            no drag-and-drop, no cookie-cutter layouts. Every site is unique, every decision is
+            intelligent.
+          </p>
+        </MotionFade>
 
         {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
+        <MotionFade
+          y={20}
+          delay={0.7}
           className="flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <Link
             href="/preview"
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-accent)] px-8 py-3.5 text-base font-medium text-[var(--color-accent)] transition-all duration-300 hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-glow)] hover:text-[var(--color-accent-light)]"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-accent)] px-8 py-3.5 text-base font-medium text-[var(--color-accent)] transition-colors duration-300 hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-glow)] hover:text-[var(--color-accent-light)]"
           >
             Sample Site Preview
           </Link>
           <Link
             href="/demo"
-            className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3.5 text-base font-semibold text-[var(--color-bg-primary)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
+            className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3.5 text-base font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
           >
             Try the Demo
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </motion.div>
+        </MotionFade>
 
         {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1 }}
+        <MotionFade
+          y={0}
+          delay={1}
+          duration={0.8}
           className="mx-auto mt-20 grid max-w-lg grid-cols-3 gap-8"
         >
           {[
@@ -139,7 +131,7 @@ function HeroSection(): React.ReactElement {
               <div className="mt-1 text-xs text-[var(--color-text-tertiary)]">{stat.label}</div>
             </div>
           ))}
-        </motion.div>
+        </MotionFade>
       </div>
 
       {/* Bottom gradient fade */}
@@ -216,7 +208,7 @@ function HowItWorksSection(): React.ReactElement {
                   <div className="absolute top-12 left-full z-0 hidden h-px w-full bg-gradient-to-r from-[var(--color-border)] to-transparent lg:block" />
                 )}
 
-                <div className="card-glow relative h-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6 transition-all duration-400 hover:border-[var(--color-border-accent)]">
+                <div className="card-glow relative h-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6 transition-colors duration-400 hover:border-[var(--color-border-accent)]">
                   {/* Step number */}
                   <div
                     className="absolute -top-3 -right-2 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
@@ -315,7 +307,7 @@ function DifferentiatorsSection(): React.ReactElement {
         <StaggerContainer className="grid grid-cols-1 gap-6 md:grid-cols-2" staggerDelay={0.15}>
           {differentiators.map((d) => (
             <StaggerItem key={d.title}>
-              <div className="group card-glow relative h-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-8 transition-all duration-400 hover:border-[var(--color-border-accent)]">
+              <div className="group card-glow relative h-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-8 transition-colors duration-400 hover:border-[var(--color-border-accent)]">
                 <div
                   className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${d.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
                 />
@@ -391,7 +383,7 @@ function SiteTypesSection(): React.ReactElement {
         >
           {siteTypes.map((type) => (
             <StaggerItem key={type.label}>
-              <div className="group card-glow relative cursor-default rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-center transition-all duration-300 hover:border-[var(--color-border-accent)]">
+              <div className="group card-glow relative cursor-default rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-center transition-colors duration-300 hover:border-[var(--color-border-accent)]">
                 <div
                   className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110"
                   style={{ background: `color-mix(in srgb, ${type.color} 12%, transparent)` }}
@@ -526,7 +518,7 @@ function CTASection(): React.ReactElement {
         </p>
         <Link
           href="/demo"
-          className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-10 py-4 text-lg font-semibold text-[var(--color-bg-primary)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
+          className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-10 py-4 text-lg font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
         >
           Start Building — It&apos;s Free
           <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />

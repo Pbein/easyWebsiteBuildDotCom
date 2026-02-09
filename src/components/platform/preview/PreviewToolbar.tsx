@@ -48,7 +48,7 @@ export function PreviewToolbar({
           <button
             key={id}
             onClick={() => onViewportChange(id)}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
               viewport === id
                 ? "bg-[rgba(255,255,255,0.08)] text-white"
                 : "text-[#9496a8] hover:text-white"
@@ -65,7 +65,7 @@ export function PreviewToolbar({
       <div className="flex items-center gap-2">
         <button
           disabled
-          className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-[#9496a8] opacity-50"
+          className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-[#9496a8] opacity-50 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
           title="Coming Soon"
         >
           <Paintbrush className="h-3.5 w-3.5" />
@@ -74,7 +74,7 @@ export function PreviewToolbar({
         <button
           onClick={onExport}
           disabled={!onExport || isExporting}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
             onExport && !isExporting
               ? "cursor-pointer text-[#3ecfb4] hover:bg-[rgba(62,207,180,0.1)]"
               : "cursor-not-allowed text-[#9496a8] opacity-50"

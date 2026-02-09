@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface IntakeState {
-  /** Current step (1-6) */
+  /** Current step (1-9) */
   currentStep: number;
   /** Direction of navigation for animations: 1 = forward, -1 = back */
   direction: number;
@@ -19,7 +19,18 @@ export interface IntakeState {
   /** Which personality axis the user is currently choosing */
   personalityStep: number;
 
-  /** Step 5 — AI-generated follow-up questions */
+  /** Step 5 — Emotional goals (1-2 primary emotions) */
+  emotionalGoals: string[];
+  /** Step 6 — Voice tone ("warm" | "polished" | "direct") */
+  voiceProfile: string | null;
+  /** Step 6 — Fill-in-the-blank narrative prompts */
+  narrativePrompts: Record<string, string>;
+  /** Step 7 — Brand archetype ID */
+  brandArchetype: string | null;
+  /** Step 7 — Anti-reference IDs */
+  antiReferences: string[];
+
+  /** Step 8 — AI-generated follow-up questions */
   aiQuestions: { id: string; question: string; type: "text" | "select"; options?: string[] }[];
   aiResponses: Record<string, string>;
   /** Timestamp when AI questions were generated (for staleness check) */
@@ -43,6 +54,11 @@ export interface IntakeActions {
   setBusinessName: (name: string) => void;
   setDescription: (description: string) => void;
   setPersonalityAxis: (axis: number, value: number) => void;
+  setEmotionalGoals: (goals: string[]) => void;
+  setVoiceProfile: (voice: string) => void;
+  setNarrativePrompt: (key: string, value: string) => void;
+  setBrandArchetype: (archetype: string) => void;
+  setAntiReferences: (refs: string[]) => void;
   setAiQuestions: (questions: IntakeState["aiQuestions"]) => void;
   setAiResponse: (questionId: string, response: string) => void;
   setSpecId: (id: string) => void;
@@ -67,6 +83,11 @@ const initialState: IntakeState = {
   description: "",
   personality: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   personalityStep: 0,
+  emotionalGoals: [],
+  voiceProfile: null,
+  narrativePrompts: {},
+  brandArchetype: null,
+  antiReferences: [],
   aiQuestions: [],
   aiResponses: {},
   questionsGeneratedAt: null,
@@ -91,6 +112,14 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
           personality[axis] = value;
           return { personality, personalityStep: state.personalityStep + 1 };
         }),
+      setEmotionalGoals: (goals) => set({ emotionalGoals: goals }),
+      setVoiceProfile: (voice) => set({ voiceProfile: voice }),
+      setNarrativePrompt: (key, value) =>
+        set((state) => ({
+          narrativePrompts: { ...state.narrativePrompts, [key]: value },
+        })),
+      setBrandArchetype: (archetype) => set({ brandArchetype: archetype }),
+      setAntiReferences: (refs) => set({ antiReferences: refs }),
       setAiQuestions: (questions) =>
         set({ aiQuestions: questions, questionsGeneratedAt: Date.now() }),
       setAiResponse: (questionId, response) =>
@@ -106,7 +135,7 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
         })),
       goNext: () =>
         set((state) => {
-          if (state.currentStep >= 6) return { showSummary: true };
+          if (state.currentStep >= 9) return { showSummary: true };
           return { currentStep: state.currentStep + 1, direction: 1 };
         }),
       goBack: () =>
@@ -128,6 +157,11 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
         description: state.description,
         personality: state.personality,
         personalityStep: state.personalityStep,
+        emotionalGoals: state.emotionalGoals,
+        voiceProfile: state.voiceProfile,
+        narrativePrompts: state.narrativePrompts,
+        brandArchetype: state.brandArchetype,
+        antiReferences: state.antiReferences,
         currentStep: state.currentStep,
         sessionId: state.sessionId,
         aiQuestions: state.aiQuestions,

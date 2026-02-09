@@ -26,25 +26,31 @@ function computeInputKey(
   siteType: string | null,
   goal: string | null,
   businessName: string,
-  description: string
+  description: string,
+  emotionalGoals: string[],
+  voiceProfile: string | null,
+  brandArchetype: string | null
 ): string {
-  return `${siteType || ""}|${goal || ""}|${businessName}|${description.slice(0, 100)}`;
+  return `${siteType || ""}|${goal || ""}|${businessName}|${description.slice(0, 100)}|${emotionalGoals.sort().join(",")}|${voiceProfile || ""}|${brandArchetype || ""}`;
 }
 
 export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.ReactElement {
-  const {
-    siteType,
-    goal,
-    businessName,
-    description,
-    personality,
-    aiQuestions,
-    aiResponses,
-    questionsInputKey,
-    setAiQuestions,
-    setAiResponse,
-    reset,
-  } = useIntakeStore();
+  const siteType = useIntakeStore((s) => s.siteType);
+  const goal = useIntakeStore((s) => s.goal);
+  const businessName = useIntakeStore((s) => s.businessName);
+  const description = useIntakeStore((s) => s.description);
+  const personality = useIntakeStore((s) => s.personality);
+  const emotionalGoals = useIntakeStore((s) => s.emotionalGoals);
+  const voiceProfile = useIntakeStore((s) => s.voiceProfile);
+  const narrativePrompts = useIntakeStore((s) => s.narrativePrompts);
+  const brandArchetype = useIntakeStore((s) => s.brandArchetype);
+  const antiReferences = useIntakeStore((s) => s.antiReferences);
+  const aiQuestions = useIntakeStore((s) => s.aiQuestions);
+  const aiResponses = useIntakeStore((s) => s.aiResponses);
+  const questionsInputKey = useIntakeStore((s) => s.questionsInputKey);
+  const setAiQuestions = useIntakeStore((s) => s.setAiQuestions);
+  const setAiResponse = useIntakeStore((s) => s.setAiResponse);
+  const reset = useIntakeStore((s) => s.reset);
 
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -56,7 +62,15 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
 
   // Load AI questions on mount (with input-key staleness check)
   useEffect(() => {
-    const currentKey = computeInputKey(siteType, goal, businessName, description);
+    const currentKey = computeInputKey(
+      siteType,
+      goal,
+      businessName,
+      description,
+      emotionalGoals,
+      voiceProfile,
+      brandArchetype
+    );
     const keysMatch = questionsInputKey === currentKey;
 
     if (aiQuestions.length > 0 && keysMatch) {
@@ -85,6 +99,11 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
       description: description || "",
       personality,
       businessName: businessName || "",
+      emotionalGoals,
+      voiceProfile: voiceProfile || undefined,
+      brandArchetype: brandArchetype || undefined,
+      antiReferences,
+      narrativePrompts,
     })
       .then((questions) => {
         if (!cancelled) {
@@ -245,14 +264,14 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
           >
             <button
               onClick={onComplete}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3 text-sm font-semibold text-[var(--color-bg-primary)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)]"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
             >
               <CheckCircle2 className="h-4 w-4" />
               These answers look good
             </button>
             <button
               onClick={handleUpdateAnswers}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-all duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)]"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-3 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
             >
               <RefreshCw className="h-4 w-4" />
               Update my answers
@@ -311,7 +330,7 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
                       <button
                         key={option}
                         onClick={() => handleSelectOption(option)}
-                        className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-3 text-left text-sm text-[var(--color-text-primary)] transition-all duration-200 hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-glow)]"
+                        className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-3 text-left text-sm text-[var(--color-text-primary)] transition-colors duration-200 hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-glow)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
                       >
                         {option}
                       </button>
@@ -321,19 +340,22 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
                   <div className="flex gap-2">
                     <input
                       type="text"
+                      id="discovery-answer"
+                      name="discovery-answer"
+                      aria-label="Your answer"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") handleSubmitText();
                       }}
                       placeholder="Type your answer..."
-                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-all focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
+                      className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] transition-colors focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] focus:outline-none"
                       autoFocus
                     />
                     <button
                       onClick={handleSubmitText}
                       disabled={!inputValue.trim()}
-                      className="rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-[var(--color-bg-primary)] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-[var(--color-bg-primary)] transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <Send className="h-4 w-4" />
                     </button>
@@ -365,7 +387,7 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
               </p>
               <button
                 onClick={onComplete}
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3 text-sm font-semibold text-[var(--color-bg-primary)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)]"
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
               >
                 <Sparkles className="h-4 w-4" />
                 Generate My Website Preview
@@ -380,7 +402,7 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
       <div className="mt-8 text-center">
         <button
           onClick={startOver}
-          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
         >
           <RotateCcw className="h-3 w-3" />
           Start Over

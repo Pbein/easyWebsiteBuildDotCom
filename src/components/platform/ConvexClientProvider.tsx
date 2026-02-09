@@ -1,7 +1,7 @@
 "use client";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 function getConvexClient(): ConvexReactClient | null {
   if (typeof window === "undefined") return null;

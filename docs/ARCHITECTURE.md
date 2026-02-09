@@ -2,11 +2,11 @@
 
 > **Implementation Status (as of Feb 2026):**
 >
-> - Layer 1 (Intent Capture): **Fully implemented** — 6-step intake flow with AI-powered discovery questions (Claude Sonnet) and deterministic fallback. Zustand state management with localStorage persistence. Fingerprint-based staleness detection (`questionsInputKey`) + review mode UI for returning users.
-> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories, assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README).
+> - Layer 1 (Intent Capture): **Fully implemented** — 9-step intake flow with AI-powered discovery questions (Claude Sonnet) and deterministic fallback. Zustand state management with localStorage persistence. Fingerprint-based staleness detection (`questionsInputKey`) + review mode UI for returning users. Brand character capture (emotional goals, voice tone, brand archetype, anti-references) in Steps 5-7.
+> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories (4 refactored to shared.tsx + variants/ pattern), assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README).
 > - Layer 3 (Theming): **Fully implemented** — 87 tokens, 7 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook, dynamic Google Font loading.
 > - Layer 4 (Knowledge Base): Schema tables created (`intentPaths`, `recipes`, `components`, `themes`, `assets`). Embedding/similarity matching system not yet built (Phase 5).
-> - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview pages).
+> - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview pages). Homepage and Docs pages converted to Server Components (Pre-Phase 5).
 
 ## System Overview
 
@@ -93,7 +93,7 @@ For a luxury med spa (business + booking + luxury personality):
 - "Describe the feeling someone should have when they visit your site."
 - "Do you have brand colors, a logo, or any existing brand materials?"
 
-**Staleness Detection:** When a user re-enters Step 5, the system computes a `questionsInputKey` fingerprint from `siteType|goal|businessName|description`. If the fingerprint matches stored questions, a review mode is shown instead of regenerating. If the fingerprint changed (different inputs), old Q&A is cleared and fresh questions are generated.
+**Staleness Detection:** When a user re-enters Step 8 (Discovery), the system computes a `questionsInputKey` fingerprint from `siteType|goal|businessName|description|emotionalGoals|voiceProfile|brandArchetype`. If the fingerprint matches stored questions, a review mode is shown instead of regenerating. If the fingerprint changed (different inputs), old Q&A is cleared and fresh questions are generated.
 
 #### Phase D: Proposal & Preview
 
@@ -559,20 +559,26 @@ easywebsitebuild/
 │   │   ├── page.tsx                       # Homepage
 │   │   ├── globals.css                    # Global styles, CSS variables
 │   │   ├── demo/
-│   │   │   ├── page.tsx                   # Demo intake flow (6-step)
+│   │   │   ├── page.tsx                   # Demo intake flow (9-step)
 │   │   │   └── preview/page.tsx           # Assembled site preview with viewport controls
-│   │   ├── docs/page.tsx                  # Documentation page
+│   │   ├── docs/page.tsx                  # Documentation page (Server Component)
 │   │   └── preview/page.tsx               # Live component library preview with theme switching
 │   ├── components/
 │   │   ├── platform/                      # Platform UI (the builder app itself)
 │   │   │   ├── Navbar.tsx
 │   │   │   ├── Footer.tsx
 │   │   │   ├── AnimatedSection.tsx
+│   │   │   ├── MotionFade.tsx             # Client component for framer-motion entrance animations
 │   │   │   ├── ConditionalLayout.tsx      # Route-aware Navbar/Footer visibility
 │   │   │   ├── ConvexClientProvider.tsx    # Convex React provider (wraps app)
+│   │   │   ├── docs/
+│   │   │   │   └── DocsShell.tsx          # Client component for docs interactive shell
 │   │   │   ├── intake/                    # Intake flow step components
-│   │   │   │   ├── Step5Discovery.tsx     # AI-powered discovery questionnaire
-│   │   │   │   ├── Step6Loading.tsx       # Animated generation loading screen
+│   │   │   │   ├── Step5Emotion.tsx       # Emotional goals selection (Step 5)
+│   │   │   │   ├── Step6Voice.tsx         # Voice & narrative (Step 6)
+│   │   │   │   ├── Step7Culture.tsx       # Brand archetype & anti-references (Step 7)
+│   │   │   │   ├── Step5Discovery.tsx     # AI-powered discovery questionnaire (Step 8)
+│   │   │   │   ├── Step6Loading.tsx       # Animated generation loading screen (Step 9)
 │   │   │   │   └── index.ts
 │   │   │   └── preview/                   # Preview UI components
 │   │   │       ├── PreviewSidebar.tsx     # Spec metadata sidebar
@@ -582,7 +588,9 @@ easywebsitebuild/
 │   │       ├── index.ts                   # Barrel exports for all components
 │   │       ├── manifest-index.ts          # Manifest lookup/filter utilities
 │   │       ├── navigation/nav-sticky/     # NavSticky component
-│   │       ├── hero/hero-centered/        # HeroCentered component
+│   │       ├── hero/hero-centered/        # HeroCentered (variant-extracted)
+│   │       │   ├── shared.tsx             # Shared constants + CTAButtonEl
+│   │       │   └── variants/              # with-bg-image.tsx, gradient-bg.tsx
 │   │       ├── hero/hero-split/           # HeroSplit component
 │   │       ├── content/content-features/  # ContentFeatures component
 │   │       ├── content/content-split/     # ContentSplit component
@@ -595,9 +603,15 @@ easywebsitebuild/
 │   │       ├── forms/form-contact/        # FormContact component
 │   │       ├── social-proof/proof-testimonials/  # ProofTestimonials component
 │   │       ├── social-proof/proof-beforeafter/   # ProofBeforeAfter component
-│   │       ├── team/team-grid/            # TeamGrid component
-│   │       ├── commerce/commerce-services/ # CommerceServices component
-│   │       ├── media/media-gallery/       # MediaGallery component
+│   │       ├── team/team-grid/            # TeamGrid (variant-extracted)
+│   │       │   ├── shared.tsx             # Shared utilities + SocialIcon + AvatarFallback
+│   │       │   └── variants/              # cards.tsx, minimal.tsx, hover-reveal.tsx
+│   │       ├── commerce/commerce-services/ # CommerceServices (variant-extracted)
+│   │       │   ├── shared.tsx             # Shared constants + getIcon + SectionHeader
+│   │       │   └── variants/              # card-grid.tsx, list.tsx, tiered.tsx
+│   │       ├── media/media-gallery/       # MediaGallery (variant-extracted)
+│   │       │   ├── shared.tsx             # Shared constants + SectionHeader + FilterTabs
+│   │       │   └── variants/              # grid.tsx, masonry.tsx, lightbox-overlay.tsx
 │   │       ├── footer/footer-standard/    # FooterStandard component
 │   │       └── layout/section/            # Section wrapper component
 │   └── lib/
@@ -612,11 +626,14 @@ easywebsitebuild/
 │       │   ├── create-zip.ts              # JSZip bundling + browser download
 │       │   └── index.ts                   # Barrel export
 │       ├── stores/
-│       │   └── intake-store.ts            # Zustand store with localStorage persistence
+│       │   └── intake-store.ts            # Zustand store with localStorage persistence (9-step flow)
+│       ├── types/
+│       │   └── brand-character.ts         # Brand character types + display constants
 │       └── theme/
 │           ├── theme.types.ts             # ThemeTokens, PersonalityVector, ThemePreset
 │           ├── token-map.ts               # Token name ↔ CSS variable mapping
 │           ├── generate-theme.ts          # Personality vector → ThemeTokens
+│           ├── emotional-overrides.ts      # Emotion/anti-reference → token adjustments
 │           ├── presets.ts                 # 7 curated presets
 │           ├── ThemeProvider.tsx           # React context provider + useTheme hook
 │           └── index.ts                   # Barrel export

@@ -11,6 +11,11 @@ export const saveSiteSpec = mutation({
     tagline: v.optional(v.string()),
     pages: v.any(),
     metadata: v.optional(v.any()),
+    emotionalGoals: v.optional(v.array(v.string())),
+    voiceProfile: v.optional(v.string()),
+    brandArchetype: v.optional(v.string()),
+    antiReferences: v.optional(v.array(v.string())),
+    narrativePrompts: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("siteSpecs", {
@@ -30,6 +35,11 @@ export const saveSiteSpecInternal = internalMutation({
     tagline: v.optional(v.string()),
     pages: v.any(),
     metadata: v.optional(v.any()),
+    emotionalGoals: v.optional(v.array(v.string())),
+    voiceProfile: v.optional(v.string()),
+    brandArchetype: v.optional(v.string()),
+    antiReferences: v.optional(v.array(v.string())),
+    narrativePrompts: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("siteSpecs", {

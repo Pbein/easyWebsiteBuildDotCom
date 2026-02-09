@@ -11,3 +11,4 @@ export {
   getPresetById,
 } from "./presets";
 export { ThemeProvider, useTheme } from "./ThemeProvider";
+export { applyEmotionalOverrides } from "./emotional-overrides";

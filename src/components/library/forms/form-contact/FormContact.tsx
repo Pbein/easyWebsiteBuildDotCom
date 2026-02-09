@@ -16,7 +16,13 @@ const SPACING_MAP = {
 } as const;
 
 const DEFAULT_FIELDS: FormField[] = [
-  { name: "name", label: "Full Name", type: "text", required: true, placeholder: "Your name" },
+  {
+    name: "name",
+    label: "Full Name",
+    type: "text",
+    required: true,
+    placeholder: "Your name\u2026",
+  },
   {
     name: "email",
     label: "Email Address",
@@ -36,7 +42,7 @@ const DEFAULT_FIELDS: FormField[] = [
     label: "Message",
     type: "textarea",
     required: true,
-    placeholder: "Tell us about your project...",
+    placeholder: "Tell us about your project\u2026",
   },
 ];
 
@@ -254,6 +260,19 @@ export function FormContact({
                       type={field.type}
                       placeholder={field.placeholder}
                       required={field.required}
+                      autoComplete={
+                        field.type === "email"
+                          ? "email"
+                          : field.type === "tel"
+                            ? "tel"
+                            : field.name === "name"
+                              ? "name"
+                              : undefined
+                      }
+                      inputMode={
+                        field.type === "email" ? "email" : field.type === "tel" ? "tel" : undefined
+                      }
+                      spellCheck={field.type === "email" ? false : undefined}
                       style={{
                         ...inputStyle,
                         borderColor: errors[field.name] ? "var(--color-error)" : undefined,

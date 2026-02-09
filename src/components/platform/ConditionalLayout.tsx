@@ -13,7 +13,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }): 
   return (
     <>
       {!hideChrome && <Navbar />}
-      <main className="min-h-screen">{children}</main>
+      <main id="main-content" className="min-h-screen">
+        {children}
+      </main>
       {!hideChrome && <Footer />}
     </>
   );

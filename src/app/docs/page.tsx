@@ -1,327 +1,23 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import {
-  BookOpen,
-  Layers,
-  Blocks,
-  Palette,
-  MessageSquare,
-  Cpu,
-  Brain,
-  Map,
-  ChevronRight,
-  Menu,
-  X,
-  ArrowDownUp,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-/* ------------------------------------------------------------------ */
-/*  Types & Navigation Data                                            */
-/* ------------------------------------------------------------------ */
-
-interface DocSection {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  headings: string[];
-}
-
-const sections: DocSection[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    icon: BookOpen,
-    headings: ["What is EasyWebsiteBuild?", "Core Principles", "Tech Stack", "Current Status"],
-  },
-  {
-    id: "data-flow",
-    label: "Data Flow",
-    icon: ArrowDownUp,
-    headings: [
-      "End-to-End Pipeline",
-      "User Input Phase",
-      "AI Processing Phase",
-      "Assembly Phase",
-      "Export Phase",
-      "Data Flow Diagram",
-    ],
-  },
-  {
-    id: "intake-flow",
-    label: "Intake Flow",
-    icon: MessageSquare,
-    headings: [
-      "User Experience Flow",
-      "Step 1: Site Type",
-      "Step 2: Primary Goal",
-      "Step 3: Industry & Context",
-      "Step 4: Brand Personality",
-      "Step 5: Deep Discovery (AI)",
-      "Step 6: Generation & Preview",
-      "State Management",
-      "Staleness Detection",
-    ],
-  },
-  {
-    id: "assembly-engine",
-    label: "Core Engine",
-    icon: Cpu,
-    headings: [
-      "Assembly Pipeline",
-      "Theme Resolution",
-      "Component Selection",
-      "Variant Configuration",
-      "Layout Composition",
-      "Content Generation",
-      "Live Preview",
-      "Export Pipeline",
-      "Component Registry",
-    ],
-  },
-  {
-    id: "component-library",
-    label: "Component Library",
-    icon: Blocks,
-    headings: [
-      "Design Principles",
-      "File Structure",
-      "Props Contract",
-      "Built Components (18)",
-      "Component Categories",
-      "Field Naming Reference",
-    ],
-  },
-  {
-    id: "theme-system",
-    label: "Theme System",
-    icon: Palette,
-    headings: [
-      "Design Token Categories",
-      "Personality Vector Mapping",
-      "Curated Font Pairings",
-      "Theme Presets (7)",
-      "Theme Application",
-    ],
-  },
-  {
-    id: "architecture",
-    label: "Architecture",
-    icon: Layers,
-    headings: [
-      "System Overview",
-      "Project Structure",
-      "Database Schema",
-      "API Integration",
-      "Deployment Architecture",
-    ],
-  },
-  {
-    id: "knowledge-base",
-    label: "Knowledge Base",
-    icon: Brain,
-    headings: [
-      "Learning Mechanisms",
-      "Intent Path Evolution",
-      "Proven Recipes",
-      "Theme Library Growth",
-      "Content Pattern Templates",
-      "Similarity Matching",
-      "Feedback Loop",
-    ],
-  },
-  {
-    id: "roadmap",
-    label: "Roadmap",
-    icon: Map,
-    headings: [
-      "Phase 1: Platform Website",
-      "Phase 2: Core Component Library",
-      "Phase 3: AI Integration & Assembly",
-      "Phase 4A: Quality Improvements",
-      "Phase 4B: Expansion & Export",
-      "Phase 5: Visual Editor & Deploy",
-      "Phase 6–9: Future",
-    ],
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/*  Doc Content                                                        */
-/* ------------------------------------------------------------------ */
-
-function DocContent({ sectionId }: { sectionId: string }): React.ReactElement {
-  switch (sectionId) {
-    case "overview":
-      return <OverviewContent />;
-    case "data-flow":
-      return <DataFlowContent />;
-    case "architecture":
-      return <ArchitectureContent />;
-    case "component-library":
-      return <ComponentLibraryContent />;
-    case "theme-system":
-      return <ThemeSystemContent />;
-    case "intake-flow":
-      return <IntakeFlowContent />;
-    case "assembly-engine":
-      return <AssemblyEngineContent />;
-    case "knowledge-base":
-      return <KnowledgeBaseContent />;
-    case "roadmap":
-      return <RoadmapContent />;
-    default:
-      return <OverviewContent />;
-  }
-}
+import { DocsShell } from "@/components/platform/docs/DocsShell";
 
 /* ------------------------------------------------------------------ */
 /*  Main Page Component                                                */
 /* ------------------------------------------------------------------ */
 
 export default function DocsPage(): React.ReactElement {
-  const [activeSection, setActiveSection] = useState(() => {
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash.slice(1);
-      if (hash && sections.some((s) => s.id === hash)) {
-        return hash;
-      }
-    }
-    return "overview";
-  });
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const sectionContent: Record<string, React.ReactNode> = {
+    overview: <OverviewContent />,
+    "data-flow": <DataFlowContent />,
+    "intake-flow": <IntakeFlowContent />,
+    "assembly-engine": <AssemblyEngineContent />,
+    "component-library": <ComponentLibraryContent />,
+    "theme-system": <ThemeSystemContent />,
+    architecture: <ArchitectureContent />,
+    "knowledge-base": <KnowledgeBaseContent />,
+    roadmap: <RoadmapContent />,
+  };
 
-  const handleSectionChange = useCallback((id: string): void => {
-    setActiveSection(id);
-    setMobileNavOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  useEffect(() => {
-    window.location.hash = activeSection;
-  }, [activeSection]);
-
-  const currentSection = sections.find((s) => s.id === activeSection) || sections[0];
-
-  return (
-    <div className="min-h-screen pt-16">
-      {/* Mobile nav toggle */}
-      <button
-        onClick={() => setMobileNavOpen(!mobileNavOpen)}
-        className="fixed right-6 bottom-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent)] text-[var(--color-bg-primary)] shadow-[var(--shadow-lg)] lg:hidden"
-        aria-label="Toggle navigation"
-      >
-        {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
-
-      <div className="mx-auto flex max-w-[90rem]">
-        {/* Left Sidebar */}
-        <aside
-          className={`fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 shrink-0 overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)] transition-transform duration-300 lg:sticky lg:translate-x-0 ${
-            mobileNavOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <nav className="p-6">
-            <p
-              className="mb-4 text-xs font-semibold tracking-[0.15em] text-[var(--color-text-tertiary)] uppercase"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Documentation
-            </p>
-            <ul className="space-y-1">
-              {sections.map((section) => {
-                const isActive = activeSection === section.id;
-                return (
-                  <li key={section.id}>
-                    <button
-                      onClick={() => handleSectionChange(section.id)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
-                        isActive
-                          ? "border border-[var(--color-border-accent)] bg-[var(--color-accent-glow)] text-[var(--color-accent)]"
-                          : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]"
-                      }`}
-                    >
-                      <section.icon className="h-4 w-4 shrink-0" />
-                      <span style={{ fontFamily: "var(--font-heading)" }}>{section.label}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-        </aside>
-
-        {/* Main Content */}
-        <main className="min-w-0 flex-1 px-6 py-10 lg:px-12">
-          <motion.div
-            key={activeSection}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="docs-content max-w-4xl"
-          >
-            <DocContent sectionId={activeSection} />
-          </motion.div>
-
-          {/* Prev / Next navigation */}
-          <div className="mt-16 flex max-w-4xl justify-between border-t border-[var(--color-border)] pt-8">
-            {(() => {
-              const idx = sections.findIndex((s) => s.id === activeSection);
-              const prev = idx > 0 ? sections[idx - 1] : null;
-              const next = idx < sections.length - 1 ? sections[idx + 1] : null;
-              return (
-                <>
-                  {prev ? (
-                    <button
-                      onClick={() => handleSectionChange(prev.id)}
-                      className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
-                    >
-                      <ChevronRight className="h-4 w-4 rotate-180" />
-                      {prev.label}
-                    </button>
-                  ) : (
-                    <div />
-                  )}
-                  {next ? (
-                    <button
-                      onClick={() => handleSectionChange(next.id)}
-                      className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
-                    >
-                      {next.label}
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <div />
-                  )}
-                </>
-              );
-            })()}
-          </div>
-        </main>
-
-        {/* Right TOC */}
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 shrink-0 overflow-y-auto p-6 xl:block">
-          <p
-            className="mb-4 text-xs font-semibold tracking-[0.15em] text-[var(--color-text-tertiary)] uppercase"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            On This Page
-          </p>
-          <ul className="space-y-2">
-            {currentSection.headings.map((heading) => (
-              <li key={heading}>
-                <span className="block cursor-default text-xs leading-snug text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]">
-                  {heading}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </aside>
-      </div>
-    </div>
-  );
+  return <DocsShell sectionContent={sectionContent} />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -346,7 +42,7 @@ function OverviewContent(): React.ReactElement {
         that:
       </p>
       <ul>
-        <li>Captures client intent through a 6-step guided discovery flow</li>
+        <li>Captures client intent through a 9-step guided discovery flow</li>
         <li>
           Uses AI (Claude API) combined with deterministic decision trees to make design decisions
         </li>
@@ -429,9 +125,11 @@ function OverviewContent(): React.ReactElement {
 
       <h2>Current Status</h2>
       <p>
-        Phases 1–4B are complete. The platform has a working 6-step intake flow, 18-component
-        library, 7 theme presets, AI-powered spec generation with deterministic fallback, live
-        preview with responsive viewport controls, and a ZIP export pipeline.
+        Phases 1–4D plus Pre-Phase 5 are complete. The platform has a working 9-step intake flow
+        (with brand character capture), 18-component library (4 with variant extraction), 7 theme
+        presets, AI-powered spec generation with deterministic fallback, live preview with
+        responsive viewport controls, and a ZIP export pipeline. Homepage and Docs pages are Server
+        Components.
       </p>
       <table>
         <thead>
@@ -759,9 +457,10 @@ function IntakeFlowContent(): React.ReactElement {
     <>
       <h1>Intake Flow</h1>
       <p>
-        The intake flow is the 6-step guided discovery experience that replaces &quot;pick a
-        template.&quot; It extracts what a client needs through structured questions, visual
-        comparisons, and AI-powered conversation.
+        The intake flow is the 9-step guided discovery experience that replaces &quot;pick a
+        template.&quot; It captures what a client needs through structured questions, visual
+        comparisons, brand character profiling, and AI-powered conversation. Steps are grouped into
+        three segments: Setup (1-4), Character (5-7), and Discovery (8-9).
       </p>
 
       <h2>User Experience Flow</h2>
@@ -1385,10 +1084,30 @@ function ComponentLibraryContent(): React.ReactElement {
       </ol>
 
       <h2>File Structure</h2>
+      <p>
+        Components use one of two patterns. Most use a <strong>standard single-file</strong>{" "}
+        pattern:
+      </p>
       <pre>
         <code>{`components/library/[category]/[component-name]/
 ├── index.ts                    # Public export
 ├── [ComponentName].tsx         # Component implementation
+├── [component-name].types.ts   # TypeScript interfaces
+├── manifest.json               # Manifest for assembly engine
+└── [component-name].tokens.ts  # Token consumption declarations`}</code>
+      </pre>
+      <p>
+        Four components use a <strong>variant-extracted</strong> pattern with shared base + variant
+        subdirectory (hero-centered, commerce-services, team-grid, media-gallery):
+      </p>
+      <pre>
+        <code>{`components/library/[category]/[component-name]/
+├── index.ts                    # Public export (unchanged)
+├── [ComponentName].tsx         # Thin dispatcher (~50-70 lines)
+├── shared.tsx                  # Shared constants, utilities, sub-components
+├── variants/
+│   ├── [variant-a].tsx         # Individual variant implementation
+│   └── [variant-b].tsx
 ├── [component-name].types.ts   # TypeScript interfaces
 ├── manifest.json               # Manifest for assembly engine
 └── [component-name].tokens.ts  # Token consumption declarations`}</code>
@@ -1985,7 +1704,7 @@ function ArchitectureContent(): React.ReactElement {
       <h2>System Overview</h2>
       <ol>
         <li>
-          <strong>Intent Capture Layer</strong> — 6-step guided discovery flow with AI-powered
+          <strong>Intent Capture Layer</strong> — 9-step guided discovery flow with AI-powered
           questions (Claude Sonnet) and deterministic fallback
         </li>
         <li>
@@ -2005,21 +1724,23 @@ function ArchitectureContent(): React.ReactElement {
       <pre>
         <code>{`src/
 ├── app/
-│   ├── page.tsx              # Homepage
+│   ├── page.tsx              # Homepage (Server Component)
 │   ├── layout.tsx            # Root layout (ConvexClientProvider)
 │   ├── demo/
-│   │   ├── page.tsx          # 6-step intake flow
+│   │   ├── page.tsx          # 9-step intake flow
 │   │   └── preview/page.tsx  # Live preview + export
-│   ├── docs/page.tsx         # This documentation
+│   ├── docs/page.tsx         # This documentation (Server Component)
 │   └── preview/page.tsx      # Component library showcase
 ├── components/
-│   ├── platform/             # App UI (Navbar, Footer, intake steps)
+│   ├── platform/             # App UI (Navbar, Footer, MotionFade, DocsShell)
 │   └── library/              # 18 website components (8 categories)
+│       └── [4 use shared.tsx + variants/ pattern]
 └── lib/
     ├── assembly/              # Engine (registry, renderer, font-loader)
     ├── export/                # ZIP generation (generate-project, create-zip)
-    ├── stores/                # Zustand intake store
-    └── theme/                 # Token system (types, generator, presets)
+    ├── stores/                # Zustand intake store (9-step flow)
+    ├── types/                 # Brand character types
+    └── theme/                 # Token system (types, generator, presets, overrides)
 
 convex/
 ├── schema.ts                 # 9 database tables
@@ -2302,7 +2023,7 @@ function RoadmapContent(): React.ReactElement {
       title: "AI Integration & Assembly Engine",
       status: "complete" as const,
       items: [
-        "Full 6-step intake flow (site type → goal → description → personality → AI discovery → generation)",
+        "Full intake flow (site type → goal → description → personality → AI discovery → generation)",
         "Claude API integration for questions (generateQuestions) and specs (generateSiteSpec)",
         "Assembly engine — COMPONENT_REGISTRY, AssemblyRenderer, font-loader",
         "Zustand intake state management with localStorage persistence",
@@ -2334,6 +2055,40 @@ function RoadmapContent(): React.ReactElement {
         "Preview page updated to showcase all 18 components",
         "Export pipeline: generate-project.ts → create-zip.ts → downloadable ZIP",
         "Export button wired in PreviewToolbar",
+      ],
+    },
+    {
+      number: "4C",
+      title: "Brand Character System",
+      status: "complete" as const,
+      items: [
+        "3 new intake steps (Steps 5-7): Emotional Goals, Voice & Narrative, Culture & Anti-References",
+        "Brand character types: 10 emotional goals, 3 voice tones, 6 archetypes, 8 anti-references",
+        "9-step intake flow with segmented progress bar (Setup | Character | Discovery)",
+        "AI prompts enhanced with character context; deterministic fallback with voice-keyed content",
+        "Emotional theme overrides: spacing, transitions, radius adjustments based on goals + anti-refs",
+      ],
+    },
+    {
+      number: "4D",
+      title: "Mobile Responsiveness",
+      status: "complete" as const,
+      items: [
+        "16 of 18 components updated with responsive spacing, padding, and font clamping",
+        "Responsive carousels (ProofTestimonials) and masonry layouts (MediaGallery)",
+        "CTA button padding reduction to prevent 375px overflow",
+        "Gap reduction on mobile for multi-column layouts",
+      ],
+    },
+    {
+      number: "Pre-5",
+      title: "Architecture Optimizations",
+      status: "complete" as const,
+      items: [
+        "Homepage RSC conversion — Server Component with MotionFade client wrapper",
+        "Docs page RSC conversion — Server Component with DocsShell client wrapper",
+        "Variant extraction for 4 components: hero-centered, commerce-services, team-grid, media-gallery",
+        "shared.tsx + variants/ pattern reduces main component files to ~50-70 line dispatchers",
       ],
     },
     {
@@ -2401,9 +2156,10 @@ function RoadmapContent(): React.ReactElement {
     <>
       <h1>Roadmap</h1>
       <p>
-        EasyWebsiteBuild is being built in progressive phases. Phases 1–4B are complete, delivering
-        a working platform with 18 components, 7 theme presets, AI-powered spec generation, live
-        preview, and ZIP export.
+        EasyWebsiteBuild is being built in progressive phases. Phases 1–4D plus Pre-Phase 5
+        architecture optimizations are complete, delivering a working platform with 18 components, 7
+        theme presets, 9-step intake with brand character capture, AI-powered spec generation, live
+        preview, mobile-responsive components, and ZIP export.
       </p>
 
       {phases.map((phase) => (

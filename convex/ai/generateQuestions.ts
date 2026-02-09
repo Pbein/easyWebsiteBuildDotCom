@@ -226,6 +226,11 @@ export const generateQuestions = action({
     description: v.string(),
     personality: v.array(v.float64()),
     businessName: v.string(),
+    emotionalGoals: v.optional(v.array(v.string())),
+    voiceProfile: v.optional(v.string()),
+    brandArchetype: v.optional(v.string()),
+    antiReferences: v.optional(v.array(v.string())),
+    narrativePrompts: v.optional(v.any()),
   },
   handler: async (_ctx, args): Promise<AIQuestion[]> => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -241,10 +246,55 @@ export const generateQuestions = action({
         ? `You are discovering details for "${args.businessName}", a ${args.siteType} website. Their description: "${args.description}".`
         : `You are discovering details for a ${args.siteType} website. Their description: "${args.description}".`;
 
+      // Build character context section
+      const characterLines: string[] = [];
+      if (args.emotionalGoals?.length) {
+        characterLines.push(
+          `Emotional goals: ${args.emotionalGoals.join(", ")}. Ask questions that dig deeper into their emotional vision — what does "${args.emotionalGoals[0]}" look like specifically for their audience?`
+        );
+      }
+      if (args.voiceProfile) {
+        characterLines.push(
+          `Voice profile: ${args.voiceProfile}. Match your question phrasing to their ${args.voiceProfile} voice preference.`
+        );
+      }
+      if (args.brandArchetype) {
+        characterLines.push(
+          `Brand archetype: ${args.brandArchetype}. Focus on what makes this archetype's content unique for their business.`
+        );
+      }
+      if (args.antiReferences?.length) {
+        characterLines.push(
+          `Anti-references (what they DON'T want): ${args.antiReferences.join(", ")}. Avoid asking about approaches they've already rejected.`
+        );
+      }
+      const narrativePrompts = args.narrativePrompts as Record<string, string> | undefined;
+      if (narrativePrompts && Object.values(narrativePrompts).some((v) => v)) {
+        characterLines.push(
+          `They've shared these narrative prompts — build on the story they've started telling:`
+        );
+        if (narrativePrompts.come_because)
+          characterLines.push(
+            `  - People come to them because: "${narrativePrompts.come_because}"`
+          );
+        if (narrativePrompts.frustrated_with)
+          characterLines.push(
+            `  - Customers are frustrated with: "${narrativePrompts.frustrated_with}"`
+          );
+        if (narrativePrompts.after_feel)
+          characterLines.push(
+            `  - After working together, clients feel: "${narrativePrompts.after_feel}"`
+          );
+      }
+      const characterContext =
+        characterLines.length > 0
+          ? `\n\nBRAND CHARACTER CONTEXT:\n${characterLines.join("\n")}`
+          : "";
+
       const message = await client.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1024,
-        system: `You are an expert web design consultant conducting a discovery session. ${businessContext}
+        system: `You are an expert web design consultant conducting a discovery session. ${businessContext}${characterContext}
 
 Generate exactly 4 targeted follow-up questions to gather the specific details needed to build their website.
 
@@ -270,6 +320,10 @@ Site Type: ${args.siteType}
 Goal: ${args.goal}
 Description: ${args.description}
 Personality Vector: [${args.personality.join(", ")}] (axes: minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic)
+${args.emotionalGoals?.length ? `Emotional Goals: ${args.emotionalGoals.join(", ")}` : ""}
+${args.voiceProfile ? `Voice: ${args.voiceProfile}` : ""}
+${args.brandArchetype ? `Archetype: ${args.brandArchetype}` : ""}
+${args.antiReferences?.length ? `Anti-references: ${args.antiReferences.join(", ")}` : ""}
 
 Generate 4 discovery questions for this client.`,
           },

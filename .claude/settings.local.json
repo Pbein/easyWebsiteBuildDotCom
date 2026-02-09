@@ -23,7 +23,19 @@
       "Bash(python3:*)",
       "Bash(python:*)",
       "Bash(ls:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx skills add:*)",
+      "Bash(npx skills search:*)",
+      "Bash(npx skills:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cd:*)",
+      "Bash(git reset:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vitest run)",
+      "Bash(git status:*)"
     ]
   }
 }
