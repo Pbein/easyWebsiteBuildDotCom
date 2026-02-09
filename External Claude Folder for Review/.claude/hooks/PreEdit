@@ -1,0 +1,90 @@
+#!/bin/bash
+# Claude Code Pre-Edit Hook
+# Warns before editing protected or sensitive files
+#
+# This hook runs BEFORE Claude edits any file.
+# It warns about protected files but doesn't block edits.
+
+# Read file path from stdin (Claude passes JSON with tool_input.file_path)
+FILE_PATH=$(cat | jq -r '.tool_input.file_path // empty')
+
+# If no file path, exit silently
+if [ -z "$FILE_PATH" ]; then
+    exit 0
+fi
+
+# Check for protected webhook files
+if [[ "$FILE_PATH" =~ convex/http\.ts ]] || [[ "$FILE_PATH" =~ convex/http/webhooks ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: PROTECTED WEBHOOK FILE"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "This file handles production webhooks."
+    echo ""
+    echo "CRITICAL RULES:"
+    echo "  - DO NOT consolidate webhook routes"
+    echo "  - Each route type requires a separate URL"
+    echo "  - External services have configured these URLs"
+    echo ""
+    echo "Read: docs/active/WEBHOOK_ROUTES_VERIFICATION.md"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for security wrapper file
+if [[ "$FILE_PATH" =~ lib/orgWrappers\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: CORE SECURITY WRAPPER"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "This file enforces multi-tenant isolation."
+    echo "Changes here affect ALL Convex functions."
+    echo ""
+    echo "Ensure:"
+    echo "  - Auth checks remain intact"
+    echo "  - Organization scoping preserved"
+    echo "  - Security tests still pass"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for environment files
+if [[ "$FILE_PATH" =~ \.env ]] && [[ ! "$FILE_PATH" =~ \.env\.example ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: ENVIRONMENT CONFIGURATION"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "Ensure:"
+    echo "  - PROD_ and DEV_ prefixes are correct"
+    echo "  - No production secrets in development"
+    echo "  - File is in .gitignore"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for schema file
+if [[ "$FILE_PATH" =~ convex/schema\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: DATABASE SCHEMA"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "Schema changes can cause data loss."
+    echo ""
+    echo "Ensure:"
+    echo "  - Backward compatible changes"
+    echo "  - Migrations planned if needed"
+    echo "  - Indexes updated appropriately"
+    echo "=========================================="
+    echo ""
+fi
+
+# Always exit 0 (don't block edits, just warn)
+exit 0

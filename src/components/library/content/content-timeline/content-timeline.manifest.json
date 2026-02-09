@@ -1,0 +1,83 @@
+{
+  "id": "content-timeline",
+  "category": "content",
+  "name": "Timeline",
+  "description": "Vertical timeline for company history, process steps, milestones, or chronological content.",
+  "siteTypes": ["business", "nonprofit", "educational", "personal"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.2, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 0.8]
+  },
+  "requiredProps": [
+    {
+      "name": "items",
+      "type": "TimelineItem[]",
+      "description": "Array of timeline items with title, description, optional date/icon/image"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string" },
+    { "name": "subheadline", "type": "string" },
+    { "name": "variant", "type": "string", "description": "vertical | alternating" },
+    {
+      "name": "showConnector",
+      "type": "boolean",
+      "description": "Show connecting line between dots"
+    }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-xs",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-2xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "radius-full",
+    "shadow-sm",
+    "shadow-md",
+    "transition-base",
+    "ease-default",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "vertical",
+      "name": "Vertical",
+      "description": "All items on one side of the connector line"
+    },
+    {
+      "id": "alternating",
+      "name": "Alternating",
+      "description": "Items alternate left and right of the center line"
+    }
+  ],
+  "tags": ["history", "process", "steps", "milestones", "chronological"]
+}

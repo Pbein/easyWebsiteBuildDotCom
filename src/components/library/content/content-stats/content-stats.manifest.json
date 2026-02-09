@@ -1,0 +1,86 @@
+{
+  "id": "content-stats",
+  "category": "content",
+  "name": "Stats / Numbers",
+  "description": "Display key metrics and numbers with optional animated counting. Ideal for social proof, company statistics, or impact numbers.",
+  "siteTypes": [
+    "business",
+    "booking",
+    "portfolio",
+    "personal",
+    "ecommerce",
+    "blog",
+    "nonprofit",
+    "event",
+    "landing",
+    "educational",
+    "community",
+    "directory"
+  ],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "stats",
+      "type": "StatItem[]",
+      "description": "Array of stat items with value, label, optional prefix/suffix/icon"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string" },
+    { "name": "subheadline", "type": "string" },
+    { "name": "variant", "type": "string", "description": "inline | cards | animated-counter" },
+    { "name": "columns", "type": "number", "description": "2, 3, or 4" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "text-5xl",
+    "leading-tight",
+    "leading-normal",
+    "tracking-tight",
+    "weight-medium",
+    "weight-bold",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "shadow-md",
+    "transition-base",
+    "ease-default",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    { "id": "inline", "name": "Inline", "description": "Stats in a row with dividers" },
+    { "id": "cards", "name": "Cards", "description": "Each stat in its own card" },
+    {
+      "id": "animated-counter",
+      "name": "Animated Counter",
+      "description": "Cards with counting animation on scroll"
+    }
+  ],
+  "tags": ["trust", "credibility", "numbers", "social-proof"]
+}

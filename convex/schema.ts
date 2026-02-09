@@ -19,6 +19,18 @@ export default defineSchema({
     updatedAt: v.number(),
   }),
 
+  siteSpecs: defineTable({
+    sessionId: v.string(),
+    siteType: v.string(),
+    conversionGoal: v.string(),
+    personalityVector: v.array(v.float64()),
+    businessName: v.string(),
+    tagline: v.optional(v.string()),
+    pages: v.any(),
+    metadata: v.optional(v.any()),
+    createdAt: v.float64(),
+  }).index("by_session", ["sessionId"]),
+
   intakeResponses: defineTable({
     projectId: v.optional(v.id("projects")),
     sessionId: v.string(),
@@ -39,11 +51,7 @@ export default defineSchema({
     usageCount: v.number(),
     confirmationCount: v.number(),
     confirmationRate: v.number(),
-    status: v.union(
-      v.literal("candidate"),
-      v.literal("proven"),
-      v.literal("deprecated")
-    ),
+    status: v.union(v.literal("candidate"), v.literal("proven"), v.literal("deprecated")),
     parentPathId: v.optional(v.id("intentPaths")),
     createdAt: v.number(),
     promotedAt: v.optional(v.number()),
@@ -115,12 +123,7 @@ export default defineSchema({
     email: v.optional(v.string()),
     name: v.optional(v.string()),
     plan: v.optional(
-      v.union(
-        v.literal("free"),
-        v.literal("starter"),
-        v.literal("pro"),
-        v.literal("enterprise")
-      )
+      v.union(v.literal("free"), v.literal("starter"), v.literal("pro"), v.literal("enterprise"))
     ),
     projectIds: v.optional(v.array(v.id("projects"))),
     createdAt: v.number(),

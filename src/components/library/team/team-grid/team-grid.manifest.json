@@ -1,0 +1,85 @@
+{
+  "id": "team-grid",
+  "category": "team",
+  "name": "Team Grid",
+  "description": "Display team members in a responsive grid with photos, names, roles, and optional bios and social links.",
+  "siteTypes": ["business", "booking", "nonprofit", "educational"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "members",
+      "type": "TeamMember[]",
+      "description": "Array of team members with name, role, optional bio/image/socials"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string" },
+    { "name": "subheadline", "type": "string" },
+    { "name": "variant", "type": "string", "description": "cards | minimal | hover-reveal" },
+    { "name": "columns", "type": "number", "description": "2, 3, or 4" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-xs",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "radius-full",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-base",
+    "transition-fast",
+    "ease-default",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "cards",
+      "name": "Cards",
+      "description": "Full card with image, name, role, bio, socials"
+    },
+    { "id": "minimal", "name": "Minimal", "description": "Circular image with name and role only" },
+    {
+      "id": "hover-reveal",
+      "name": "Hover Reveal",
+      "description": "Image with name overlay, bio revealed on hover"
+    }
+  ],
+  "tags": ["people", "team", "about", "staff"]
+}

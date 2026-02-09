@@ -1,0 +1,91 @@
+{
+  "id": "content-accordion",
+  "category": "content",
+  "name": "FAQ / Accordion",
+  "description": "Expandable content sections for FAQs, specifications, or collapsible information. Supports single-open, multi-open, and bordered styles.",
+  "siteTypes": [
+    "business",
+    "booking",
+    "portfolio",
+    "personal",
+    "ecommerce",
+    "blog",
+    "nonprofit",
+    "event",
+    "landing",
+    "educational",
+    "community",
+    "directory"
+  ],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "items",
+      "type": "AccordionItem[]",
+      "description": "Array of { question, answer } items"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string" },
+    { "name": "subheadline", "type": "string" },
+    { "name": "variant", "type": "string", "description": "single-open | multi-open | bordered" },
+    { "name": "defaultOpen", "type": "number", "description": "Index of initially open item" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-background",
+    "color-surface",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-2xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "transition-base",
+    "transition-fast",
+    "ease-default",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    { "id": "single-open", "name": "Single Open", "description": "Only one item open at a time" },
+    {
+      "id": "multi-open",
+      "name": "Multi Open",
+      "description": "Multiple items can be open simultaneously"
+    },
+    {
+      "id": "bordered",
+      "name": "Bordered",
+      "description": "Card-like bordered items with background on open"
+    }
+  ],
+  "tags": ["faq", "information", "expandable", "content"]
+}

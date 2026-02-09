@@ -2,11 +2,11 @@
 
 > **Implementation Status (as of Feb 2026):**
 >
-> - Layer 1 (Intent Capture): Demo intake flow built (4-step). Full AI-powered flow is Phase 3.
-> - Layer 2 (Component Assembly): 10 MVP components built with manifest system, barrel exports, and manifest index. Assembly engine itself is Phase 4.
-> - Layer 3 (Theming): Fully implemented — 87 tokens, 3 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook.
-> - Layer 4 (Knowledge Base): Design spec only. Implementation is Phase 6.
-> - Platform website: Complete (Homepage, Demo, Docs, Preview pages).
+> - Layer 1 (Intent Capture): **Fully implemented** — 6-step intake flow with AI-powered discovery questions (Claude Sonnet) and deterministic fallback. Zustand state management with localStorage persistence. Fingerprint-based staleness detection (`questionsInputKey`) + review mode UI for returning users.
+> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories, assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README).
+> - Layer 3 (Theming): **Fully implemented** — 87 tokens, 7 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook, dynamic Google Font loading.
+> - Layer 4 (Knowledge Base): Schema tables created (`intentPaths`, `recipes`, `components`, `themes`, `assets`). Embedding/similarity matching system not yet built (Phase 5).
+> - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview pages).
 
 ## System Overview
 
@@ -16,7 +16,7 @@ EasyWebsiteBuild is an AI-powered website assembly platform built on three core 
 2. **Component Assembly Engine** — Modular building blocks + composition logic
 3. **Theming & Style System** — Design tokens that make each site unique
 
-These layers work together in a pipeline: Intent → Spec → Assembly → Preview → Delivery.
+These layers work together in a pipeline: Intent → Spec → Assembly → Preview → Export/Delivery.
 
 ---
 
@@ -93,13 +93,7 @@ For a luxury med spa (business + booking + luxury personality):
 - "Describe the feeling someone should have when they visit your site."
 - "Do you have brand colors, a logo, or any existing brand materials?"
 
-For a musician portfolio (portfolio + showcase + creative personality):
-
-- "What genre of music do you create?"
-- "Is the goal to attract fans, book gigs, or get label attention?"
-- "Do you want to embed music players, videos, or both?"
-- "Should the site feel like a polished press kit or an artistic experience?"
-- "Do you have high-quality press photos?"
+**Staleness Detection:** When a user re-enters Step 5, the system computes a `questionsInputKey` fingerprint from `siteType|goal|businessName|description`. If the fingerprint matches stored questions, a review mode is shown instead of regenerating. If the fingerprint changed (different inputs), old Q&A is cleared and fresh questions are generated.
 
 #### Phase D: Proposal & Preview
 
@@ -115,42 +109,17 @@ User reviews, approves, or requests modifications.
 
 ```typescript
 interface SiteIntentDocument {
-  // Classification
-  siteType: SiteType;
-  industry: string;
-  conversionGoal: ConversionGoal;
-
-  // Brand
+  sessionId: string;
+  siteType: string;
+  conversionGoal: string;
   personalityVector: [number, number, number, number, number, number];
-  colorPreferences?: string[];
-  existingBrandAssets?: BrandAsset[];
-
-  // Structure
-  pages: PageSpec[];
-  navigation: NavigationSpec;
-  footer: FooterSpec;
-
-  // Theme
-  themeId?: string; // If matching an existing proven theme
-  themeOverrides?: Partial<ThemeTokens>;
-
-  // Content
   businessName: string;
-  tagline?: string;
-  services?: Service[];
-  teamMembers?: TeamMember[];
-  testimonials?: Testimonial[];
-  contentInventory: ContentInventory;
-
-  // Technical
-  features: Feature[]; // booking, ecommerce, blog, etc.
-  integrations?: Integration[];
-
-  // Metadata
-  createdAt: string;
-  intakePath: string[]; // Breadcrumb of decisions made
-  aiInteractions: number; // How many AI calls were needed
-  confidence: number; // System confidence in the spec (0-1)
+  tagline: string;
+  pages: PageSpec[];
+  metadata: {
+    generatedAt: number;
+    method: "ai" | "deterministic";
+  };
 }
 
 interface PageSpec {
@@ -173,7 +142,7 @@ interface ComponentPlacement {
 
 ## Layer 2: Component Assembly Engine
 
-> **Status:** 10 MVP components built and working. Assembly engine itself (automated spec → site composition) is planned for Phase 4. Currently, the Preview page at `/preview` demonstrates all components assembled into a complete sample site ("Meridian Studio") with live theme switching.
+> **Status:** Fully implemented. 18 components built across 8 categories. Assembly engine operational — `AssemblyRenderer` reads a `SiteIntentDocument`, generates a theme from the personality vector, and composes components into a live site via `COMPONENT_REGISTRY`. AI-powered spec generation (Claude Sonnet) with deterministic fallback supports all 18 components. Live preview at `/demo/preview` with responsive viewport controls, metadata sidebar, and toolbar. Export pipeline generates downloadable ZIP files. Component library preview at `/preview` demonstrates all 18 components with live theme switching.
 
 ### Component Library Architecture
 
@@ -218,7 +187,6 @@ interface ComponentManifest {
 - ✅ Header/Navigation — `nav-sticky` (transparent, solid variants; responsive mobile menu)
 - ✅ Footer — `footer-standard` (multi-column variant; social icons, copyright bar)
 - ✅ Section Wrapper — `section` (6 bg variants, 5 spacing presets, container constraints)
-- Page Layout (overall page structure, sidebar options)
 
 **Hero Sections** (✅ = built):
 
@@ -235,37 +203,36 @@ interface ComponentManifest {
 
 - ✅ Text block — `content-text` (centered variant; eyebrow, headline, body with HTML support)
 - ✅ Feature grid — `content-features` (icon-cards variant; Lucide icon lookup, hover + stagger)
-- Card grid (image + content cards)
 - ✅ Split content — `content-split` (alternating variant; rows flip image side, scroll animation)
-- Stats/numbers section
-- Timeline/process steps
+- ✅ Stats/numbers — `content-stats` (inline, cards, animated-counter variants)
+- ✅ Timeline/process steps — `content-timeline` (vertical, alternating variants)
+- ✅ Logo cloud/trust badges — `content-logos` (grid, scroll, fade variants)
+- ✅ FAQ/Accordion — `content-accordion` (single-open, multi-open, bordered variants)
 - Comparison table
-- Logo cloud/trust badges
+- Card grid (image + content cards)
 
 **Social Proof** (✅ = built):
 
 - ✅ Testimonial carousel — `proof-testimonials` (carousel variant; pagination, star ratings, avatar fallbacks)
+- ✅ Before/after showcase — `proof-beforeafter` (slider, side-by-side variants; interactive drag slider with keyboard nav)
 - Testimonial grid
 - Review cards with ratings
 - Case study preview
 - Client logo wall
-- Before/after showcase
 
-**Team & People:**
+**Team & People** (✅ = built):
 
-- Team grid (photo + name + role)
+- ✅ Team grid — `team-grid` (cards, minimal, hover-reveal variants)
 - Team carousel
 - Individual team member spotlight
 - About section with founder story
 
-**Media:**
+**Media** (✅ = built):
 
-- Image gallery (grid, masonry, lightbox)
+- ✅ Image gallery — `media-gallery` (grid, masonry, lightbox variants; filter tabs, keyboard navigation)
 - Video embed section
-- Before/after slider
 - Portfolio grid with filtering
 - Image with parallax effect
-- Image with alpha mask / subject extraction
 
 **Call to Action** (✅ = built):
 
@@ -281,45 +248,13 @@ interface ComponentManifest {
 - Booking/appointment widget
 - Newsletter signup
 - Search
-- FAQ/Accordion
-- Tabs
-- Modal/Lightbox
 
-**Commerce:**
+**Commerce** (✅ = built):
 
+- ✅ Service menu — `commerce-services` (card-grid, list, tiered variants)
 - Product card grid
 - Product detail section
-- Service menu with pricing
 - Pricing table/comparison
-- Shopping cart
-- Checkout flow
-
-**Navigation:**
-
-- Breadcrumbs
-- Sidebar navigation
-- Pagination
-- Table of contents
-- Back to top button
-
-### Component Variant System
-
-Each component type has multiple variants that share the same data contract but render differently. Example for Hero:
-
-```
-hero/
-├── HeroCentered.tsx        # Text centered on background
-├── HeroSplit.tsx           # Image one side, text the other
-├── HeroVideo.tsx           # Video background
-├── HeroParallax.tsx        # Parallax depth layers
-├── HeroCarousel.tsx        # Sliding images with text
-├── HeroMinimal.tsx         # Just headline, minimal styling
-├── HeroFullBleed.tsx       # Full image with overlay
-├── HeroAnimated.tsx        # Interactive/animated elements
-├── hero.types.ts           # Shared TypeScript interfaces
-├── hero.manifest.json      # Component manifest for assembly engine
-└── hero.stories.tsx        # Visual documentation / preview
-```
 
 ### Assembly Protocol
 
@@ -327,18 +262,34 @@ The assembly engine follows this process:
 
 1. **Read Site Intent Document** — Parse the structured spec
 2. **Resolve Theme** — Either load a proven theme or generate tokens from personality vector
-3. **Select Components** — For each page, match component IDs to library entries
+3. **Select Components** — For each page, match component IDs to library entries via `COMPONENT_REGISTRY`
 4. **Configure Variants** — Based on personality fit and content availability
-5. **Compose Layout** — Arrange components in order with section wrappers
+5. **Compose Layout** — Arrange components in order with section wrappers, alternating backgrounds
 6. **Populate Content** — Insert real or AI-generated content into component props
-7. **Render Preview** — Generate a live, interactive preview
-8. **Export** — On approval, generate a deployable Next.js project
+7. **Render Preview** — Generate a live, interactive preview via `AssemblyRenderer`
+8. **Export** — On approval, generate a downloadable ZIP with static HTML/CSS via export pipeline
+
+### Export Pipeline
+
+The export pipeline converts a `SiteIntentDocument` into a downloadable static website:
+
+1. **`generateProject(spec)`** — Converts spec into `ExportResult` with `index.html`, `styles.css`, and `README.md`
+2. **`createProjectZip(result)`** — Bundles files into a ZIP using JSZip
+3. **`downloadBlob(blob, filename)`** — Triggers browser download
+
+The exported HTML includes:
+
+- Full CSS with theme variables and responsive design
+- Component-specific styles for all 18 component types
+- Google Fonts loading via `<link>` tags
+- Semantic HTML structure matching the component tree
+- XSS-safe content rendering via `escapeHtml()`
 
 ---
 
 ## Layer 3: Theming & Style System
 
-> **Status:** Fully implemented. 87 CSS Custom Properties across 6 categories. `generateThemeFromVector()` maps personality vectors to tokens using chroma-js for palette generation and 10 curated font pairings. ThemeProvider + useTheme hook inject tokens as CSS custom properties. 3 presets built (Luxury Dark, Modern Clean, Warm Professional). Preview page at `/preview` allows live theme switching across all components.
+> **Status:** Fully implemented. 87 CSS Custom Properties across 6 categories. `generateThemeFromVector()` maps personality vectors to tokens using chroma-js for palette generation and 10 curated font pairings. ThemeProvider + useTheme hook inject tokens as CSS custom properties. 7 presets built. Preview page at `/preview` allows live theme switching across all 18 components.
 
 ### Design Token Architecture
 
@@ -424,26 +375,23 @@ The 6-dimensional personality vector maps to theme tokens through a generation f
 | Classic ↔ Modern  | Serif vs sans-serif, ornamental details, spacing proportions                 |
 | Calm ↔ Dynamic    | Animation speed/distance, transition types, interactive effects              |
 
-### Theme Presets
+### Theme Presets (7 total)
 
-Curated starting points that can be adjusted (✅ = implemented):
+Curated starting points that can be adjusted:
 
 - ✅ **Luxury Dark** — Deep navy, gold accents, Cormorant Garamond/Outfit, generous space
-- **Luxury Light** — Cream/ivory base, elegant serif, subtle shadows, muted metallics
 - ✅ **Modern Clean** — White base, blue accent, Sora/DM Sans, crisp edges
-- **Bold Creative** — Vibrant colors, display fonts, dynamic animations, asymmetric layouts
 - ✅ **Warm Professional** — Warm whites, terracotta/sage accents, Lora/Merriweather Sans
-- **Editorial** — High contrast, strong typography hierarchy, magazine-like grid
-- **Tech Forward** — Dark mode, monospace accents, gradient meshes, glass effects
-- **Organic Natural** — Greens/browns, handwritten accents, soft shapes, texture
-- **Playful Bright** — Primary colors, bouncy animations, large rounded elements
-- **Minimalist Zen** — Near-monochrome, extreme whitespace, delicate typography
+- ✅ **Bold Creative** — Vibrant magenta/cyan, Oswald/Lato, 0px radius, high contrast
+- ✅ **Editorial** — Red/white, Libre Baskerville/Nunito Sans, 0px radius, magazine-like grid
+- ✅ **Tech Forward** — Indigo/cyan, DM Sans/JetBrains Mono, dark mode, glass effects
+- ✅ **Organic Natural** — Sage/terracotta, Crimson Pro/Work Sans, soft rounded shapes
 
 ---
 
 ## Layer 4: Evolving Knowledge Base
 
-> **Status:** Design spec only — not yet implemented. Planned for Phase 6. The Convex schema includes placeholder tables for `intentPaths` and `recipes`, but the embedding/similarity matching system has not been built.
+> **Status:** Schema tables created in Convex (`intentPaths`, `recipes`, `components`, `themes`, `assets`) with indexes. The tables are ready for data but the embedding/similarity matching system, path lifecycle management, and analytics dashboard have not been built. Planned for Phase 5.
 
 ### Intent Path Learning
 
@@ -524,16 +472,15 @@ interface ProvenRecipe {
 
 ### Core Tables
 
-- **intakeResponses** — Individual answers from the intake flow (✅ implemented with `saveResponse` mutation and `getBySession` query)
-- **projects** — Client website projects
-- **siteSpecs** — Generated Site Intent Documents
-- **intentPaths** — The evolving decision tree
-- **components** — Component library registry
-- **themes** — Theme presets and custom themes
-- **assets** — File references and metadata
-- **recipes** — Proven component configurations
-- **users** — Platform users (clients)
-- **subscriptions** — Payment/plan information
+- **projects** — Client website projects (✅ schema defined)
+- **users** — Platform users (✅ schema defined)
+- **siteSpecs** — Generated Site Intent Documents (✅ fully implemented — `saveSiteSpec`, `saveSiteSpecInternal`, `getSiteSpec` with `by_session` index)
+- **intakeResponses** — Individual intake flow responses (✅ schema defined with `by_session` index)
+- **intentPaths** — The evolving decision tree (✅ schema defined with `by_step` index — lifecycle management not yet built)
+- **components** — Component library registry (✅ schema defined with `by_category` index)
+- **themes** — Theme presets and custom themes (✅ schema defined)
+- **assets** — File references and metadata (✅ schema defined)
+- **recipes** — Proven component configurations (✅ schema defined with `by_component` index)
 
 ---
 
@@ -544,10 +491,10 @@ interface ProvenRecipe {
 Claude is called for:
 
 1. **Deep Discovery Questions** — Generating contextual follow-up questions based on intake progress
-2. **Intent Interpretation** — When user gives a novel response that doesn't match known paths
-3. **Copy Generation** — Website copy based on business info and brand personality
-4. **Component Selection** — When the optimal component arrangement isn't deterministic
-5. **Theme Fine-tuning** — Adjusting theme tokens based on nuanced brand descriptions
+2. **Site Spec Generation** — Producing a full `SiteIntentDocument` with page structure, component selection, variant configuration, and content for all 18 components
+3. **Intent Interpretation** — When user gives a novel response that doesn't match known paths
+4. **Copy Generation** — Website copy based on business info and brand personality (planned)
+5. **Theme Fine-tuning** — Adjusting theme tokens based on nuanced brand descriptions (planned)
 
 ### Optimization Strategy
 
@@ -556,6 +503,7 @@ Claude is called for:
 - Use structured output (JSON mode) for spec generation
 - Maintain conversation context within a session to avoid redundant questions
 - Graduate AI-dependent paths to deterministic as confidence grows
+- Fingerprint-based staleness detection for question caching
 
 ---
 
@@ -567,14 +515,23 @@ Claude is called for:
 - Convex cloud for database + real-time
 - Claude API for AI features
 
-### Generated Sites (Subscription Model)
+### Generated Sites (Export — Currently Implemented)
+
+- Export as static HTML/CSS project (ZIP download)
+- Includes `index.html`, `styles.css`, `README.md`
+- Full theme with CSS Custom Properties
+- Responsive design built-in
+- Google Fonts loading
+- No dependency on EasyWebsiteBuild platform
+
+### Generated Sites (Subscription Model — Future)
 
 - Each site is a separate Next.js deployment
 - Shared component library via npm package
 - Individual Convex projects for sites needing dynamic features
-- Or static export for simple sites
+- Vercel deployment via API
 
-### Generated Sites (One-Time Purchase)
+### Generated Sites (One-Time Purchase — Future)
 
 - Export as standalone Next.js project
 - All components bundled in
@@ -598,19 +555,29 @@ easywebsitebuild/
 │   └── THEME_SYSTEM.md
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx                     # Root layout (ConditionalLayout for route-aware Navbar/Footer)
+│   │   ├── layout.tsx                     # Root layout (ConvexClientProvider → ConditionalLayout)
 │   │   ├── page.tsx                       # Homepage
 │   │   ├── globals.css                    # Global styles, CSS variables
-│   │   ├── demo/page.tsx                  # Demo intake flow (4-step)
+│   │   ├── demo/
+│   │   │   ├── page.tsx                   # Demo intake flow (6-step)
+│   │   │   └── preview/page.tsx           # Assembled site preview with viewport controls
 │   │   ├── docs/page.tsx                  # Documentation page
-│   │   └── preview/page.tsx               # Live component preview with theme switching
+│   │   └── preview/page.tsx               # Live component library preview with theme switching
 │   ├── components/
 │   │   ├── platform/                      # Platform UI (the builder app itself)
 │   │   │   ├── Navbar.tsx
 │   │   │   ├── Footer.tsx
 │   │   │   ├── AnimatedSection.tsx
-│   │   │   └── ConditionalLayout.tsx      # Route-aware Navbar/Footer visibility
-│   │   └── library/                       # Website component library (used in generated sites)
+│   │   │   ├── ConditionalLayout.tsx      # Route-aware Navbar/Footer visibility
+│   │   │   ├── ConvexClientProvider.tsx    # Convex React provider (wraps app)
+│   │   │   ├── intake/                    # Intake flow step components
+│   │   │   │   ├── Step5Discovery.tsx     # AI-powered discovery questionnaire
+│   │   │   │   ├── Step6Loading.tsx       # Animated generation loading screen
+│   │   │   │   └── index.ts
+│   │   │   └── preview/                   # Preview UI components
+│   │   │       ├── PreviewSidebar.tsx     # Spec metadata sidebar
+│   │   │       └── PreviewToolbar.tsx     # Viewport controls toolbar
+│   │   └── library/                       # Website component library (18 components)
 │   │       ├── base.types.ts              # BaseComponentProps, ImageSource, LinkItem, CTAButton
 │   │       ├── index.ts                   # Barrel exports for all components
 │   │       ├── manifest-index.ts          # Manifest lookup/filter utilities
@@ -620,19 +587,43 @@ easywebsitebuild/
 │   │       ├── content/content-features/  # ContentFeatures component
 │   │       ├── content/content-split/     # ContentSplit component
 │   │       ├── content/content-text/      # ContentText component
+│   │       ├── content/content-stats/     # ContentStats component
+│   │       ├── content/content-accordion/ # ContentAccordion component
+│   │       ├── content/content-timeline/  # ContentTimeline component
+│   │       ├── content/content-logos/     # ContentLogos component
 │   │       ├── cta/cta-banner/            # CtaBanner component
 │   │       ├── forms/form-contact/        # FormContact component
 │   │       ├── social-proof/proof-testimonials/  # ProofTestimonials component
+│   │       ├── social-proof/proof-beforeafter/   # ProofBeforeAfter component
+│   │       ├── team/team-grid/            # TeamGrid component
+│   │       ├── commerce/commerce-services/ # CommerceServices component
+│   │       ├── media/media-gallery/       # MediaGallery component
 │   │       ├── footer/footer-standard/    # FooterStandard component
 │   │       └── layout/section/            # Section wrapper component
 │   └── lib/
+│       ├── assembly/                      # Assembly engine
+│       │   ├── spec.types.ts              # SiteIntentDocument, PageSpec, ComponentPlacement
+│       │   ├── component-registry.ts      # componentId → React component mapping
+│       │   ├── font-loader.ts             # Runtime Google Fonts loader with deduplication
+│       │   ├── AssemblyRenderer.tsx        # Spec → live site renderer
+│       │   └── index.ts                   # Barrel export
+│       ├── export/                        # Export pipeline
+│       │   ├── generate-project.ts        # SiteIntentDocument → static HTML/CSS files
+│       │   ├── create-zip.ts              # JSZip bundling + browser download
+│       │   └── index.ts                   # Barrel export
+│       ├── stores/
+│       │   └── intake-store.ts            # Zustand store with localStorage persistence
 │       └── theme/
 │           ├── theme.types.ts             # ThemeTokens, PersonalityVector, ThemePreset
 │           ├── token-map.ts               # Token name ↔ CSS variable mapping
 │           ├── generate-theme.ts          # Personality vector → ThemeTokens
-│           ├── presets.ts                 # 3 curated presets (Luxury Dark, Modern Clean, Warm Professional)
+│           ├── presets.ts                 # 7 curated presets
 │           ├── ThemeProvider.tsx           # React context provider + useTheme hook
 │           └── index.ts                   # Barrel export
 └── convex/
-    └── schema.ts                          # Database schema (8 tables)
+    ├── schema.ts                          # Database schema (9 tables)
+    ├── siteSpecs.ts                       # Site spec CRUD (saveSiteSpec, getSiteSpec)
+    └── ai/                                # AI integration actions
+        ├── generateQuestions.ts            # Claude-powered discovery questions
+        └── generateSiteSpec.ts            # Claude-powered site spec generation
 ```

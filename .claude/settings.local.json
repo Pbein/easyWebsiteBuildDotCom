@@ -9,7 +9,21 @@
       "Bash(npx husky init)",
       "Bash(npx next build:*)",
       "Bash(npx next lint:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)",
+      "Bash(where:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebSearch",
+      "Bash(dir:*)",
+      "Bash(npm ls:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)"
     ]
   }
 }

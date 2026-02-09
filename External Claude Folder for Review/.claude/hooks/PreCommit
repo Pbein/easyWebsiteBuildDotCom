@@ -1,0 +1,48 @@
+#!/bin/bash
+# Claude Code Pre-Commit Hook
+# Runs automatically before git commits when using Claude Code
+#
+# This hook ensures code quality before committing by:
+# 1. Running linting checks
+# 2. Running type checking
+# 3. Checking for common issues
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# 1. Run linting
+echo "Checking lint..."
+if ! bun run lint --quiet 2>/dev/null; then
+    echo "Lint errors found. Please fix before committing."
+    exit 1
+fi
+echo "Lint: OK"
+
+# 2. Run type checking (build without emit)
+echo "Checking types..."
+if ! bunx tsc --noEmit 2>/dev/null; then
+    echo "Type errors found. Please fix before committing."
+    exit 1
+fi
+echo "Types: OK"
+
+# 3. Check for console.log statements in staged files
+echo "Checking for debug statements..."
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$STAGED_FILES" ]; then
+    if echo "$STAGED_FILES" | xargs grep -l 'console\.log' 2>/dev/null; then
+        echo "Warning: console.log statements found in staged files"
+        echo "Consider removing before committing to production"
+    fi
+fi
+
+# 4. Check for TODO comments in staged files
+if [ -n "$STAGED_FILES" ]; then
+    if echo "$STAGED_FILES" | xargs grep -l 'TODO:' 2>/dev/null; then
+        echo "Warning: TODO comments found in staged files"
+        echo "Consider addressing before committing"
+    fi
+fi
+
+echo "Pre-commit checks passed!"

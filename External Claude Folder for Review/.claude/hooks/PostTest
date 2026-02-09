@@ -1,0 +1,68 @@
+#!/bin/bash
+# Claude Code Post-Test Hook
+# Runs after test execution to provide helpful information
+#
+# This hook runs AFTER Claude executes test commands.
+# It provides coverage info and security test reminders.
+
+echo ""
+echo "=========================================="
+echo "POST-TEST ANALYSIS"
+echo "=========================================="
+
+# Check for coverage reports
+if [ -f "coverage/lcov-report/index.html" ]; then
+    echo ""
+    echo "Coverage report available:"
+    echo "  coverage/lcov-report/index.html"
+    echo ""
+fi
+
+# Check if Convex files were recently modified
+CONVEX_MODIFIED=$(git diff --name-only HEAD~5 2>/dev/null | grep -E "packages/convex/.*\.ts$" || true)
+if [ -n "$CONVEX_MODIFIED" ]; then
+    echo ""
+    echo "Recently modified Convex files detected."
+    echo "Consider running security tests:"
+    echo ""
+    echo "  bun run test:security"
+    echo ""
+    echo "Modified files:"
+    echo "$CONVEX_MODIFIED" | head -10 | sed 's/^/  /'
+    if [ $(echo "$CONVEX_MODIFIED" | wc -l) -gt 10 ]; then
+        echo "  ... and more"
+    fi
+    echo ""
+fi
+
+# Check if billing files were modified
+BILLING_MODIFIED=$(git diff --name-only HEAD~5 2>/dev/null | grep -E "billing" || true)
+if [ -n "$BILLING_MODIFIED" ]; then
+    echo ""
+    echo "Billing files modified. Consider running:"
+    echo ""
+    echo "  bun run test:stripe"
+    echo ""
+fi
+
+# Check if SMS files were modified
+SMS_MODIFIED=$(git diff --name-only HEAD~5 2>/dev/null | grep -E "(sms|twilio|campaign)" || true)
+if [ -n "$SMS_MODIFIED" ]; then
+    echo ""
+    echo "SMS-related files modified. Consider running:"
+    echo ""
+    echo "  bun run test:sms"
+    echo ""
+fi
+
+# Test quality reminders
+echo ""
+echo "Quality Checklist:"
+echo "  [ ] Security tests pass (bun run test:security)"
+echo "  [ ] Coverage >= 85% for modified files"
+echo "  [ ] No console.log in production code"
+echo "  [ ] Karen verification before marking complete"
+echo ""
+echo "=========================================="
+
+exit 0

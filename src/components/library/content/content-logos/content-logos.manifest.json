@@ -1,0 +1,101 @@
+{
+  "id": "content-logos",
+  "category": "content",
+  "name": "Logo Cloud",
+  "description": "Trust badges and client logo cloud. Displays partner, client, or certification logos in grid, scrolling marquee, or staggered fade-in layouts to build credibility.",
+  "siteTypes": [
+    "business",
+    "booking",
+    "portfolio",
+    "personal",
+    "ecommerce",
+    "blog",
+    "nonprofit",
+    "event",
+    "landing",
+    "educational",
+    "community",
+    "directory"
+  ],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "logos",
+      "type": "LogoItem[]",
+      "description": "Array of logo items with name, optional image, and optional URL"
+    }
+  ],
+  "optionalProps": [
+    {
+      "name": "headline",
+      "type": "string",
+      "description": "Section headline (e.g. 'Trusted by industry leaders')"
+    },
+    { "name": "variant", "type": "string", "description": "Visual variant: grid, scroll, or fade" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "font-accent",
+    "font-mono",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "shadow-sm",
+    "shadow-md",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "grid",
+      "name": "Grid",
+      "description": "Responsive grid of logos with grayscale-to-color hover effect"
+    },
+    {
+      "id": "scroll",
+      "name": "Scroll",
+      "description": "Infinite horizontal marquee of logos with pause-on-hover"
+    },
+    {
+      "id": "fade",
+      "name": "Fade",
+      "description": "Staggered fade-in grid where logos appear one by one on scroll"
+    }
+  ],
+  "tags": ["trust", "clients", "partners", "logos", "credibility"]
+}

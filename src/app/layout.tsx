@@ -3,6 +3,7 @@ import { Space_Grotesk, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ConditionalLayout } from "@/components/platform/ConditionalLayout";
+import { ConvexClientProvider } from "@/components/platform/ConvexClientProvider";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
@@ -41,7 +42,9 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${outfit.variable} ${jetbrainsMono.variable} noise-bg antialiased`}
       >
-        <ConditionalLayout>{children}</ConditionalLayout>
+        <ConvexClientProvider>
+          <ConditionalLayout>{children}</ConditionalLayout>
+        </ConvexClientProvider>
         <Toaster
           theme="dark"
           position="bottom-right"

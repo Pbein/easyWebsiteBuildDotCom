@@ -1,0 +1,31 @@
+#!/bin/bash
+# Claude Code Post-Tool-Use Hook
+# Runs after Claude completes tool operations
+#
+# This hook provides feedback on code changes by:
+# 1. Running quick tests on modified areas
+# 2. Checking for common issues
+#
+# NOTE: This hook runs frequently, so keep it fast (<10 seconds)
+
+# Only run tests if we modified Convex files
+MODIFIED_CONVEX=$(git diff --name-only | grep -E '^convex/' || true)
+if [ -n "$MODIFIED_CONVEX" ]; then
+    echo "Convex files modified, running quick check..."
+
+    # Quick type check only (faster than full test)
+    if ! bunx tsc --noEmit --project convex/tsconfig.json 2>/dev/null; then
+        echo "Type errors in Convex files. Please review."
+    fi
+fi
+
+# Only run frontend tests if we modified frontend files
+MODIFIED_FRONTEND=$(git diff --name-only | grep -E '^src/' || true)
+if [ -n "$MODIFIED_FRONTEND" ]; then
+    echo "Frontend files modified."
+
+    # Quick type check
+    if ! bunx tsc --noEmit 2>/dev/null; then
+        echo "Type errors in frontend files. Please review."
+    fi
+fi

@@ -1,11 +1,14 @@
 # Intake Flow Design — Intent Capture System
 
-> **Implementation Status (as of Feb 2026):**
+> **Implementation Status (as of Feb 2026):** Fully implemented in Phase 3, enhanced in Phase 4B.
 >
-> - **Demo intake flow built** at `/demo` — 4-step experience (site type selection, goals, business description, personality A/B comparisons)
-> - **State management** — Zustand store with localStorage persistence tracks intake progress
-> - **Convex storage** — `intakeResponses` table with `saveResponse` mutation and `getBySession` query stores completed responses
-> - **Not yet built:** Steps 5-6 (AI-powered deep discovery and spec/preview generation), Claude API integration, full 6-step flow. These are planned for Phase 3.
+> - **Full 6-step intake flow** at `/demo` — site type → goal → description → personality A/B comparisons → AI discovery → generation/preview
+> - **Steps 1-4** — Local React state with visual card selection, personality axis comparisons, text input
+> - **Step 5 (AI Discovery)** — `Step5Discovery` component calls `generateQuestions` Convex action (Claude Sonnet), displays personalized questions with text/select input types, comprehensive fallback question bank for 11 site types. Fingerprint-based staleness detection (`questionsInputKey`) clears old Q&A when inputs change. Review mode shows previous answers when returning with same inputs.
+> - **Step 6 (Generation)** — `Step6Loading` component with 5-phase animated progress, calls `generateSiteSpec` action, auto-redirects to `/demo/preview?session=<sessionId>` on success
+> - **State management** — Zustand store (`useIntakeStore`) with localStorage persistence; bridge pattern syncs local state to store at Step 4→5 transition
+> - **Convex storage** — `siteSpecs` table with `saveSiteSpec` mutation and `getSiteSpec` query; `intakeResponses` table with `by_session` index
+> - **Live preview** — `/demo/preview` page renders assembled site with responsive viewport controls, metadata sidebar, toolbar, and export button (ZIP download)
 
 ## Overview
 
@@ -20,19 +23,19 @@ The intake flow is the guided discovery experience that replaces the traditional
 
 Options presented as visual cards with icons:
 
-- 🏢 Business Website — "Showcase your business and attract clients"
-- 📅 Booking Website — "Let customers book appointments or services"
-- 🛍️ Online Store — "Sell products directly online"
-- ✍️ Blog — "Share your writing and ideas"
-- 💼 Portfolio — "Showcase your creative work"
-- 👤 Personal Website — "Your personal corner of the internet"
-- 🎓 Educational — "Teach, train, or share knowledge"
-- 👥 Community — "Build a membership or community space"
-- 💝 Nonprofit — "Rally support for your cause"
-- 🎉 Event — "Promote and manage an event"
-- 📄 Landing Page — "One focused page with a single goal"
-- 📋 Directory — "List and organize businesses or resources"
-- ❓ Something else — (Free text → AI interpretation)
+- Business Website — "Showcase your business and attract clients"
+- Booking Website — "Let customers book appointments or services"
+- Online Store — "Sell products directly online"
+- Blog — "Share your writing and ideas"
+- Portfolio — "Showcase your creative work"
+- Personal Website — "Your personal corner of the internet"
+- Educational — "Teach, train, or share knowledge"
+- Community — "Build a membership or community space"
+- Nonprofit — "Rally support for your cause"
+- Event — "Promote and manage an event"
+- Landing Page — "One focused page with a single goal"
+- Directory — "List and organize businesses or resources"
+- Something else — (Free text → AI interpretation)
 
 ### Step 2: Primary Goal
 
@@ -70,7 +73,7 @@ The AI extracts: industry, location, scale, target audience, competitive positio
 
 ### Step 4: Brand Personality
 
-**Screen**: Series of visual A/B comparisons (5-6 rounds)
+**Screen**: Series of visual A/B comparisons (6 rounds)
 
 Each round shows two rendered website sections side by side, representing opposite poles of a personality axis. User clicks the one that feels more like their brand, or adjusts a slider between them.
 
@@ -100,11 +103,13 @@ Right: A dynamic section with motion, scroll effects, interactive elements
 
 Each choice maps to a value on the 0-1 axis. Clicking "left" = 0.1-0.3, "slightly left" = 0.3-0.4, "center" = 0.5, etc.
 
+**Bridge Pattern:** At the Step 4→5 transition, `bridgeToStore()` syncs all local React state (siteType, goal, businessName, description, personalityVector) into the Zustand store, which persists to localStorage.
+
 ### Step 5: Deep Discovery (AI-Powered)
 
 **Screen**: Chat-like interface with AI-generated questions
 
-Based on all previous answers, Claude generates 3-5 targeted questions. These are presented one at a time in a conversational format.
+Based on all previous answers, Claude generates 4 targeted questions. These are presented one at a time in a conversational format.
 
 Example for luxury med spa (business + booking + luxury personality):
 
@@ -120,8 +125,34 @@ Question 3: "What makes your med spa different from competitors? What's your uni
 Question 4: "Do you have professional brand photography, or will you need us to source imagery?"
 → User selects: "I have photos" / "I need sourced imagery" / "Mix of both"
 
-Question 5: "Describe the feeling someone should have when they first visit your website."
-→ User types: "Like they're stepping into a five-star hotel. Luxurious, exclusive, trustworthy."
+#### Staleness Detection & Review Mode
+
+Step 5 uses a fingerprint-based system to handle returning users:
+
+**`questionsInputKey`** — A fingerprint string computed from `${siteType}|${goal}|${businessName}|${description.slice(0,100)}`. This is stored in the Zustand store when questions are generated.
+
+**On mount logic:**
+
+```
+1. Compute currentKey from current intake data
+2. Compare with stored questionsInputKey
+
+If keys match AND all questions answered:
+  → Show REVIEW MODE (read-only answers with "Use these" / "Update" buttons)
+
+If keys match AND partially answered:
+  → Resume from where user left off
+
+If keys DON'T match OR no questions exist:
+  → Clear old Q&A, generate fresh questions
+  → Store new questionsInputKey after generation
+```
+
+**Review mode UI:**
+
+- All 4 Q&A pairs displayed in a summary list
+- "These answers look good" button → proceeds to Step 6
+- "Update my answers" button → clears responses, resets to question 1
 
 ### Step 6: Preview & Proposal
 
@@ -136,7 +167,7 @@ The system generates:
 
 User can:
 
-- Approve and proceed
+- Approve and export (ZIP download)
 - Request changes ("make it darker", "use a different hero style", "add a team section")
 - Go back and adjust personality or answers
 - Start over
@@ -152,39 +183,45 @@ interface IntakeState {
   completedSteps: number[];
 
   // Step 1: Site Type
-  siteType: SiteType | null;
-  customSiteType?: string;
+  siteType: string | null;
 
   // Step 2: Primary Goal
-  conversionGoal: ConversionGoal | null;
-  customGoal?: string;
+  conversionGoal: string | null;
 
   // Step 3: Industry & Context
+  businessName: string;
   businessDescription: string;
-  extractedIndustry?: string;
-  extractedAudience?: string;
-  extractedLocation?: string;
 
   // Step 4: Brand Personality
   personalityVector: [number, number, number, number, number, number];
-  personalityChoices: { axis: string; value: number }[];
 
   // Step 5: Deep Discovery
   aiQuestions: AIQuestion[];
-  aiResponses: { questionId: string; response: string }[];
+  aiResponses: Record<string, string>; // questionId → response
+  questionsInputKey: string | null; // Fingerprint for staleness detection
 
-  // Step 6: Preview
-  generatedSpec?: SiteIntentDocument;
-  previewApproved: boolean;
-  changeRequests: string[];
+  // Step 6: Generation
+  sessionId: string | null;
+  specId: string | null;
+
+  // Actions
+  setSiteType: (type: string) => void;
+  setGoal: (goal: string) => void;
+  setBusinessName: (name: string) => void;
+  setBusinessDescription: (desc: string) => void;
+  setPersonalityVector: (vector: [number, number, number, number, number, number]) => void;
+  setAiQuestions: (questions: AIQuestion[]) => void;
+  setAiResponse: (questionId: string, response: string) => void;
+  setSessionId: (id: string) => void;
+  setSpecId: (id: string) => void;
+  reset: () => void;
 }
 
 interface AIQuestion {
   id: string;
   question: string;
-  type: "text" | "select" | "multiselect";
+  type: "text" | "select";
   options?: string[];
-  purpose: string; // What this answer will be used for
 }
 ```
 
@@ -213,43 +250,91 @@ intakePaths: defineTable({
 
 ### AI Integration Points
 
-**Step 3 — Industry Extraction:**
+**Step 5 — Question Generation (`convex/ai/generateQuestions.ts`):**
 
 ```
-System: Extract industry, target audience, location, and business scale
-from this description. Return structured JSON.
-User input: "{businessDescription}"
-```
-
-**Step 5 — Question Generation:**
-
-```
-System: You are helping build a website. Based on the following client
-profile, generate 3-5 targeted discovery questions that will help us
-build their ideal website. Focus on content needs, functional requirements,
-and emotional goals.
+System: You are a web design consultant. Based on the client profile,
+generate exactly 4 targeted discovery questions that will help build
+their ideal website. Mix of text input and select questions.
 
 Client Profile:
 - Site Type: {siteType}
 - Goal: {conversionGoal}
 - Business: {businessDescription}
+- Business Name: {businessName}
 - Brand Personality: {personalityVector interpretation}
 
-Return questions as JSON array.
+Return questions as JSON array with id, question, type, options, purpose.
 ```
 
-**Step 6 — Spec Generation:**
+**Fallback:** Comprehensive question bank with curated questions for 11 site types (business, booking, ecommerce, blog, portfolio, personal, educational, community, nonprofit, event, landing).
+
+**Step 6 — Spec Generation (`convex/ai/generateSiteSpec.ts`):**
 
 ```
-System: Based on the complete intake data, generate a Site Intent Document
-that specifies pages, component selections with variants, and content
-structure. Reference available components from the manifest index.
+System: Based on the complete intake data, generate a SiteIntentDocument.
+Select from 18 available components with appropriate variants and
+content that matches each component's type interface exactly.
 
-Available Components: {componentManifestIndex}
-Available Themes: {themePresetIndex}
-Intake Data: {completeIntakeState}
+Available Components (18):
+- nav-sticky, hero-centered, hero-split, content-features, content-split,
+  content-text, content-stats, content-accordion, content-timeline,
+  content-logos, cta-banner, form-contact, footer-standard,
+  proof-testimonials, proof-beforeafter, team-grid, commerce-services,
+  media-gallery
+
+Component Selection Guidelines:
+- Every page MUST have nav-sticky and footer-standard
+- Homepage SHOULD have a hero component
+- Use content-stats for businesses with impressive numbers
+- Use commerce-services for service-based businesses
+- Use team-grid when team presence matters
+- Use content-accordion for FAQ sections
+- Use content-logos for trust/credibility building
 
 Return a complete SiteIntentDocument as JSON.
+```
+
+**Fallback:** Deterministic spec generation with personality-driven variant selection, site-type-based component selection, and content generation using helper functions (`getStatsForSiteType`, `getServicesForSiteType`, `getTeamForSiteType`, `getTrustLogos`, `getFaqForSiteType`).
+
+## Data Flow Diagram
+
+```
+User Input (Steps 1-4)
+    │
+    ├── siteType, conversionGoal (Step 1-2)
+    ├── businessName, businessDescription (Step 3)
+    └── personalityVector [6 floats] (Step 4)
+          │
+          ▼
+    bridgeToStore() ──→ Zustand Store (localStorage)
+          │
+          ▼
+    Step 5: generateQuestions (Convex Action)
+          │
+          ├── AI Path: Claude Sonnet generates 4 questions
+          └── Fallback: Question bank by site type
+                │
+                ▼
+          User answers 4 questions
+                │
+                ▼
+    Step 6: generateSiteSpec (Convex Action)
+          │
+          ├── AI Path: Claude Sonnet generates full spec
+          └── Fallback: Deterministic component selection + content
+                │
+                ▼
+          SiteIntentDocument (JSON)
+                │
+                ├── saveSiteSpec() → Convex DB (siteSpecs table)
+                │
+                ▼
+          /demo/preview?session=<sessionId>
+                │
+                ├── getSiteSpec() → Fetch from Convex
+                ├── AssemblyRenderer → Live preview
+                └── Export → ZIP download (HTML/CSS/README)
 ```
 
 ## Progressive Disclosure
@@ -281,6 +366,16 @@ The flow should feel light and fast. Principles:
 
 - Provide "I'm not sure" option on personality questions (maps to 0.5 center)
 - AI can suggest based on industry norms: "Most luxury service businesses prefer..."
+
+**User returns to Step 5 with same inputs:**
+
+- Review mode shows previous answers
+- User can confirm or re-answer
+
+**User returns to Step 5 with different inputs:**
+
+- Old questions/answers are cleared
+- Fresh questions generated for new context
 
 **User wants to skip ahead:**
 

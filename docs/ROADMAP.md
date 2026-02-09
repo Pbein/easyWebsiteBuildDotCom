@@ -56,58 +56,89 @@
 
 ---
 
-## Phase 3: Intent Capture System (Next)
+## Phase 3: Intent Capture, AI Integration & Assembly Engine ✅ COMPLETE
 
-**Goal**: Complete the intake flow with AI integration.
+**Goal**: Complete the intake flow with AI integration, build the assembly engine, and deliver live previews.
 
 ### Deliverables
 
-- [ ] Full 6-step intake flow UI (expand current 4-step demo)
-- [ ] Brand personality visual comparison system
-- [ ] Claude API integration for deep discovery questions
-- [ ] Claude API integration for spec generation
-- [ ] Site Intent Document generation from intake data
-- [ ] Convex storage for intake responses
-- [ ] Intent path storage (knowledge base foundation)
+- [x] Full 6-step intake flow UI (expanded from 4-step to 6-step demo)
+- [x] Brand personality visual comparison system (6-axis A/B comparisons in Step 4)
+- [x] Claude API integration for deep discovery questions (`convex/ai/generateQuestions.ts`)
+- [x] Claude API integration for spec generation (`convex/ai/generateSiteSpec.ts`)
+- [x] Site Intent Document generation from intake data (AI-first with deterministic fallback)
+- [x] Zustand intake state management with localStorage persistence (`useIntakeStore`)
+- [x] Convex storage for site specs (`siteSpecs` table with `saveSiteSpec` / `getSiteSpec`)
+- [x] Intent path schema (knowledge base foundation — `intentPaths`, `recipes`, `components`, `themes`, `assets` tables)
+- [x] Assembly engine — `COMPONENT_REGISTRY`, `AssemblyRenderer`, `font-loader`, `SiteIntentDocument` types
+- [x] Theme resolver — personality vector → token set via `generateThemeFromVector()` in renderer
+- [x] Component selection and variant matching using personality-driven logic in deterministic fallback
+- [x] Live preview renderer (`/demo/preview`) with responsive viewport switcher (desktop/tablet/mobile)
+- [x] Preview sidebar showing spec metadata, theme colors, fonts, component list, personality visualization
+- [x] Preview toolbar with viewport controls and action button placeholders
+- [x] Step 5 — AI-powered discovery questionnaire with loading states and fallback question bank (11 site types)
+- [x] Step 6 — Animated loading screen with 5-phase progress, auto-redirect to preview on success
 
 ---
 
-## Phase 4: Assembly Engine & Preview
+## Phase 4A: Quality & Content Accuracy Improvements ✅ COMPLETE
 
-**Goal**: Turn Site Intent Documents into live website previews.
+**Goal**: Fix content accuracy issues and improve Step 5 Discovery UX.
 
 ### Deliverables
 
-- [ ] Assembly engine that reads a spec and composes components
-- [ ] Theme resolver (personality vector → token set) — foundation already built
-- [ ] Component selection and variant matching using manifest personalityFit ranges
-- [ ] Live preview renderer
+- [x] Fix spec generator content fields to match component type interfaces exactly
+- [x] Step 5 Discovery fix — fingerprint-based staleness detection (`questionsInputKey`) replaces time-based heuristic
+- [x] Review mode UI — shows previous answers when returning with same inputs, "Use these" / "Update" buttons
+
+---
+
+## Phase 4B: Component Library Expansion + Export Pipeline ✅ COMPLETE
+
+**Goal**: Expand from 10 to 18 components, add 4 more theme presets, build export pipeline.
+
+### Deliverables
+
+- [x] 8 new components (18 total):
+  - `content-stats` — inline, cards, animated-counter variants
+  - `content-accordion` — single-open, multi-open, bordered variants
+  - `content-timeline` — vertical, alternating variants
+  - `content-logos` — grid, scroll, fade variants
+  - `proof-beforeafter` — slider, side-by-side variants
+  - `team-grid` — cards, minimal, hover-reveal variants
+  - `commerce-services` — card-grid, list, tiered variants
+  - `media-gallery` — grid, masonry, lightbox variants (filter tabs, keyboard nav)
+- [x] 4 new theme presets (7 total):
+  - Bold Creative — magenta/cyan, Oswald/Lato, 0px radius
+  - Editorial — red/white, Libre Baskerville/Nunito Sans, 0px radius
+  - Tech Forward — indigo/cyan, DM Sans/JetBrains Mono
+  - Organic Natural — sage/terracotta, Crimson Pro/Work Sans, soft radius
+- [x] All 18 components registered in assembly engine (barrel exports, manifest-index, component-registry)
+- [x] AI spec generator updated with all 18 components + selection guidelines
+- [x] Deterministic fallback enhanced — adds content-stats, commerce-services, team-grid, content-logos, content-accordion conditionally by site type
+- [x] Helper functions: `getStatsForSiteType`, `getServicesForSiteType`, `getTeamForSiteType`, `getTrustLogos`, `getFaqForSiteType`
+- [x] Preview page updated to showcase all 18 components with Meridian Studio content
+- [x] Export pipeline:
+  - `generate-project.ts` — SiteIntentDocument → static HTML/CSS/README files
+  - `create-zip.ts` — JSZip bundling → downloadable ZIP
+  - Export button wired in PreviewToolbar (demo/preview page)
+
+---
+
+## Phase 5: Visual Editor, Multi-Page Support & Deployment Pipeline (Next)
+
+**Goal**: Enable visual editing, multi-page site generation, and deployment options.
+
+### Deliverables
+
+- [ ] Visual editor — inline text editing, image replacement, component reordering
+- [ ] Multi-page site support — multiple pages per spec, page navigation
+- [ ] Full Next.js project generation (beyond static HTML export)
+- [ ] Vercel deployment via API (hosted sites)
+- [ ] Custom domain configuration
 - [ ] Preview approval/change request flow
-- [ ] AI copy generation for placeholder content
 - [ ] Preview sharing (shareable link for client review)
-
----
-
-## Phase 5: Expand Component Library
-
-**Goal**: Full component coverage for all 13 site types.
-
-### Deliverables
-
-- [ ] `hero-parallax` (all variants including subject mask)
-- [ ] `hero-video` (autoplay, play-button)
-- [ ] `nav-centered` (with-topbar, minimal)
-- [ ] `nav-hamburger` (fullscreen, slide)
-- [ ] `media-gallery` (grid, masonry, lightbox)
-- [ ] `team-grid` (cards, hover-reveal)
-- [ ] `commerce-services` (card-grid, list, tiered)
-- [ ] `commerce-pricing` (columns, toggle)
-- [ ] `content-stats` (animated-counter, cards)
-- [ ] `proof-beforeafter` (slider, side-by-side)
-- [ ] `content-accordion` (FAQ)
-- [ ] `content-timeline` (vertical)
-- [ ] All remaining component categories
-- [ ] 5+ additional theme presets (Bold Creative, Editorial, Tech Forward, etc.)
+- [ ] AI copy generation for refining placeholder content
 
 ---
 
@@ -128,33 +159,14 @@
 
 ---
 
-## Phase 7: Build & Deploy Pipeline
-
-**Goal**: Generate deployable websites from approved specs.
-
-### Deliverables
-
-- [ ] Next.js project generator
-- [ ] Component bundling for generated sites
-- [ ] Theme token file generation
-- [ ] Vercel deployment via API (hosted sites)
-- [ ] ZIP export with documentation (one-time purchase)
-- [ ] Custom domain configuration
-- [ ] Convex setup for dynamic features (forms, booking)
-
----
-
-## Phase 8: Visual Editor & Subscription Features
+## Phase 7: Visual Editor & Subscription Features
 
 **Goal**: Enable ongoing content management for subscription clients.
 
 ### Deliverables
 
-- [ ] Inline text editing
-- [ ] Image replacement interface
-- [ ] Component reordering (drag and drop)
-- [ ] Component visibility toggle
-- [ ] Theme adjustment panel (colors, fonts)
+- [ ] Advanced visual editor (drag-and-drop, component insertion)
+- [ ] Theme adjustment panel (color picker, font selector)
 - [ ] Change history / undo
 - [ ] User authentication and project dashboard
 - [ ] Subscription/payment integration (Stripe)
@@ -162,7 +174,7 @@
 
 ---
 
-## Phase 9: Commerce & Advanced Features
+## Phase 8: Commerce & Advanced Features
 
 **Goal**: Support e-commerce, booking, and membership sites.
 
@@ -179,7 +191,7 @@
 
 ---
 
-## Phase 10: Scale & Optimize
+## Phase 9: Scale & Optimize
 
 **Goal**: Prepare for public launch and growth.
 

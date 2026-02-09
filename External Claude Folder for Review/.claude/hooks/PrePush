@@ -1,0 +1,102 @@
+#!/bin/bash
+# Claude Code Pre-Push Hook
+# Validates code before pushing to remote
+#
+# This hook runs BEFORE Claude pushes to a remote repository.
+# It performs final validation checks.
+
+echo ""
+echo "=========================================="
+echo "PRE-PUSH VALIDATION"
+echo "=========================================="
+echo ""
+
+ERRORS=0
+
+# 1. Check for bare query/mutation usage in Convex files
+echo "Checking for security wrapper compliance..."
+CONVEX_FILES=$(git diff origin/main --name-only 2>/dev/null | grep -E "packages/convex/.*\.ts$" | grep -v "_generated" | grep -v "__tests__" || true)
+
+for FILE in $CONVEX_FILES; do
+    if [ -f "$FILE" ]; then
+        # Check for bare query({ usage
+        if grep -q "= query({" "$FILE" 2>/dev/null; then
+            if ! grep -q "orgQuery\|internalQuery\|publicQuery\|adminQuery" "$FILE" 2>/dev/null; then
+                echo "WARNING: $FILE may use bare query() instead of orgQuery()"
+                ERRORS=$((ERRORS + 1))
+            fi
+        fi
+
+        # Check for bare mutation({ usage
+        if grep -q "= mutation({" "$FILE" 2>/dev/null; then
+            if ! grep -q "orgMutation\|internalMutation\|publicMutation\|adminMutation" "$FILE" 2>/dev/null; then
+                echo "WARNING: $FILE may use bare mutation() instead of orgMutation()"
+                ERRORS=$((ERRORS + 1))
+            fi
+        fi
+    fi
+done
+
+if [ $ERRORS -eq 0 ]; then
+    echo "Security wrappers: OK"
+else
+    echo ""
+    echo "Found $ERRORS potential security issues."
+    echo "Please review before pushing."
+fi
+
+# 2. Check for console.log in staged files
+echo ""
+echo "Checking for debug statements..."
+STAGED_TS=$(git diff origin/main --name-only 2>/dev/null | grep -E '\.(ts|tsx)$' || true)
+CONSOLE_COUNT=0
+
+for FILE in $STAGED_TS; do
+    if [ -f "$FILE" ]; then
+        COUNT=$(grep -c 'console\.log' "$FILE" 2>/dev/null || echo 0)
+        if [ "$COUNT" -gt 0 ]; then
+            CONSOLE_COUNT=$((CONSOLE_COUNT + COUNT))
+        fi
+    fi
+done
+
+if [ $CONSOLE_COUNT -gt 0 ]; then
+    echo "Warning: $CONSOLE_COUNT console.log statements found"
+    echo "Consider removing before production"
+else
+    echo "Debug statements: OK"
+fi
+
+# 3. Check for TODO comments
+echo ""
+echo "Checking for TODOs..."
+TODO_COUNT=0
+
+for FILE in $STAGED_TS; do
+    if [ -f "$FILE" ]; then
+        COUNT=$(grep -c 'TODO:' "$FILE" 2>/dev/null || echo 0)
+        if [ "$COUNT" -gt 0 ]; then
+            TODO_COUNT=$((TODO_COUNT + COUNT))
+        fi
+    fi
+done
+
+if [ $TODO_COUNT -gt 0 ]; then
+    echo "Info: $TODO_COUNT TODO comments found"
+else
+    echo "TODOs: OK"
+fi
+
+# 4. Summary
+echo ""
+echo "=========================================="
+if [ $ERRORS -gt 0 ]; then
+    echo "RESULT: $ERRORS warnings - review recommended"
+else
+    echo "RESULT: All checks passed"
+fi
+echo "=========================================="
+echo ""
+
+# Don't block push, just warn
+exit 0

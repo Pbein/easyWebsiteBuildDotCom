@@ -1,6 +1,6 @@
 # Component Library Specification
 
-> **Implementation Status (as of Feb 2026):** 10 MVP components built (Phase 1 of component development complete). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all components is available at `/preview` with the "Meridian Studio" sample site.
+> **Implementation Status (as of Feb 2026):** 18 components built across 8 categories (Phase 1 MVP + Phase 4B expansion complete). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all 18 components is available at `/preview` with the "Meridian Studio" sample site. All 18 components are registered in the assembly engine (`COMPONENT_REGISTRY`) and supported by both AI and deterministic spec generation.
 
 ## Overview
 
@@ -55,7 +55,7 @@ interface BaseComponentProps {
   "id": "hero-parallax",
   "category": "hero",
   "name": "Parallax Hero",
-  "description": "Full-viewport hero with parallax depth layers and optional alpha-masked foreground subject",
+  "description": "Full-viewport hero with parallax depth layers",
   "siteTypes": ["business", "booking", "portfolio", "personal"],
   "personalityFit": {
     "minimal_rich": [0.4, 1.0],
@@ -67,45 +67,12 @@ interface BaseComponentProps {
   },
   // NOTE: personalityFit values use number[] (not tuple) for JSON compatibility
   "requiredProps": [
-    { "name": "headline", "type": "string", "description": "Primary headline text" },
-    { "name": "backgroundImage", "type": "ImageSource", "description": "Background layer image" }
+    { "name": "headline", "type": "string", "description": "Primary headline text" }
   ],
-  "optionalProps": [
-    { "name": "subheadline", "type": "string" },
-    {
-      "name": "foregroundImage",
-      "type": "ImageSource",
-      "description": "Alpha-masked foreground subject"
-    },
-    {
-      "name": "midgroundElements",
-      "type": "ImageSource[]",
-      "description": "Mid-layer parallax elements"
-    },
-    { "name": "ctaText", "type": "string" },
-    { "name": "ctaLink", "type": "string" },
-    { "name": "overlayGradient", "type": "GradientSpec" },
-    { "name": "height", "type": "'viewport' | 'large' | 'medium'" }
-  ],
-  "consumedTokens": [
-    "color-primary",
-    "color-text-on-dark",
-    "font-heading",
-    "font-body",
-    "text-6xl",
-    "text-xl",
-    "radius-lg",
-    "shadow-xl",
-    "transition-slow",
-    "animation-distance"
-  ],
-  "variants": [
-    { "id": "default", "name": "Standard Parallax" },
-    { "id": "with-subject", "name": "With Foreground Subject Mask" },
-    { "id": "with-video", "name": "With Video Background Layer" },
-    { "id": "with-particles", "name": "With Particle Effect Overlay" }
-  ],
-  "tags": ["luxury", "dramatic", "immersive", "visual-heavy"]
+  "optionalProps": [{ "name": "subheadline", "type": "string" }],
+  "consumedTokens": ["color-primary", "color-text-on-dark", "font-heading", "font-body"],
+  "variants": [{ "id": "default", "name": "Standard Parallax" }],
+  "tags": ["luxury", "dramatic", "immersive"]
 }
 ```
 
@@ -140,40 +107,40 @@ interface BaseComponentProps {
 | -------------------- | ---------------- | ----------------------------------- | ------------------- | -------- |
 | `content-text`       | Text Block       | centered                            | Universal           | ✅ Built |
 | `content-features`   | Feature Grid     | icon-cards                          | Business, SaaS      | ✅ Built |
-| `content-cards`      | Card Grid        | uniform, masonry, horizontal-scroll | Universal           |          |
 | `content-split`      | Split Content    | alternating                         | Services, about     | ✅ Built |
-| `content-stats`      | Stats/Numbers    | inline, cards, animated-counter     | Business, nonprofit |          |
-| `content-timeline`   | Timeline         | vertical, horizontal, branching     | About, history      |          |
+| `content-stats`      | Stats/Numbers    | inline, cards, animated-counter     | Business, nonprofit | ✅ Built |
+| `content-timeline`   | Timeline         | vertical, alternating               | About, history      | ✅ Built |
+| `content-logos`      | Logo Cloud       | grid, scroll, fade                  | Trust building      | ✅ Built |
+| `content-accordion`  | FAQ/Accordion    | single-open, multi-open, bordered   | Universal           | ✅ Built |
+| `content-cards`      | Card Grid        | uniform, masonry, horizontal-scroll | Universal           |          |
 | `content-comparison` | Comparison Table | toggle, side-by-side, stacked       | Pricing, products   |          |
-| `content-logos`      | Logo Cloud       | grid, scroll, fade                  | Trust building      |          |
-| `content-accordion`  | FAQ/Accordion    | single-open, multi-open, bordered   | Universal           |          |
 | `content-tabs`       | Tabbed Content   | horizontal, vertical, pill-style    | Services, features  |          |
 
 ### Social Proof
 
-| ID                   | Name               | Variants                     | Best For            | Status   |
-| -------------------- | ------------------ | ---------------------------- | ------------------- | -------- |
-| `proof-testimonials` | Testimonials       | carousel                     | Universal           | ✅ Built |
-| `proof-reviews`      | Review Cards       | star-rating, quote, video    | Ecommerce, services |          |
-| `proof-casestudies`  | Case Study Preview | card, full-width, numbered   | B2B, agencies       |          |
-| `proof-beforeafter`  | Before/After       | slider, side-by-side, toggle | Med spa, renovation |          |
+| ID                   | Name               | Variants                   | Best For            | Status   |
+| -------------------- | ------------------ | -------------------------- | ------------------- | -------- |
+| `proof-testimonials` | Testimonials       | carousel                   | Universal           | ✅ Built |
+| `proof-beforeafter`  | Before/After       | slider, side-by-side       | Med spa, renovation | ✅ Built |
+| `proof-reviews`      | Review Cards       | star-rating, quote, video  | Ecommerce, services |          |
+| `proof-casestudies`  | Case Study Preview | card, full-width, numbered | B2B, agencies       |          |
 
 ### Team & People
 
-| ID               | Name           | Variants                           | Best For           | Status |
-| ---------------- | -------------- | ---------------------------------- | ------------------ | ------ |
-| `team-grid`      | Team Grid      | cards, minimal, hover-reveal       | Business, agencies |        |
-| `team-carousel`  | Team Carousel  | cards, headshots                   | Large teams        |        |
-| `team-spotlight` | Team Spotlight | founder-story, leadership, sidebar | About pages        |        |
+| ID               | Name           | Variants                           | Best For           | Status   |
+| ---------------- | -------------- | ---------------------------------- | ------------------ | -------- |
+| `team-grid`      | Team Grid      | cards, minimal, hover-reveal       | Business, agencies | ✅ Built |
+| `team-carousel`  | Team Carousel  | cards, headshots                   | Large teams        |          |
+| `team-spotlight` | Team Spotlight | founder-story, leadership, sidebar | About pages        |          |
 
 ### Media
 
-| ID                | Name             | Variants                             | Best For            | Status |
-| ----------------- | ---------------- | ------------------------------------ | ------------------- | ------ |
-| `media-gallery`   | Image Gallery    | grid, masonry, lightbox              | Portfolio, events   |        |
-| `media-video`     | Video Embed      | inline, modal, with-poster           | Universal           |        |
-| `media-portfolio` | Portfolio Grid   | filterable, hover-detail, case-study | Portfolio, creative |        |
-| `media-showcase`  | Showcase Section | parallax-image, reveal, zoom         | Luxury, creative    |        |
+| ID                | Name             | Variants                             | Best For            | Status   |
+| ----------------- | ---------------- | ------------------------------------ | ------------------- | -------- |
+| `media-gallery`   | Image Gallery    | grid, masonry, lightbox              | Portfolio, events   | ✅ Built |
+| `media-video`     | Video Embed      | inline, modal, with-poster           | Universal           |          |
+| `media-portfolio` | Portfolio Grid   | filterable, hover-detail, case-study | Portfolio, creative |          |
+| `media-showcase`  | Showcase Section | parallax-image, reveal, zoom         | Luxury, creative    |          |
 
 ### CTA (Call to Action)
 
@@ -195,12 +162,12 @@ interface BaseComponentProps {
 
 ### Commerce
 
-| ID                  | Name           | Variants                  | Best For          | Status |
-| ------------------- | -------------- | ------------------------- | ----------------- | ------ |
-| `commerce-products` | Product Grid   | cards, list, featured     | Ecommerce         |        |
-| `commerce-detail`   | Product Detail | gallery, split, tabbed    | Ecommerce         |        |
-| `commerce-services` | Service Menu   | card-grid, list, tiered   | Services, booking |        |
-| `commerce-pricing`  | Pricing Table  | columns, toggle, featured | SaaS, services    |        |
+| ID                  | Name           | Variants                  | Best For          | Status   |
+| ------------------- | -------------- | ------------------------- | ----------------- | -------- |
+| `commerce-services` | Service Menu   | card-grid, list, tiered   | Services, booking | ✅ Built |
+| `commerce-products` | Product Grid   | cards, list, featured     | Ecommerce         |          |
+| `commerce-detail`   | Product Detail | gallery, split, tabbed    | Ecommerce         |          |
+| `commerce-pricing`  | Pricing Table  | columns, toggle, featured | SaaS, services    |          |
 
 ### Footer Components
 
@@ -213,43 +180,115 @@ interface BaseComponentProps {
 
 ---
 
-## Component Development Priority
+## Built Components — Detailed Reference
 
-### Phase 1 (MVP) ✅ COMPLETE
+### Phase 1 (MVP) — 10 Core Components + Section Wrapper
 
-All 10 core components built with full theme token consumption, responsive design, and manifest descriptors:
+1. **`nav-sticky`** — transparent (solidifies on scroll) + solid variants; responsive mobile menu with hamburger toggle
+2. **`hero-centered`** — with-bg-image (gradient overlay) + gradient-bg (layered radial mesh) variants
+3. **`hero-split`** — image-right + image-left variants; decorative accent element behind image
+4. **`content-features`** — icon-cards variant; Lucide icon lookup via `* as LucideIcons`, hover lift + shadow, staggered entry animation
+5. **`content-split`** — alternating variant; rows flip image side, per-row scroll animation
+6. **`content-text`** — centered variant; eyebrow, headline, body (supports HTML via `dangerouslySetInnerHTML`)
+7. **`cta-banner`** — full-width + contained variants; 4 background options (primary/dark/gradient/image)
+8. **`form-contact`** — simple variant; client-side validation, error states, success animation
+9. **`proof-testimonials`** — carousel variant; pagination dots, star ratings, avatar fallbacks
+10. **`footer-standard`** — multi-column variant; logo, tagline, link columns, SVG social icons, copyright bar
+11. **`section`** — universal layout wrapper with 6 bg variants, 5 spacing presets, container constraints
 
-1. ✅ `nav-sticky` — transparent + solid variants; responsive mobile menu
-2. ✅ `hero-centered` — with-bg-image + gradient-bg variants
-3. ✅ `hero-split` — image-right + image-left variants; decorative accent element
-4. ✅ `content-features` — icon-cards variant; Lucide icon lookup, hover lift + shadow
-5. ✅ `content-split` — alternating variant; rows flip image side, scroll animation
-6. ✅ `content-text` — centered variant; eyebrow, headline, body (supports HTML)
-7. ✅ `cta-banner` — full-width + contained variants; 4 bg options
-8. ✅ `form-contact` — simple variant; client-side validation, error states, success animation
-9. ✅ `footer-standard` — multi-column variant; SVG social icons, copyright bar
-10. ✅ `proof-testimonials` — carousel variant; pagination dots, star ratings, avatar fallbacks
+### Phase 4B — 8 Additional Components
 
-Also built: `section` wrapper (6 bg variants, 5 spacing presets, container constraints)
+12. **`content-stats`** — inline, cards, animated-counter variants; `StatItem.value` is `number` type, auto-formats with suffix/prefix
+13. **`content-accordion`** — single-open, multi-open, bordered variants; keyboard accessible, smooth height transitions
+14. **`content-timeline`** — vertical, alternating variants; `TimelineItem.date` field (not `year`), connecting lines, scroll-triggered entry
+15. **`content-logos`** — grid, scroll, fade variants; accepts logo names with auto-generated placeholder icons, `headline` field (no `subheadline`)
+16. **`proof-beforeafter`** — slider (interactive drag) + side-by-side variants; `comparisons` array (not `items`), keyboard accessible (arrow keys), touch support
+17. **`team-grid`** — cards, minimal, hover-reveal variants; `TeamMember.image` field (not `avatar`), `members` array
+18. **`commerce-services`** — card-grid, list, tiered variants; `ServiceItem.name` field (not `title`), `services` array
+19. **`media-gallery`** — grid, masonry, lightbox variants; filter tabs by category, keyboard navigation for lightbox, `GalleryImage` with src/alt/caption/category
 
-### Phase 2 (Expand Visual Range) — Next
+### Critical Type Interface Notes
 
-- `hero-parallax` (all variants including subject mask)
-- `hero-video` (autoplay, play-button)
-- `nav-centered` (with-topbar, minimal)
-- `nav-hamburger` (fullscreen, slide)
-- `media-gallery` (grid, masonry, lightbox)
-- `team-grid` (cards, hover-reveal)
-- `commerce-services` (card-grid, list, tiered)
-- `commerce-pricing` (columns, toggle)
-- `content-stats` (animated-counter, cards)
-- `proof-beforeafter` (slider, side-by-side)
-- `content-accordion` (FAQ)
-- `content-timeline` (vertical)
+When generating content for components (in AI spec generation or deterministic fallback), field names MUST match exactly:
 
-### Phase 3 (Full Coverage)
+| Component           | Correct Field    | Wrong Field        |
+| ------------------- | ---------------- | ------------------ |
+| `content-stats`     | `value: number`  | `value: string`    |
+| `commerce-services` | `name`           | `title`            |
+| `team-grid`         | `image`          | `avatar`           |
+| `content-timeline`  | `date`           | `year`             |
+| `proof-beforeafter` | `comparisons`    | `items`            |
+| `content-logos`     | `headline`       | (no `subheadline`) |
+| `content-stats`     | `value` (number) | `value` (string)   |
 
-- All remaining components from the inventory tables above
-- Commerce components (product grid, detail, cart, checkout)
-- Community/membership components
-- Blog/content components
+---
+
+## Future: Complex Interactive Components
+
+These components require deeper integration work beyond simple assembly rendering. They involve multi-step flows, third-party services, and state management that goes beyond the current static-preview model.
+
+### Booking Flows
+
+**`form-booking`** — Multi-step booking wizard
+
+- **Step 1:** Service selection (from a configurable service menu)
+- **Step 2:** Date/time picker (calendar integration)
+- **Step 3:** Client information form
+- **Step 4:** Confirmation + optional payment
+- **Variants:** `calendar`, `time-slots`, `multi-step`
+- **Considerations:** Requires a backend booking API or third-party integration (Calendly, Acuity, Cal.com). In assembly preview, renders a static mockup of the booking flow. When deployed, connects to the configured booking provider.
+
+### E-commerce Flows
+
+**Product Detail with Variant Selector**
+
+- Image gallery with zoom/lightbox
+- Size/color/option variant selector with dynamic pricing
+- Add-to-cart with quantity controls
+- Related products carousel
+
+**Cart Sidebar**
+
+- Slide-in cart with item list, quantity adjustment, and subtotal
+- Promo code input
+- Proceed to checkout CTA
+
+**Checkout Multi-Step**
+
+- Step 1: Shipping information
+- Step 2: Payment (Stripe Elements integration)
+- Step 3: Order review + confirmation
+- **Considerations:** Requires Stripe or equivalent payment processor. Cart state management via Zustand or React context. Inventory tracking via Convex.
+
+### Demo/Live Modes
+
+Components that behave differently in assembly preview vs. deployed sites:
+
+| Component        | Demo Mode (Preview)                       | Live Mode (Deployed)                       |
+| ---------------- | ----------------------------------------- | ------------------------------------------ |
+| `form-contact`   | Shows form, logs submission to console    | Sends email via API route or Convex action |
+| `form-booking`   | Shows static calendar mockup              | Connects to Calendly/Cal.com API           |
+| `commerce-*`     | Shows product cards with placeholder data | Connects to Stripe/Shopify                 |
+| `cta-newsletter` | Shows email input, no-op on submit        | Connects to Mailchimp/ConvertKit           |
+
+Implementation: Components accept a `mode: "demo" | "live"` prop. The assembly renderer passes `mode="demo"`. Deployed sites pass `mode="live"` with the necessary API configuration.
+
+### Third-Party Integration Strategy
+
+Rather than hardcoding specific services, the platform should support a **provider abstraction layer**:
+
+```typescript
+interface IntegrationProvider {
+  id: string; // e.g., "calendly", "stripe", "mailchimp"
+  category: string; // e.g., "booking", "payment", "email"
+  configSchema: object; // JSON Schema for required config (API keys, IDs)
+  component: React.ComponentType; // Wrapper component that handles the integration
+}
+```
+
+This allows:
+
+- Swapping providers without changing component code (e.g., Calendly → Cal.com)
+- Storing integration config in Convex per-site
+- Rendering appropriate setup prompts during site deployment
+- Graceful degradation when no provider is configured (show placeholder with setup CTA)

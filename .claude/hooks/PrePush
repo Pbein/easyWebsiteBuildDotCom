@@ -1,0 +1,96 @@
+#!/bin/bash
+# Claude Code Pre-Push Hook
+# Validates code before pushing to remote
+#
+# This hook runs BEFORE Claude pushes to a remote repository.
+# It performs final validation checks (warnings only, non-blocking).
+
+echo ""
+echo "=========================================="
+echo "PRE-PUSH VALIDATION"
+echo "=========================================="
+echo ""
+
+WARNINGS=0
+
+# 1. Check for console.log in changed files
+echo "Checking for debug statements..."
+CHANGED_TS=$(git diff origin/main --name-only 2>/dev/null | grep -E '\.(ts|tsx)$' || true)
+CONSOLE_COUNT=0
+
+for FILE in $CHANGED_TS; do
+    if [ -f "$FILE" ]; then
+        COUNT=$(grep -c 'console\.log' "$FILE" 2>/dev/null || echo 0)
+        if [ "$COUNT" -gt 0 ]; then
+            CONSOLE_COUNT=$((CONSOLE_COUNT + COUNT))
+        fi
+    fi
+done
+
+if [ $CONSOLE_COUNT -gt 0 ]; then
+    echo "Warning: $CONSOLE_COUNT console.log statements found"
+    echo "Consider removing before production"
+    WARNINGS=$((WARNINGS + 1))
+else
+    echo "Debug statements: OK"
+fi
+
+# 2. Check for TODO comments
+echo ""
+echo "Checking for TODOs..."
+TODO_COUNT=0
+
+for FILE in $CHANGED_TS; do
+    if [ -f "$FILE" ]; then
+        COUNT=$(grep -c 'TODO:' "$FILE" 2>/dev/null || echo 0)
+        if [ "$COUNT" -gt 0 ]; then
+            TODO_COUNT=$((TODO_COUNT + COUNT))
+        fi
+    fi
+done
+
+if [ $TODO_COUNT -gt 0 ]; then
+    echo "Info: $TODO_COUNT TODO comments found"
+    WARNINGS=$((WARNINGS + 1))
+else
+    echo "TODOs: OK"
+fi
+
+# 3. Check for hardcoded colors in library components
+echo ""
+echo "Checking component library for hardcoded colors..."
+LIB_FILES=$(git diff origin/main --name-only 2>/dev/null | grep -E 'src/components/library/.*\.(ts|tsx)$' || true)
+HARDCODED=0
+
+for FILE in $LIB_FILES; do
+    if [ -f "$FILE" ]; then
+        # Check for hex colors that aren't in comments
+        COUNT=$(grep -cE '#[0-9a-fA-F]{3,8}' "$FILE" 2>/dev/null || echo 0)
+        if [ "$COUNT" -gt 0 ]; then
+            HARDCODED=$((HARDCODED + COUNT))
+            echo "  Warning: $FILE may contain hardcoded colors"
+        fi
+    fi
+done
+
+if [ $HARDCODED -gt 0 ]; then
+    echo "Warning: $HARDCODED potential hardcoded colors in library components"
+    echo "Library components should use CSS Custom Properties only"
+    WARNINGS=$((WARNINGS + 1))
+else
+    echo "Library colors: OK"
+fi
+
+# 4. Summary
+echo ""
+echo "=========================================="
+if [ $WARNINGS -gt 0 ]; then
+    echo "RESULT: $WARNINGS warnings - review recommended"
+else
+    echo "RESULT: All checks passed"
+fi
+echo "=========================================="
+echo ""
+
+# Don't block push, just warn
+exit 0

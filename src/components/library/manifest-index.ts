@@ -17,6 +17,14 @@ import ctaBannerManifest from "./cta/cta-banner/cta-banner.manifest.json";
 import formContactManifest from "./forms/form-contact/form-contact.manifest.json";
 import footerStandardManifest from "./footer/footer-standard/footer-standard.manifest.json";
 import proofTestimonialsManifest from "./social-proof/proof-testimonials/proof-testimonials.manifest.json";
+import proofBeforeafterManifest from "./social-proof/proof-beforeafter/proof-beforeafter.manifest.json";
+import contentStatsManifest from "./content/content-stats/content-stats.manifest.json";
+import contentAccordionManifest from "./content/content-accordion/content-accordion.manifest.json";
+import contentTimelineManifest from "./content/content-timeline/content-timeline.manifest.json";
+import contentLogosManifest from "./content/content-logos/content-logos.manifest.json";
+import teamGridManifest from "./team/team-grid/team-grid.manifest.json";
+import commerceServicesManifest from "./commerce/commerce-services/commerce-services.manifest.json";
+import mediaGalleryManifest from "./media/media-gallery/media-gallery.manifest.json";
 
 export interface ComponentManifest {
   id: string;
@@ -45,6 +53,14 @@ export const COMPONENT_MANIFESTS: ComponentManifest[] = [
   formContactManifest,
   footerStandardManifest,
   proofTestimonialsManifest,
+  proofBeforeafterManifest,
+  contentStatsManifest,
+  contentAccordionManifest,
+  contentTimelineManifest,
+  contentLogosManifest,
+  teamGridManifest,
+  commerceServicesManifest,
+  mediaGalleryManifest,
 ] as ComponentManifest[];
 
 /** Look up a component manifest by its ID. */

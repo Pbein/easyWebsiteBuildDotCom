@@ -12,6 +12,7 @@ export interface IntakeState {
   /** Step 2 */
   goal: string | null;
   /** Step 3 */
+  businessName: string;
   description: string;
   /** Step 4 — 6-axis personality vector [density, tone, temp, weight, era, energy] */
   personality: number[];
@@ -21,9 +22,16 @@ export interface IntakeState {
   /** Step 5 — AI-generated follow-up questions */
   aiQuestions: { id: string; question: string; type: "text" | "select"; options?: string[] }[];
   aiResponses: Record<string, string>;
+  /** Timestamp when AI questions were generated (for staleness check) */
+  questionsGeneratedAt: number | null;
+  /** Fingerprint of intake inputs when questions were generated (for staleness check) */
+  questionsInputKey: string | null;
 
   /** Anonymous session ID for Convex storage */
   sessionId: string;
+
+  /** Convex ID of the generated site spec */
+  specId: string | null;
 
   /** Whether the summary/results view is shown */
   showSummary: boolean;
@@ -32,9 +40,12 @@ export interface IntakeState {
 export interface IntakeActions {
   setSiteType: (siteType: string) => void;
   setGoal: (goal: string) => void;
+  setBusinessName: (name: string) => void;
   setDescription: (description: string) => void;
   setPersonalityAxis: (axis: number, value: number) => void;
+  setAiQuestions: (questions: IntakeState["aiQuestions"]) => void;
   setAiResponse: (questionId: string, response: string) => void;
+  setSpecId: (id: string) => void;
 
   goToStep: (step: number) => void;
   goNext: () => void;
@@ -52,12 +63,16 @@ const initialState: IntakeState = {
   direction: 1,
   siteType: null,
   goal: null,
+  businessName: "",
   description: "",
   personality: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
   personalityStep: 0,
   aiQuestions: [],
   aiResponses: {},
+  questionsGeneratedAt: null,
+  questionsInputKey: null,
   sessionId: generateSessionId(),
+  specId: null,
   showSummary: false,
 };
 
@@ -68,6 +83,7 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
 
       setSiteType: (siteType) => set({ siteType, goal: null }),
       setGoal: (goal) => set({ goal }),
+      setBusinessName: (name) => set({ businessName: name }),
       setDescription: (description) => set({ description }),
       setPersonalityAxis: (axis, value) =>
         set((state) => {
@@ -75,10 +91,13 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
           personality[axis] = value;
           return { personality, personalityStep: state.personalityStep + 1 };
         }),
+      setAiQuestions: (questions) =>
+        set({ aiQuestions: questions, questionsGeneratedAt: Date.now() }),
       setAiResponse: (questionId, response) =>
         set((state) => ({
           aiResponses: { ...state.aiResponses, [questionId]: response },
         })),
+      setSpecId: (id) => set({ specId: id }),
 
       goToStep: (step) =>
         set((state) => ({
@@ -105,12 +124,16 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
       partialize: (state) => ({
         siteType: state.siteType,
         goal: state.goal,
+        businessName: state.businessName,
         description: state.description,
         personality: state.personality,
         personalityStep: state.personalityStep,
         currentStep: state.currentStep,
         sessionId: state.sessionId,
+        aiQuestions: state.aiQuestions,
         aiResponses: state.aiResponses,
+        questionsGeneratedAt: state.questionsGeneratedAt,
+        questionsInputKey: state.questionsInputKey,
       }),
     }
   )

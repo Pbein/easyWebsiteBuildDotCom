@@ -1,0 +1,97 @@
+{
+  "id": "media-gallery",
+  "category": "media",
+  "name": "Media Gallery",
+  "description": "Image gallery component with grid, masonry, and lightbox display modes. Supports category filtering, captions, and configurable column counts.",
+  "siteTypes": ["portfolio", "business", "event", "personal"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "images",
+      "type": "GalleryImage[]",
+      "description": "Array of images with src, alt, optional caption and category"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Supporting subheadline" },
+    {
+      "name": "variant",
+      "type": "string",
+      "description": "Display variant: grid, masonry, or lightbox"
+    },
+    { "name": "columns", "type": "number", "description": "Number of columns: 2, 3, or 4" },
+    { "name": "showCaptions", "type": "boolean", "description": "Show caption overlays on hover" },
+    { "name": "enableFilter", "type": "boolean", "description": "Enable category filter tabs" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-dark",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "shadow-xl",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "grid",
+      "name": "Grid",
+      "description": "Uniform grid layout with square aspect-ratio containers and hover effects"
+    },
+    {
+      "id": "masonry",
+      "name": "Masonry",
+      "description": "CSS columns-based masonry layout with varying image heights"
+    },
+    {
+      "id": "lightbox",
+      "name": "Lightbox",
+      "description": "Grid layout with full-screen lightbox overlay on click, keyboard navigation"
+    }
+  ],
+  "tags": ["images", "gallery", "portfolio", "visual", "photos"]
+}

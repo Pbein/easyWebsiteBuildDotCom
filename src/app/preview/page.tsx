@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
-import { LUXURY_DARK, MODERN_CLEAN, WARM_PROFESSIONAL, THEME_PRESETS } from "@/lib/theme/presets";
+import { LUXURY_DARK, THEME_PRESETS } from "@/lib/theme/presets";
 import { generateThemeFromVector } from "@/lib/theme/generate-theme";
 import type { PersonalityVector } from "@/lib/theme/theme.types";
 import type { ThemeTokens } from "@/lib/theme/theme.types";
@@ -12,11 +12,18 @@ import { NavSticky } from "@/components/library/navigation/nav-sticky";
 import { HeroCentered } from "@/components/library/hero/hero-centered";
 import { ContentFeatures } from "@/components/library/content/content-features";
 import { ContentSplit } from "@/components/library/content/content-split";
+import { ContentStats } from "@/components/library/content/content-stats";
+import { ContentAccordion } from "@/components/library/content/content-accordion";
+import { ContentTimeline } from "@/components/library/content/content-timeline";
+import { ContentLogos } from "@/components/library/content/content-logos";
 import { ProofTestimonials } from "@/components/library/social-proof/proof-testimonials";
 import { ContentText } from "@/components/library/content/content-text";
 import { CtaBanner } from "@/components/library/cta/cta-banner";
 import { FormContact } from "@/components/library/forms/form-contact";
 import { FooterStandard } from "@/components/library/footer/footer-standard";
+import { TeamGrid } from "@/components/library/team/team-grid";
+import { CommerceServices } from "@/components/library/commerce/commerce-services";
+import { MediaGallery } from "@/components/library/media/media-gallery";
 
 /* ────────────────────────────────────────────────────────────
  * Placeholder content for the fictional business "Meridian"
@@ -24,9 +31,9 @@ import { FooterStandard } from "@/components/library/footer/footer-standard";
 
 const NAV_LINKS = [
   { label: "Home", href: "#hero" },
-  { label: "Services", href: "#features" },
-  { label: "Work", href: "#work" },
-  { label: "Testimonials", href: "#testimonials" },
+  { label: "Services", href: "#services" },
+  { label: "Work", href: "#gallery" },
+  { label: "Team", href: "#team" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
@@ -193,6 +200,201 @@ const SOCIAL_LINKS = [
   { platform: "linkedin", url: "#" },
   { platform: "github", url: "#" },
   { platform: "instagram", url: "#" },
+];
+
+const STATS = [
+  { value: 340, label: "Projects Delivered", suffix: "+" },
+  { value: 98, label: "Client Satisfaction", suffix: "%" },
+  { value: 12, label: "Years in Business" },
+  { value: 45, label: "Team Members" },
+];
+
+const TEAM_MEMBERS = [
+  {
+    name: "Elena Vasquez",
+    role: "Founder & Creative Director",
+    bio: "14 years of crafting digital experiences for Fortune 500 brands and ambitious startups.",
+    image: {
+      src: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
+      alt: "Elena Vasquez",
+    },
+    socials: [
+      { platform: "linkedin", url: "#" },
+      { platform: "twitter", url: "#" },
+    ],
+  },
+  {
+    name: "Marcus Chen",
+    role: "Head of Engineering",
+    bio: "Former Google engineer with a passion for performant, accessible web experiences.",
+    image: {
+      src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+      alt: "Marcus Chen",
+    },
+    socials: [
+      { platform: "github", url: "#" },
+      { platform: "linkedin", url: "#" },
+    ],
+  },
+  {
+    name: "Priya Sharma",
+    role: "Strategy Lead",
+    bio: "Bridges the gap between business goals and creative execution with data-driven insights.",
+    image: {
+      src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop&crop=face",
+      alt: "Priya Sharma",
+    },
+    socials: [{ platform: "linkedin", url: "#" }],
+  },
+  {
+    name: "Jordan Brooks",
+    role: "Design Director",
+    bio: "Award-winning designer specializing in brand systems and design language creation.",
+    image: {
+      src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+      alt: "Jordan Brooks",
+    },
+    socials: [
+      { platform: "dribbble", url: "#" },
+      { platform: "twitter", url: "#" },
+    ],
+  },
+];
+
+const SERVICES = [
+  {
+    name: "Brand Strategy",
+    description: "Comprehensive brand positioning, messaging frameworks, and competitive analysis.",
+    price: "$15K",
+    icon: "Compass",
+  },
+  {
+    name: "Web Design & Dev",
+    description:
+      "Custom websites built with modern tech, optimized for performance and conversion.",
+    price: "$25K",
+    icon: "Code",
+    featured: true,
+  },
+  {
+    name: "Growth Marketing",
+    description: "Data-driven marketing strategies that drive qualified traffic and conversions.",
+    price: "$8K/mo",
+    icon: "TrendingUp",
+  },
+  {
+    name: "Ongoing Retainer",
+    description:
+      "Dedicated support, optimization, and continuous improvement for your digital presence.",
+    price: "$5K/mo",
+    icon: "Shield",
+  },
+];
+
+const CLIENT_LOGOS = [
+  { name: "Vanta Labs" },
+  { name: "Atlas & Co" },
+  { name: "Redwood Health" },
+  { name: "Prism Tech" },
+  { name: "Northlight" },
+  { name: "Apex Consulting" },
+  { name: "Horizon Media" },
+  { name: "Ember Studios" },
+];
+
+const GALLERY_IMAGES = [
+  {
+    src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
+    alt: "Dashboard design for Vanta Labs",
+    caption: "Vanta Labs Dashboard",
+    category: "Web Design",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop",
+    alt: "Brand workshop session",
+    caption: "Strategy Workshop",
+    category: "Branding",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
+    alt: "Analytics platform interface",
+    caption: "Prism Analytics Platform",
+    category: "Web Design",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&h=400&fit=crop",
+    alt: "Team planning sprint",
+    caption: "Sprint Planning",
+    category: "Process",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop",
+    alt: "Client presentation",
+    caption: "Atlas & Co Rebrand",
+    category: "Branding",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop",
+    alt: "Modern office workspace",
+    caption: "Meridian HQ",
+    category: "Process",
+  },
+];
+
+const TIMELINE_ITEMS = [
+  {
+    date: "2012",
+    title: "Studio Founded",
+    description:
+      "Elena Vasquez launches Meridian from a shared coworking space with a vision for design-driven digital transformation.",
+  },
+  {
+    date: "2015",
+    title: "First Major Client",
+    description:
+      "Partnered with Redwood Health on a complete digital overhaul — the project that put Meridian on the map.",
+  },
+  {
+    date: "2018",
+    title: "Team Grows to 20",
+    description:
+      "Expanded into a dedicated studio space and brought on specialists in engineering, strategy, and growth.",
+  },
+  {
+    date: "2021",
+    title: "Award-Winning Year",
+    description:
+      "Recognized with three Webby Awards and named a top digital agency by Fast Company.",
+  },
+  {
+    date: "2024",
+    title: "Global Reach",
+    description:
+      "Now serving clients across 15 countries with a 45-person team delivering world-class digital experiences.",
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    question: "What does a typical engagement look like?",
+    answer:
+      "<p>Every project starts with a discovery phase where we deeply understand your business, goals, and audience. From there, we move into strategy, design, development, and launch — with checkpoints and feedback loops at every stage.</p>",
+  },
+  {
+    question: "How long does a project usually take?",
+    answer:
+      "<p>Timelines vary based on scope. A brand strategy project typically takes 4-6 weeks, while a full website design and development project runs 8-14 weeks. We'll provide a detailed timeline during our proposal phase.</p>",
+  },
+  {
+    question: "Do you work with startups or only enterprise clients?",
+    answer:
+      "<p>We work with both. Our sweet spot is ambitious companies — whether that's a funded startup ready to make a splash or an established brand ready for a digital transformation. What matters most is alignment on values and vision.</p>",
+  },
+  {
+    question: "What technologies do you use?",
+    answer:
+      "<p>Our stack varies by project needs, but we're strong advocates for Next.js, React, TypeScript, and modern JAMstack architectures. For content management, we work with Sanity, Contentful, and custom solutions. We always choose the right tool for the job.</p>",
+  },
 ];
 
 /* ────────────────────────────────────────────────────────────
@@ -475,6 +677,21 @@ export default function PreviewPage() {
             height="viewport"
           />
 
+          {/* Client Logos */}
+          <ContentLogos
+            headline="Trusted by Industry Leaders"
+            logos={CLIENT_LOGOS}
+            variant="scroll"
+          />
+
+          {/* Stats */}
+          <ContentStats
+            headline="Meridian by the Numbers"
+            subheadline="A decade of measurable impact for our clients"
+            stats={STATS}
+            variant="animated-counter"
+          />
+
           {/* Features */}
           <ContentFeatures
             id="features"
@@ -484,8 +701,46 @@ export default function PreviewPage() {
             columns={3}
           />
 
+          {/* Services & Pricing */}
+          <CommerceServices
+            id="services"
+            headline="Our Services"
+            subheadline="Flexible engagement models tailored to your needs and budget"
+            services={SERVICES}
+            variant="card-grid"
+          />
+
           {/* Split content */}
           <ContentSplit id="work" sections={SPLIT_SECTIONS} imageStyle="rounded" />
+
+          {/* Gallery */}
+          <MediaGallery
+            id="gallery"
+            headline="Selected Work"
+            subheadline="A glimpse into the projects that define our craft"
+            images={GALLERY_IMAGES}
+            variant="lightbox"
+            columns={3}
+            showCaptions
+            enableFilter
+          />
+
+          {/* Timeline */}
+          <ContentTimeline
+            headline="Our Journey"
+            subheadline="From a two-person studio to an award-winning agency"
+            items={TIMELINE_ITEMS}
+            variant="alternating"
+          />
+
+          {/* Team */}
+          <TeamGrid
+            id="team"
+            headline="Meet the Team"
+            subheadline="The people behind the pixels"
+            members={TEAM_MEMBERS}
+            variant="cards"
+          />
 
           {/* Testimonials */}
           <ProofTestimonials
@@ -504,6 +759,14 @@ export default function PreviewPage() {
             textAlign="center"
             maxWidth="medium"
             spacing="xl"
+          />
+
+          {/* FAQ */}
+          <ContentAccordion
+            headline="Frequently Asked Questions"
+            subheadline="Everything you need to know about working with Meridian"
+            items={FAQ_ITEMS}
+            variant="bordered"
           />
 
           {/* CTA Banner */}

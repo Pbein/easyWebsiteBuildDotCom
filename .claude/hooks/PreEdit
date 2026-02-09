@@ -1,0 +1,103 @@
+#!/bin/bash
+# Claude Code Pre-Edit Hook
+# Warns before editing protected or sensitive files
+#
+# This hook runs BEFORE Claude edits any file.
+# It warns about protected files but doesn't block edits.
+
+# Read file path from stdin (Claude passes JSON with tool_input.file_path)
+FILE_PATH=$(cat | jq -r '.tool_input.file_path // empty')
+
+# If no file path, exit silently
+if [ -z "$FILE_PATH" ]; then
+    exit 0
+fi
+
+# Check for theme system core files
+if [[ "$FILE_PATH" =~ src/lib/theme/types\.ts ]] || [[ "$FILE_PATH" =~ src/lib/theme/token-map\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: CORE THEME SYSTEM FILE"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "This file defines the theme token system."
+    echo "Changes here affect ALL library components."
+    echo ""
+    echo "Ensure:"
+    echo "  - All 87 tokens remain defined"
+    echo "  - Token categories (colors, typography, spacing, borders, shadows, effects) intact"
+    echo "  - tokensToCSSProperties still accepts Partial<ThemeTokens>"
+    echo "  - All presets and components still work after changes"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for component base types
+if [[ "$FILE_PATH" =~ src/components/library/base\.types\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: COMPONENT BASE TYPES"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "This defines shared interfaces for all library components."
+    echo "Changes may break multiple components."
+    echo ""
+    echo "Ensure:"
+    echo "  - BaseComponentProps interface remains backward compatible"
+    echo "  - ImageSource, LinkItem, CTAButton types preserved"
+    echo "  - All components still compile after changes"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for environment files
+if [[ "$FILE_PATH" =~ \.env ]] && [[ ! "$FILE_PATH" =~ \.env\.example ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: ENVIRONMENT CONFIGURATION"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "Ensure:"
+    echo "  - No production secrets in development"
+    echo "  - File is in .gitignore"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for Convex schema
+if [[ "$FILE_PATH" =~ convex/schema\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: DATABASE SCHEMA"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "Schema changes can cause data loss."
+    echo ""
+    echo "Ensure:"
+    echo "  - Backward compatible changes"
+    echo "  - Migrations planned if needed"
+    echo "  - Indexes updated appropriately"
+    echo "=========================================="
+    echo ""
+fi
+
+# Check for manifest index (central registry)
+if [[ "$FILE_PATH" =~ src/components/library/manifest-index\.ts ]]; then
+    echo ""
+    echo "=========================================="
+    echo "WARNING: COMPONENT MANIFEST INDEX"
+    echo "=========================================="
+    echo "File: $FILE_PATH"
+    echo ""
+    echo "This is the central registry of all library components."
+    echo "Ensure all manifests are properly imported and exported."
+    echo "=========================================="
+    echo ""
+fi
+
+# Always exit 0 (don't block edits, just warn)
+exit 0

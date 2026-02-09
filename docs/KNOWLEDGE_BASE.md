@@ -1,14 +1,18 @@
 # Knowledge Base — Evolving Decision Tree & Learning System
 
-> **Implementation Status (as of Feb 2026):** Design spec only — not yet implemented. The knowledge base is planned for Phase 6.
+> **Implementation Status (as of Feb 2026):** Schema foundation built in Phase 3. Active learning system planned for Phase 6.
 >
-> **Foundational pieces already built:**
+> **Foundation built:**
 >
-> - Convex schema includes `intakeResponses` table for storing intake flow data
-> - Component manifest system with `personalityFit` ranges provides the matching data the knowledge base will query
-> - Theme presets serve as seed data for the theme library
+> - Convex schema tables created: `intentPaths` (with `by_step` index), `recipes` (with `by_component` index), `components` (with `by_category` index), `themes`, `assets`
+> - `intakeResponses` table for storing intake flow data (with `by_session` index)
+> - `siteSpecs` table stores generated Site Intent Documents (with `by_session` index, full CRUD)
+> - Component manifest system with `personalityFit` ranges provides the matching data the knowledge base will query (18 components with manifests)
+> - 7 theme presets serve as seed data for the theme library
+> - AI-generated specs are tagged with `method: "ai" | "deterministic"` metadata for future analysis
+> - Deterministic fallback includes site-type-specific content generators (stats, services, team, logos, FAQ) that provide baseline content patterns
 >
-> **Not yet built:** Semantic embeddings, vector search, path lifecycle management, proven recipe storage, content pattern extraction, analytics dashboard.
+> **Not yet built:** Semantic embeddings, vector search, path lifecycle management (candidate → proven → deprecated), proven recipe storage/retrieval, content pattern extraction, analytics dashboard.
 
 ## Overview
 
