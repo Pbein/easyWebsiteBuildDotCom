@@ -6,6 +6,55 @@
 
 ---
 
+## Progress Tracker
+
+> **Last updated:** 2026-02-10
+> **Stories shipped:** 19/33 (58%) — 11 active remaining, 3 deferred
+
+| Story    | Title                                       | Status      | Commit    |
+| -------- | ------------------------------------------- | ----------- | --------- |
+| T1-E1-S1 | AI Prompt: User's Own Words                 | ✅ Done     | `afbc34d` |
+| T1-E1-S2 | AI Prompt: Business Sub-Type Vocabulary     | ✅ Done     | `afbc34d` |
+| T1-E1-S3 | Business-Type-Aware Nav Labels              | ✅ Done     | `afbc34d` |
+| T1-E1-S4 | Sub-Type Deterministic Content (3 types)    | ✅ Done     | `afbc34d` |
+| T1-E1-S5 | Narrative Prompts in Deterministic Fallback | ✅ Done     | `afbc34d` |
+| T1-E1-S6 | Business-Specific CTAs                      | ✅ Done     | `038d47f` |
+| T1-E1-S7 | Business-Sub-Type Discovery Questions       | ✅ Done     | `afbc34d` |
+| T1-E2-S1 | Content Validator (safety net)              | ✅ Done     | `fb1098d` |
+| T1-E2-S2 | Auto-Fix Mismatches                         | ⬚ Remaining | —         |
+| T2-E1-S1 | Business Type in Theme Generator            | ✅ Done     | `afbc34d` |
+| T2-E1-S2 | Industry Color Association Hue Shifting     | ✅ Done     | `afbc34d` |
+| T2-E1-S3 | Emotional Goals Influence Colors            | ✅ Done     | `afbc34d` |
+| T2-E1-S4 | Dark/Light Mode Business Bias               | ✅ Done     | `038d47f` |
+| T2-E2-S1 | Business-Aware Font Selection               | ✅ Done     | `038d47f` |
+| T2-E2-S2 | Business-Aware Variant Selection            | ✅ Done     | `038d47f` |
+| T3-E1-S1 | Screenshot Capture                          | ⬚ Remaining | —         |
+| T3-E1-S2 | VLM Evaluation                              | ⬚ Remaining | —         |
+| T3-E1-S3 | Feedback → Adjustments                      | ⬚ Remaining | —         |
+| T3-E2-S1 | Quick Satisfaction Rating                   | ⬚ Remaining | —         |
+| T3-E2-S2 | Pipeline Session Logging                    | ✅ Done     | `fb1098d` |
+| T4-E1-S1 | Curate Mood Board Images                    | ⏸ Deferred  | —         |
+| T4-E1-S2 | Mood Board Selection Step                   | ⏸ Deferred  | —         |
+| T4-E2-S1 | Visual Reference URL Input                  | ⏸ Deferred  | —         |
+| T4-E3-S1 | A/B Theme Variant Toggle                    | ⬚ Remaining | —         |
+| T5-E1-S1 | Anti-Reference Redesign                     | ⬚ Remaining | —         |
+| T5-E1-S2 | Business-Specific Anti-Refs                 | ⬚ Remaining | —         |
+| T6-E1-S1 | Dev Panel UI Shell                          | ✅ Done     | `fb1098d` |
+| T6-E1-S2 | Dev Panel: Intake Tab                       | ✅ Done     | `fb1098d` |
+| T6-E1-S3 | Dev Panel: Prompt & AI Response Tab         | ✅ Done     | `fb1098d` |
+| T6-E1-S4 | Dev Panel: Theme Tab                        | ⬚ Remaining | —         |
+| T6-E1-S5 | Dev Panel: Validation Tab                   | ✅ Done     | `fb1098d` |
+| T6-E2-S1 | Named Test Cases                            | ⬚ Remaining | —         |
+| T6-E2-S2 | Side-by-Side Comparison                     | ⬚ Remaining | —         |
+
+### Shipping Log
+
+- **`afbc34d`** — T1-E1 (S1-S5, S7) + T2-E1 (S1-S3): Industry-aware content, theme hues, emotional color overrides
+- **`038d47f`** — T1-E1-S6 + T2-E1-S4 + T2-E2 (S1-S2): Sub-type-aware variants, CTAs, font pairings, dark mode bias
+- **`fb1098d`** — T1-E2-S1 + T3-E2-S2 + T6-E1 (S1-S3, S5): Content validator, pipeline logging, dev panel with populated tabs
+
+---
+
 ## How to Read This Document
 
 Each epic follows this structure:
@@ -29,7 +78,7 @@ Each epic follows this structure:
 
 **Why this is the #1 priority:** The current deterministic fallback produces "Services & Treatments" for a fine dining restaurant. The AI prompt is better but doesn't emphasize using the user's own words. Both paths need an overhaul.
 
-### T1-E1-S1: Restructure AI Prompt to Emphasize User's Own Words
+### T1-E1-S1: Restructure AI Prompt to Emphasize User's Own Words ✅
 
 **Story:** As the AI spec generator, I should produce copy that incorporates the user's actual language from intake — their description, narrative prompts, and discovery answers — so the generated site feels like THEIR website, not a template.
 
@@ -55,7 +104,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S2: Add Business Sub-Type Awareness to AI Prompt
+### T1-E1-S2: Add Business Sub-Type Awareness to AI Prompt ✅
 
 **Story:** As the AI spec generator, I should understand that "booking" covers restaurants, spas, salons, clinics, and studios — and generate content vocabulary appropriate to the specific sub-type, not generic booking language.
 
@@ -81,7 +130,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S3: Business-Type-Aware Navigation Labels
+### T1-E1-S3: Business-Type-Aware Navigation Labels ✅
 
 **Story:** As a business owner viewing my generated website, the navigation links should use labels that match my industry, not generic defaults.
 
@@ -111,7 +160,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S4: Business Sub-Type Inference + Minimal Deterministic Content (Scoped Down)
+### T1-E1-S4: Business Sub-Type Inference + Minimal Deterministic Content (Scoped Down) ✅
 
 **Story:** As the deterministic fallback, when AI is unavailable, I should at least produce plausible content for the 3 most common sub-types — not generic spa content for a restaurant. This validates the pattern; additional sub-types are added only if the AI path proves unreliable.
 
@@ -141,7 +190,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S5: Weave Narrative Prompts into Deterministic Fallback
+### T1-E1-S5: Weave Narrative Prompts into Deterministic Fallback ✅
 
 **Story:** As the deterministic fallback, I should use the user's narrative prompt answers (come_because, frustrated_with, after_feel) in generated copy — not ignore them entirely.
 
@@ -168,7 +217,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S6: CTA Text Must Match Business Context
+### T1-E1-S6: CTA Text Must Match Business Context ✅
 
 **Story:** As a business owner, CTAs on my website should use language appropriate to my business — "Reserve a Table" for a restaurant, not "Schedule a Consultation."
 
@@ -197,7 +246,7 @@ Each epic follows this structure:
 
 ---
 
-### T1-E1-S7: Business-Sub-Type-Aware Discovery Questions
+### T1-E1-S7: Business-Sub-Type-Aware Discovery Questions ✅
 
 **Story:** As the discovery question generator (Step 8), I should ask questions tailored to the user's specific business sub-type — "What signature dishes define your menu?" for a restaurant, not "What services do you offer?" — so the AI spec generator receives better raw material to work with.
 
@@ -233,7 +282,7 @@ Each epic follows this structure:
 
 > **Maintenance warning:** This validator requires keyword blacklists/whitelists per business sub-type. Every new sub-type needs lists updated. As the AI path improves, the validator catches fewer issues but still needs maintenance. This should be treated as a SAFETY NET, not the primary quality mechanism. Keep the rule set deliberately small and high-confidence — catch "appointment" on a restaurant, not subtle tone mismatches. If the AI path achieves >95% content accuracy, consider deprecating the auto-fix (T1-E2-S2) and keeping only the diagnostic warnings for dev tooling.
 
-### T1-E2-S1: Build Content Validator Function
+### T1-E2-S1: Build Content Validator Function ✅
 
 **Story:** As the spec generation pipeline, after producing a SiteIntentDocument, I should run a validation pass that flags obvious content/business-type mismatches.
 
@@ -286,7 +335,7 @@ Each epic follows this structure:
 
 **Description:** The current `generateThemeFromVector()` maps personality to colors with zero business-type awareness. A "warm + serious + classic" restaurant gets the same palette as a "warm + serious + classic" law firm. This epic adds business-type conditioning to theme generation.
 
-### T2-E1-S1: Add Business Type + Emotional Goals to Theme Generator Signature
+### T2-E1-S1: Add Business Type + Emotional Goals to Theme Generator Signature ✅
 
 **Story:** As the theme generation system, I should accept business type and emotional goals as inputs alongside the personality vector, so I can produce color palettes that are contextually appropriate.
 
@@ -313,7 +362,7 @@ Each epic follows this structure:
 
 ---
 
-### T2-E1-S2: Industry Color Association Hue Shifting
+### T2-E1-S2: Industry Color Association Hue Shifting ✅
 
 **Story:** As the theme generator, when I know the business type is "restaurant" and the emotional goal is "luxury," I should bias the seed hue toward warm, appetizing tones (terracotta, burgundy, deep gold) instead of using only the warm/cool personality axis.
 
@@ -344,7 +393,7 @@ Each epic follows this structure:
 
 ---
 
-### T2-E1-S3: Emotional Goals Influence Color Palette
+### T2-E1-S3: Emotional Goals Influence Color Palette ✅
 
 **Story:** As the emotional override system, I should adjust the actual color palette (not just spacing and transitions) based on emotional goals.
 
@@ -375,7 +424,7 @@ Each epic follows this structure:
 
 ---
 
-### T2-E1-S4: Dark/Light Mode Decision Informed by Business Type
+### T2-E1-S4: Dark/Light Mode Decision Informed by Business Type ✅
 
 **Story:** As the theme generator, my dark/light mode decision should consider business type alongside the lightBold axis — a fine dining restaurant with "luxury" goals should lean dark even at moderate lightBold values.
 
@@ -403,7 +452,7 @@ Each epic follows this structure:
 
 ## T2-E2: Expanded Font Pairing & Variant Selection
 
-### T2-E2-S1: Business-Type-Aware Font Pairing Selection
+### T2-E2-S1: Business-Type-Aware Font Pairing Selection ✅
 
 **Story:** As the font pairing selector, I should consider business type alongside personality axes when choosing fonts — a luxury restaurant should get an elegant serif, while a tech startup should get a clean sans-serif.
 
@@ -434,7 +483,7 @@ Each epic follows this structure:
 
 ---
 
-### T2-E2-S2: Component Variant Selection Informed by Business Type + Character
+### T2-E2-S2: Component Variant Selection Informed by Business Type + Character ✅
 
 **Story:** As the deterministic spec generator, my choice of component VARIANTS should consider the business type and brand character — a luxury restaurant should get the "tiered" commerce-services variant (for prix fixe menus), while a casual restaurant should get "card-grid."
 
@@ -576,7 +625,7 @@ Each epic follows this structure:
 
 ---
 
-### T3-E2-S2: Pipeline Session Logging
+### T3-E2-S2: Pipeline Session Logging ✅
 
 **Story:** As the system, I should log the complete pipeline trace for every generation session so developers can diagnose issues and the feedback loop has data to work with.
 
@@ -804,7 +853,7 @@ Each epic follows this structure:
 
 **Description:** Add a collapsible developer panel to the preview page that exposes the full pipeline trace for the current generation, enabling rapid diagnosis of output quality issues.
 
-### T6-E1-S1: Build Dev Panel UI Shell
+### T6-E1-S1: Build Dev Panel UI Shell ✅
 
 **Story:** As a developer, I should be able to toggle a dev panel on the preview page that shows diagnostic information about the current generation — behind a dev-only flag so users never see it.
 
@@ -831,7 +880,7 @@ Each epic follows this structure:
 
 ---
 
-### T6-E1-S2: Populate Dev Panel — Intake Tab
+### T6-E1-S2: Populate Dev Panel — Intake Tab ✅
 
 **Story:** As a developer using the dev panel, the "Intake" tab should show all user inputs verbatim, so I can see exactly what the user provided.
 
@@ -858,7 +907,7 @@ Each epic follows this structure:
 
 ---
 
-### T6-E1-S3: Populate Dev Panel — Prompt & AI Response Tab
+### T6-E1-S3: Populate Dev Panel — Prompt & AI Response Tab ✅
 
 **Story:** As a developer, I should see the exact prompt sent to Claude and the raw AI response, so I can iterate on prompt engineering.
 
@@ -912,7 +961,7 @@ Each epic follows this structure:
 
 ---
 
-### T6-E1-S5: Populate Dev Panel — Validation Tab
+### T6-E1-S5: Populate Dev Panel — Validation Tab ✅
 
 **Story:** As a developer, I should see the content validation results (warnings and auto-fixes) for the current spec.
 
@@ -1060,17 +1109,17 @@ These can run in parallel with Phase C:
 
 # Summary Metrics
 
-| Tier                        | Epics  | Stories | Active Scope           | Notes                                                                         |
-| --------------------------- | ------ | ------- | ---------------------- | ----------------------------------------------------------------------------- |
-| Tier 1: Content Fidelity    | 2      | 9       | ~4 weeks               | T1-E1-S4 scoped to 3 sub-types (was 8+); T1-E1-S7 added (discovery questions) |
-| Tier 2: Visual Character    | 2      | 6       | ~3 weeks               | No changes                                                                    |
-| Tier 3: Feedback Loop       | 2      | 5       | ~4 weeks               | No changes                                                                    |
-| Tier 4: Intake Improvements | 3      | 4       | ~1 week active         | T4-E1 deferred; only T4-E3-S1 (A/B variants) in active scope                  |
-| Tier 5: Anti-References     | 1      | 2       | ~1.5 weeks             | No changes                                                                    |
-| Tier 6: Dev Tooling         | 2      | 7       | ~4 weeks               | No changes                                                                    |
-| **TOTAL**                   | **12** | **33**  | **~17.5 weeks active** | 3 stories deferred (~4.5 weeks saved)                                         |
+| Tier                        | Epics  | Stories | Done   | Remaining                  | Notes                                                            |
+| --------------------------- | ------ | ------- | ------ | -------------------------- | ---------------------------------------------------------------- |
+| Tier 1: Content Fidelity    | 2      | 9       | 8/9    | 1                          | Only T1-E2-S2 (auto-fix) remains                                 |
+| Tier 2: Visual Character    | 2      | 6       | 6/6    | 0                          | **COMPLETE**                                                     |
+| Tier 3: Feedback Loop       | 2      | 5       | 1/5    | 4                          | Pipeline logging done; screenshot + VLM + satisfaction remaining |
+| Tier 4: Intake Improvements | 3      | 4       | 0/1    | 1                          | T4-E1 deferred; only T4-E3-S1 (A/B variants) in active scope     |
+| Tier 5: Anti-References     | 1      | 2       | 0/2    | 2                          | No changes                                                       |
+| Tier 6: Dev Tooling         | 2      | 7       | 4/7    | 3                          | Dev panel shell + 3 tabs done; Theme tab + backtesting remaining |
+| **TOTAL**                   | **12** | **33**  | **19** | **11 active + 3 deferred** | 58% complete                                                     |
 
-**Critical path to "LuxuryFine fixed":** T1-E1-S1 + T1-E1-S2 + T1-E1-S3 + T1-E1-S7 + T2-E1-S1 + T2-E1-S2 + T2-E1-S3 = **~3 weeks** to fix the most visible problems for the test case.
+**Critical path to "LuxuryFine fixed":** T1-E1-S1 + T1-E1-S2 + T1-E1-S3 + T1-E1-S7 + T2-E1-S1 + T2-E1-S2 + T2-E1-S3 = **COMPLETE** — all critical path stories are shipped.
 
 ---
 
