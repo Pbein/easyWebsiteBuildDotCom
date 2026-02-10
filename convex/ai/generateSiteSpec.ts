@@ -125,6 +125,233 @@ function inferBusinessSubType(siteType: string, description: string): string {
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Inline content validator (mirrors src/lib/assembly/validate-spec.ts)
+ * Inlined here because Convex actions cannot import from src/.
+ * ──────────────────────────────────────────────────────────── */
+
+interface ValidationWarning {
+  severity: "error" | "warning";
+  componentRef?: string;
+  field?: string;
+  message: string;
+  suggestion?: string;
+}
+
+interface ValidationResult {
+  warnings: ValidationWarning[];
+  subType: string;
+}
+
+const VOCAB_BLACKLIST: Record<string, string[]> = {
+  restaurant: [
+    "appointment",
+    "session",
+    "treatment",
+    "ceo",
+    "creative director",
+    "consultation",
+    "therapist",
+    "esthetician",
+  ],
+  spa: [
+    "reservation",
+    "table for",
+    "food menu",
+    "entrée",
+    "appetizer",
+    "chef",
+    "sous chef",
+    "sommelier",
+  ],
+  photography: [
+    "appointment",
+    "treatment",
+    "therapist",
+    "reservation",
+    "table",
+    "entrée",
+    "esthetician",
+  ],
+};
+
+const VOCAB_WHITELIST: Record<string, string[]> = {
+  restaurant: [
+    "menu",
+    "dine",
+    "dining",
+    "table",
+    "reservation",
+    "chef",
+    "cuisine",
+    "dish",
+    "course",
+    "plate",
+    "kitchen",
+    "flavor",
+    "taste",
+  ],
+  spa: [
+    "treatment",
+    "wellness",
+    "relax",
+    "rejuvenate",
+    "massage",
+    "facial",
+    "therapy",
+    "sanctuary",
+    "soothe",
+    "calm",
+    "skin",
+    "body",
+  ],
+  photography: [
+    "photo",
+    "portrait",
+    "shoot",
+    "session",
+    "capture",
+    "lens",
+    "frame",
+    "gallery",
+    "portfolio",
+    "image",
+    "moment",
+  ],
+};
+
+const GENERIC_PHRASES: Array<{ phrase: string; notForSubTypes?: string[] }> = [
+  { phrase: "building something remarkable together" },
+  { phrase: "services & treatments", notForSubTypes: ["spa"] },
+  { phrase: "schedule a consultation", notForSubTypes: ["business"] },
+  { phrase: "welcome to our" },
+  { phrase: "lorem ipsum" },
+  { phrase: "your trusted partner" },
+  { phrase: "we are committed to excellence" },
+];
+
+function collectStrings(obj: unknown): string[] {
+  if (typeof obj === "string") return [obj];
+  if (Array.isArray(obj)) return obj.flatMap(collectStrings);
+  if (obj && typeof obj === "object") {
+    return Object.values(obj as Record<string, unknown>).flatMap(collectStrings);
+  }
+  return [];
+}
+
+function validateSpecContent(
+  spec: SiteIntentDocument,
+  context: { description: string; siteType: string }
+): ValidationResult {
+  const warnings: ValidationWarning[] = [];
+  const subType = inferBusinessSubType(context.siteType, context.description);
+
+  const allComponentStrings: string[] = [];
+  for (const page of spec.pages) {
+    for (const comp of page.components) {
+      allComponentStrings.push(...collectStrings(comp.content));
+    }
+  }
+  const joinedContent = allComponentStrings.join(" ").toLowerCase();
+
+  // Rule 1: Generic placeholder detection
+  for (const { phrase, notForSubTypes } of GENERIC_PHRASES) {
+    if (notForSubTypes?.includes(subType)) continue;
+    if (joinedContent.includes(phrase.toLowerCase())) {
+      warnings.push({
+        severity: "warning",
+        message: `Generic placeholder detected: "${phrase}"`,
+        suggestion: `Replace with content specific to ${spec.businessName} / ${subType}`,
+      });
+    }
+  }
+
+  // Rule 2: Business name presence in nav/footer
+  const nameLower = spec.businessName.toLowerCase();
+  let foundNameInNavOrFooter = false;
+  for (const page of spec.pages) {
+    for (const comp of page.components) {
+      if (comp.componentId === "nav-sticky" || comp.componentId === "footer-standard") {
+        const logoText = (comp.content as Record<string, unknown>)?.logoText;
+        if (typeof logoText === "string" && logoText.toLowerCase().includes(nameLower)) {
+          foundNameInNavOrFooter = true;
+        }
+      }
+    }
+  }
+  if (!foundNameInNavOrFooter) {
+    warnings.push({
+      severity: "error",
+      field: "logoText",
+      message: `Business name "${spec.businessName}" not found in nav or footer logoText`,
+      suggestion: `Set logoText to "${spec.businessName}" in nav-sticky and footer-standard`,
+    });
+  }
+
+  // Rule 3: Vocabulary blacklist per sub-type
+  const blacklist = VOCAB_BLACKLIST[subType];
+  if (blacklist) {
+    for (const term of blacklist) {
+      if (joinedContent.includes(term.toLowerCase())) {
+        let componentRef: string | undefined;
+        for (const page of spec.pages) {
+          for (const comp of page.components) {
+            const compStrings = collectStrings(comp.content).join(" ").toLowerCase();
+            if (compStrings.includes(term.toLowerCase())) {
+              componentRef = `${comp.componentId}[${comp.order}]`;
+              break;
+            }
+          }
+          if (componentRef) break;
+        }
+        warnings.push({
+          severity: "warning",
+          componentRef,
+          message: `"${term}" is inappropriate vocabulary for a ${subType} site`,
+          suggestion: `Replace with ${subType}-specific terminology`,
+        });
+      }
+    }
+  }
+
+  // Rule 4: Vocabulary whitelist per sub-type
+  const whitelist = VOCAB_WHITELIST[subType];
+  if (whitelist) {
+    const hasAny = whitelist.some((term) => joinedContent.includes(term.toLowerCase()));
+    if (!hasAny) {
+      warnings.push({
+        severity: "warning",
+        message: `No ${subType}-specific vocabulary found in content (expected at least one of: ${whitelist.slice(0, 5).join(", ")}, ...)`,
+        suggestion: `Add industry-specific language for ${subType}`,
+      });
+    }
+  }
+
+  // Rule 5: Content field type checks (content-stats values)
+  for (const page of spec.pages) {
+    for (const comp of page.components) {
+      if (comp.componentId === "content-stats") {
+        const stats = (comp.content as Record<string, unknown>)?.stats;
+        if (Array.isArray(stats)) {
+          for (const stat of stats as Array<Record<string, unknown>>) {
+            if (typeof stat.value === "string") {
+              warnings.push({
+                severity: "error",
+                componentRef: `content-stats[${comp.order}]`,
+                field: "stats[].value",
+                message: `content-stats value should be a number, got string: "${stat.value}"`,
+                suggestion: "Convert value to a numeric type",
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { warnings, subType };
+}
+
+/* ────────────────────────────────────────────────────────────
  * Industry-specific content for deterministic fallback
  * ──────────────────────────────────────────────────────────── */
 
@@ -2168,7 +2395,21 @@ export const generateSiteSpec = action({
     narrativePrompts: v.optional(v.any()),
   },
   handler: async (ctx, args): Promise<SiteIntentDocument> => {
+    const startTime = Date.now();
     const apiKey = process.env.ANTHROPIC_API_KEY;
+
+    const intakeSnapshot = {
+      siteType: args.siteType,
+      goal: args.goal,
+      businessName: args.businessName,
+      description: args.description,
+      personality: args.personality,
+      emotionalGoals: args.emotionalGoals,
+      voiceProfile: args.voiceProfile,
+      brandArchetype: args.brandArchetype,
+      antiReferences: args.antiReferences,
+      narrativePrompts: args.narrativePrompts,
+    };
 
     const characterArgs = {
       emotionalGoals: args.emotionalGoals,
@@ -2195,6 +2436,31 @@ export const generateSiteSpec = action({
         antiReferences: spec.antiReferences,
         narrativePrompts: spec.narrativePrompts,
       });
+
+      const validationResult = validateSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (validationResult.warnings.length > 0) {
+        console.warn(
+          `[Spec Validation] ${validationResult.warnings.length} issues:`,
+          validationResult.warnings.map((w) => w.message)
+        );
+      }
+      try {
+        await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
+          sessionId: args.sessionId,
+          method: "deterministic",
+          intakeData: intakeSnapshot,
+          specSnapshot: spec,
+          validationResult,
+          processingTimeMs: Date.now() - startTime,
+          createdAt: Date.now(),
+        });
+      } catch (logErr) {
+        console.error("Pipeline log save failed:", logErr);
+      }
+
       return spec;
     }
 
@@ -2311,10 +2577,23 @@ export const generateSiteSpec = action({
           ? `\n\nBRAND CHARACTER CONTEXT:\n${characterPromptLines.join("\n")}\n\nCOPY QUALITY RULES:\n- No generic filler text. Every headline must be specific to this business.\n- Headlines must be evocative, not merely descriptive. "Premium Grooming, Downtown Austin" not "Welcome to Our Barbershop".\n- Match the voice profile EXACTLY in every piece of copy.\n- If the user's own words are provided, they are the HIGHEST PRIORITY source material. Paraphrase and elevate them — do not ignore them.\n- Anti-references are hard constraints — if "salesy" is listed, never use aggressive CTAs or urgency language.\n\nNEGATIVE EXAMPLES (NEVER generate content like this):\n- NEVER use "Services & Treatments" for a restaurant — use "Our Menu" or "The Dining Experience"\n- NEVER use "Schedule a Consultation" for a restaurant — use "Reserve a Table" or "Make a Reservation"\n- NEVER use "Founder & CEO" for a restaurant team — use "Executive Chef" or "Restaurant Manager"\n- NEVER use "Appointments Booked" as a stat for a restaurant — use "Guests Served" or "Dishes Crafted"\n- NEVER use generic nav labels like "Services" when the business type has a specific term (Menu, Treatments, Portfolio, Courses)\n- NEVER use "Welcome to [Business Name]" as a headline — it says nothing about the business`
           : "";
 
-      const message = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
-        system: `You are a website assembly AI. The business is called "${args.businessName}". Use this name consistently in all content (nav logoText, footer logoText, headlines, etc.).${characterSection}
+      const userPrompt = `Business Name: ${args.businessName}
+Site Type: ${args.siteType}${aiSubType !== args.siteType ? `\nInferred Business Sub-Type: ${aiSubType} (USE ${aiSubType.toUpperCase()}-SPECIFIC VOCABULARY THROUGHOUT)` : ""}
+Goal: ${args.goal}
+Description: ${args.description}
+Personality Vector: [${args.personality.join(", ")}]
+(axes: minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic)
+${args.emotionalGoals?.length ? `Emotional Goals: ${args.emotionalGoals.join(", ")}` : ""}
+${args.voiceProfile ? `Voice: ${args.voiceProfile}` : ""}
+${args.brandArchetype ? `Archetype: ${args.brandArchetype}` : ""}
+${args.antiReferences?.length ? `Anti-references: ${args.antiReferences.join(", ")}` : ""}
+
+Discovery Responses:
+${aiResponsesSummary}
+
+Generate the SiteIntentDocument for ${args.businessName}. Remember: all content must be specific to a ${aiSubType} business — use industry-appropriate terminology for nav labels, section headings, team roles, testimonials, and CTAs.`;
+
+      const systemPrompt = `You are a website assembly AI. The business is called "${args.businessName}". Use this name consistently in all content (nav logoText, footer logoText, headlines, etc.).${characterSection}
 
 Given client intake data, generate a SiteIntentDocument — a JSON spec that determines exactly which components and content make up their website.
 
@@ -2417,27 +2696,13 @@ Return ONLY a JSON object with this structure:
   ]
 }
 
-No markdown fencing. No explanation. Just the JSON.`,
-        messages: [
-          {
-            role: "user",
-            content: `Business Name: ${args.businessName}
-Site Type: ${args.siteType}${aiSubType !== args.siteType ? `\nInferred Business Sub-Type: ${aiSubType} (USE ${aiSubType.toUpperCase()}-SPECIFIC VOCABULARY THROUGHOUT)` : ""}
-Goal: ${args.goal}
-Description: ${args.description}
-Personality Vector: [${args.personality.join(", ")}]
-(axes: minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic)
-${args.emotionalGoals?.length ? `Emotional Goals: ${args.emotionalGoals.join(", ")}` : ""}
-${args.voiceProfile ? `Voice: ${args.voiceProfile}` : ""}
-${args.brandArchetype ? `Archetype: ${args.brandArchetype}` : ""}
-${args.antiReferences?.length ? `Anti-references: ${args.antiReferences.join(", ")}` : ""}
+No markdown fencing. No explanation. Just the JSON.`;
 
-Discovery Responses:
-${aiResponsesSummary}
-
-Generate the SiteIntentDocument for ${args.businessName}. Remember: all content must be specific to a ${aiSubType} business — use industry-appropriate terminology for nav labels, section headings, team roles, testimonials, and CTAs.`,
-          },
-        ],
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
       });
 
       const textBlock = message.content.find((b) => b.type === "text");
@@ -2445,7 +2710,8 @@ Generate the SiteIntentDocument for ${args.businessName}. Remember: all content 
         throw new Error("No text response from AI");
       }
 
-      let raw = textBlock.text.trim();
+      const rawAiResponse = textBlock.text.trim();
+      let raw = rawAiResponse;
       if (raw.startsWith("```")) {
         raw = raw.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
       }
@@ -2491,6 +2757,32 @@ Generate the SiteIntentDocument for ${args.businessName}. Remember: all content 
         narrativePrompts: spec.narrativePrompts,
       });
 
+      const validationResult = validateSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (validationResult.warnings.length > 0) {
+        console.warn(
+          `[Spec Validation] ${validationResult.warnings.length} issues:`,
+          validationResult.warnings.map((w) => w.message)
+        );
+      }
+      try {
+        await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
+          sessionId: args.sessionId,
+          method: "ai",
+          intakeData: intakeSnapshot,
+          promptSent: `[SYSTEM]\n${systemPrompt}\n\n[USER]\n${userPrompt}`,
+          rawAiResponse,
+          specSnapshot: spec,
+          validationResult,
+          processingTimeMs: Date.now() - startTime,
+          createdAt: Date.now(),
+        });
+      } catch (logErr) {
+        console.error("Pipeline log save failed:", logErr);
+      }
+
       return spec;
     } catch (error) {
       console.error("Failed to generate AI spec, falling back to deterministic:", error);
@@ -2510,6 +2802,31 @@ Generate the SiteIntentDocument for ${args.businessName}. Remember: all content 
         antiReferences: spec.antiReferences,
         narrativePrompts: spec.narrativePrompts,
       });
+
+      const validationResult = validateSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (validationResult.warnings.length > 0) {
+        console.warn(
+          `[Spec Validation] ${validationResult.warnings.length} issues:`,
+          validationResult.warnings.map((w) => w.message)
+        );
+      }
+      try {
+        await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
+          sessionId: args.sessionId,
+          method: "deterministic",
+          intakeData: intakeSnapshot,
+          specSnapshot: spec,
+          validationResult,
+          processingTimeMs: Date.now() - startTime,
+          createdAt: Date.now(),
+        });
+      } catch (logErr) {
+        console.error("Pipeline log save failed:", logErr);
+      }
+
       return spec;
     }
   },

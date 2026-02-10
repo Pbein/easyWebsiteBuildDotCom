@@ -124,6 +124,18 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_component", ["componentId"]),
 
+  pipelineLogs: defineTable({
+    sessionId: v.string(),
+    method: v.string(),
+    intakeData: v.any(),
+    promptSent: v.optional(v.string()),
+    rawAiResponse: v.optional(v.string()),
+    specSnapshot: v.optional(v.any()),
+    validationResult: v.optional(v.any()),
+    processingTimeMs: v.number(),
+    createdAt: v.float64(),
+  }).index("by_session", ["sessionId"]),
+
   users: defineTable({
     email: v.optional(v.string()),
     name: v.optional(v.string()),

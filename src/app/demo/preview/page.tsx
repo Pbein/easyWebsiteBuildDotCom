@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -10,6 +10,7 @@ import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ExportResult } from "@/lib/export/generate-project";
 import { PreviewSidebar } from "@/components/platform/preview/PreviewSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
+import { DevPanel } from "@/components/platform/preview/DevPanel";
 import { Loader2 } from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
@@ -26,6 +27,35 @@ function PreviewContent(): React.ReactElement {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activePage, setActivePage] = useState("/");
   const [isExporting, setIsExporting] = useState(false);
+
+  // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
+  const isDevParam = searchParams.get("dev") === "true";
+  const [devPanelOpen, setDevPanelOpen] = useState(false);
+
+  useEffect(() => {
+    if (isDevParam || localStorage.getItem("ewb-dev") === "true") {
+      setDevPanelOpen(true);
+    }
+  }, [isDevParam]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent): void {
+      if (e.ctrlKey && e.shiftKey && e.key === "D") {
+        e.preventDefault();
+        setDevPanelOpen((prev) => {
+          const next = !prev;
+          if (next) {
+            localStorage.setItem("ewb-dev", "true");
+          } else {
+            localStorage.removeItem("ewb-dev");
+          }
+          return next;
+        });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const rawSpec = useQuery(api.siteSpecs.getSiteSpec, sessionId ? { sessionId } : "skip");
 
@@ -140,7 +170,7 @@ function PreviewContent(): React.ReactElement {
         isExporting={isExporting}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Sidebar */}
         {sidebarOpen && (
           <PreviewSidebar
@@ -186,6 +216,9 @@ function PreviewContent(): React.ReactElement {
           </div>
         </div>
       </div>
+
+      {/* Dev Panel — bottom drawer */}
+      {devPanelOpen && sessionId && <DevPanel sessionId={sessionId} />}
     </div>
   );
 }
