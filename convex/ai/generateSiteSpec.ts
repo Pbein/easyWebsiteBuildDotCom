@@ -926,6 +926,7 @@ function generateDeterministicSpec(args: {
   const { sessionId, siteType, goal, description, personality } = args;
   const voiceTone = (args.voiceProfile || "polished") as "warm" | "polished" | "direct";
   const antiRefs = args.antiReferences || [];
+  const emotionalGoals = args.emotionalGoals || [];
   const narrativeData = args.narrativePrompts || {};
 
   // Use explicitly provided business name, fall back to extraction from description
@@ -937,17 +938,35 @@ function generateDeterministicSpec(args: {
     INDUSTRY_CONTENT[subType] || INDUSTRY_CONTENT[siteType] || INDUSTRY_CONTENT.business;
   const tagline = industry.taglines[goal] || "Building something remarkable together";
 
-  // Determine hero variant based on personality
+  // Determine hero variant based on personality + sub-type
   const isMinimal = personality[0] < 0.5;
-  const heroVariant = isMinimal ? "gradient-bg" : "with-bg-image";
-  const heroComponent = personality[2] < 0.5 ? "hero-centered" : "hero-split";
+  const isLuxury = emotionalGoals.includes("luxury");
+
+  // Sub-type-aware hero selection:
+  // Luxury restaurants → gradient-bg hero-centered (dramatic, no split)
+  // Photography → hero-split (showcase imagery)
+  // Spa → hero-centered with background image (serene full-width)
+  const heroVariant =
+    (isLuxury && subType === "restaurant") || subType === "spa"
+      ? "gradient-bg"
+      : isMinimal
+        ? "gradient-bg"
+        : "with-bg-image";
+  const heroComponent =
+    subType === "photography"
+      ? "hero-split"
+      : isLuxury && subType === "restaurant"
+        ? "hero-centered"
+        : personality[2] < 0.5
+          ? "hero-centered"
+          : "hero-split";
   const heroSplitVariant = personality[4] > 0.5 ? "image-right" : "image-left";
 
   const components: ComponentPlacement[] = [];
   let order = 0;
 
-  // Voice-keyed CTA text
-  const ctaText = getVoiceKeyedCtaText(goal, voiceTone, antiRefs);
+  // Voice-keyed CTA text with sub-type awareness
+  const ctaText = getVoiceKeyedCtaText(goal, voiceTone, antiRefs, subType);
 
   // Sub-type-aware nav links
   const navLinks = getNavLinksForSubType(subType, siteType);
@@ -1035,7 +1054,7 @@ function generateDeterministicSpec(args: {
   if (["business", "booking", "ecommerce", "educational", "nonprofit"].includes(siteType)) {
     components.push({
       componentId: "content-stats",
-      variant: personality[3] > 0.6 ? "animated-counter" : "cards",
+      variant: isLuxury || personality[3] > 0.6 ? "animated-counter" : "cards",
       order: order++,
       content: {
         headline: "By the Numbers",
@@ -1059,9 +1078,19 @@ function generateDeterministicSpec(args: {
       subheadline:
         siteType === "booking" ? "Choose the perfect service for you" : "Explore our offerings",
     };
+    // Sub-type-aware service variant: tiered for luxury restaurant (prix fixe menus),
+    // list for spa (treatment menu), card-grid otherwise
+    const serviceVariant =
+      isLuxury && subType === "restaurant"
+        ? "tiered"
+        : subType === "spa"
+          ? "list"
+          : personality[3] > 0.5
+            ? "card-grid"
+            : "list";
     components.push({
       componentId: "commerce-services",
-      variant: personality[3] > 0.5 ? "card-grid" : "list",
+      variant: serviceVariant,
       order: order++,
       content: {
         headline: sh.headline,
@@ -1088,9 +1117,18 @@ function generateDeterministicSpec(args: {
           ? "People I love working with"
           : `The people behind ${businessName}`,
     };
+    // Sub-type-aware team variant: hover-reveal for photography, cards for restaurant/luxury, minimal for clean
+    const teamVariant =
+      subType === "photography"
+        ? "hover-reveal"
+        : isLuxury || subType === "restaurant"
+          ? "cards"
+          : personality[0] > 0.5
+            ? "cards"
+            : "minimal";
     components.push({
       componentId: "team-grid",
-      variant: personality[0] > 0.5 ? "cards" : "minimal",
+      variant: teamVariant,
       order: order++,
       content: {
         headline: th.headline,
@@ -1115,9 +1153,11 @@ function generateDeterministicSpec(args: {
 
   // Gallery for visual businesses (photography, restaurant)
   if (subType === "photography") {
+    // Serious/polished photographers get lightbox; creative/casual get masonry
+    const galleryVariant = personality[1] > 0.6 ? "lightbox" : "masonry";
     components.push({
       componentId: "media-gallery",
-      variant: "masonry",
+      variant: galleryVariant,
       order: order++,
       content: {
         headline: "Selected Work",
@@ -1163,7 +1203,7 @@ function generateDeterministicSpec(args: {
   if (["booking", "ecommerce", "educational", "event", "nonprofit"].includes(siteType)) {
     components.push({
       componentId: "content-accordion",
-      variant: "single-open",
+      variant: isLuxury ? "bordered" : "single-open",
       order: order++,
       content: {
         headline: "Frequently Asked Questions",
@@ -1182,10 +1222,17 @@ function generateDeterministicSpec(args: {
     : "Take the next step and see what we can do for you.";
   components.push({
     componentId: "cta-banner",
-    variant: personality[3] > 0.5 ? "full-width" : "contained",
+    variant:
+      isLuxury || subType === "restaurant"
+        ? "full-width"
+        : subType === "spa"
+          ? "contained"
+          : personality[3] > 0.5
+            ? "full-width"
+            : "contained",
     order: order++,
     content: {
-      headline: getCtaHeadline(goal),
+      headline: getCtaHeadline(goal, subType),
       subheadline: ctaSubheadline,
       ctaPrimary: { text: ctaText, href: "#contact" },
       backgroundVariant: "primary",
@@ -1200,8 +1247,8 @@ function generateDeterministicSpec(args: {
       order: order++,
       content: {
         id: "contact",
-        headline: "Get in Touch",
-        subheadline: `Ready to get started? Drop us a message and we'll get back to you within 24 hours.`,
+        headline: getContactFormHeadline(subType),
+        subheadline: getContactFormSubheadline(subType, businessName),
         fields: [
           { name: "name", label: "Your Name", type: "text", required: true },
           { name: "email", label: "Email Address", type: "email", required: true },
@@ -1435,9 +1482,34 @@ function getVoiceKeyedHeadline(
 function getVoiceKeyedCtaText(
   goal: string,
   voiceTone: "warm" | "polished" | "direct",
-  antiRefs: string[]
+  antiRefs: string[],
+  subType?: string
 ): string {
   const isSalesy = antiRefs.includes("salesy");
+
+  // Sub-type-specific CTA overrides (highest priority)
+  const subTypeCtas: Record<string, Record<string, Record<string, string>>> = {
+    restaurant: {
+      warm: { book: "Come dine with us", contact: "Say hello" },
+      polished: { book: "Reserve Your Table", contact: "Make a Reservation" },
+      direct: { book: "Book a table", contact: "Reserve now" },
+    },
+    spa: {
+      warm: { book: "Treat yourself", contact: "Start your journey" },
+      polished: { book: "Book Your Treatment", contact: "Schedule Your Session" },
+      direct: { book: "Book a session", contact: "Book now" },
+    },
+    photography: {
+      warm: { book: "Let's capture your story", contact: "Let's talk about your shoot" },
+      polished: { book: "Book Your Session", contact: "Schedule a Consultation" },
+      direct: { book: "Book a shoot", contact: "Get in touch" },
+    },
+  };
+
+  // Check sub-type-specific CTA first
+  if (subType && subTypeCtas[subType]?.[voiceTone]?.[goal]) {
+    return subTypeCtas[subType][voiceTone][goal];
+  }
 
   const ctasByVoice: Record<string, Record<string, string>> = {
     warm: {
@@ -1522,7 +1594,27 @@ function getServicesHeadline(subType: string, siteType: string): string {
   return map[subType] || map[siteType] || "What Makes Us Different";
 }
 
-function getCtaHeadline(goal: string): string {
+function getCtaHeadline(goal: string, subType?: string): string {
+  // Sub-type-specific CTA headlines (highest priority)
+  const subTypeHeadlines: Record<string, Record<string, string>> = {
+    restaurant: {
+      book: "Reserve Your Table Tonight",
+      contact: "We'd Love to Host You",
+    },
+    spa: {
+      book: "Book Your Treatment Today",
+      contact: "Begin Your Wellness Journey",
+    },
+    photography: {
+      book: "Book Your Session",
+      contact: "Let's Plan Your Shoot",
+    },
+  };
+
+  if (subType && subTypeHeadlines[subType]?.[goal]) {
+    return subTypeHeadlines[subType][goal];
+  }
+
   const headlines: Record<string, string> = {
     contact: "Ready to Start Your Project?",
     book: "Book Your Appointment Today",
@@ -1532,6 +1624,27 @@ function getCtaHeadline(goal: string): string {
     convert: "Join Thousands of Happy Customers",
   };
   return headlines[goal] || "Ready to Get Started?";
+}
+
+function getContactFormHeadline(subType: string): string {
+  const map: Record<string, string> = {
+    restaurant: "Make a Reservation",
+    spa: "Book Your Appointment",
+    photography: "Let's Plan Your Session",
+  };
+  return map[subType] || "Get in Touch";
+}
+
+function getContactFormSubheadline(subType: string, businessName: string): string {
+  const map: Record<string, string> = {
+    restaurant: `Reserve your table at ${businessName}. We look forward to welcoming you.`,
+    spa: `Schedule your next treatment at ${businessName}. Your wellness journey starts here.`,
+    photography: `Tell us about your vision and we'll craft the perfect session for you.`,
+  };
+  return (
+    map[subType] ||
+    `Ready to get started? Drop us a message and we'll get back to you within 24 hours.`
+  );
 }
 
 function getStatsForSiteType(
