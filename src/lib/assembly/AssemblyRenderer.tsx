@@ -31,11 +31,11 @@ export function AssemblyRenderer({
   const pv = spec.personalityVector as PersonalityVector;
 
   const theme = useMemo(() => {
-    const baseTheme = generateThemeFromVector(pv);
+    const baseTheme = generateThemeFromVector(pv, { businessType: spec.siteType });
     return spec.emotionalGoals?.length
       ? applyEmotionalOverrides(baseTheme, spec.emotionalGoals, spec.antiReferences || [])
       : baseTheme;
-  }, [pv, spec.emotionalGoals, spec.antiReferences]);
+  }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
 
   // Load fonts when theme is ready
   useEffect(() => {

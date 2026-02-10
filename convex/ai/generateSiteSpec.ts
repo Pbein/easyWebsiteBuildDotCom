@@ -39,6 +39,92 @@ interface SiteIntentDocument {
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Business sub-type inference from description keywords
+ * ──────────────────────────────────────────────────────────── */
+
+const SUB_TYPE_KEYWORDS: Record<string, string[]> = {
+  restaurant: [
+    "restaurant",
+    "dining",
+    "menu",
+    "chef",
+    "cuisine",
+    "food",
+    "bistro",
+    "cafe",
+    "eatery",
+    "kitchen",
+    "grill",
+    "diner",
+    "steakhouse",
+    "sushi",
+    "pizzeria",
+    "trattoria",
+    "brasserie",
+    "gastropub",
+    "fine dining",
+    "brunch",
+    "catering",
+    "taqueria",
+    "bakery",
+    "patisserie",
+  ],
+  spa: [
+    "spa",
+    "massage",
+    "wellness",
+    "treatment",
+    "facial",
+    "skincare",
+    "relaxation",
+    "aromatherapy",
+    "body wrap",
+    "hot stone",
+    "reflexology",
+    "detox",
+    "sauna",
+    "steam room",
+    "hydrotherapy",
+    "day spa",
+    "med spa",
+  ],
+  photography: [
+    "photo",
+    "photographer",
+    "photography",
+    "shoot",
+    "portrait",
+    "wedding photo",
+    "headshot",
+    "studio photo",
+    "editorial photo",
+    "newborn photo",
+    "family photo",
+    "event photo",
+    "commercial photo",
+  ],
+};
+
+/**
+ * Infer a specific business sub-type from the site type and description.
+ * Returns a granular sub-type (e.g. "restaurant", "spa", "photography")
+ * or falls back to the original siteType if no match.
+ */
+function inferBusinessSubType(siteType: string, description: string): string {
+  const lower = description.toLowerCase();
+
+  for (const [subType, keywords] of Object.entries(SUB_TYPE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (lower.includes(keyword)) {
+        return subType;
+      }
+    }
+  }
+
+  return siteType;
+}
+
+/* ────────────────────────────────────────────────────────────
  * Industry-specific content for deterministic fallback
  * ──────────────────────────────────────────────────────────── */
 
@@ -634,6 +720,189 @@ const INDUSTRY_CONTENT: Record<string, IndustryContent> = {
     aboutBody: (name, desc) =>
       `<p>${desc}</p><p>${name} was built to solve a real problem with a straightforward solution. No gimmicks, no unnecessary complexity — just results.</p>`,
   },
+
+  /* ── Sub-type overrides (restaurant, spa, photography) ── */
+
+  restaurant: {
+    taglines: {
+      contact: "Reserve your table tonight",
+      book: "Make a reservation",
+      showcase: "A culinary experience like no other",
+      sell: "Savor every moment",
+    },
+    headline: (name) => `${name} — Where Every Dish Tells a Story`,
+    features: [
+      {
+        icon: "ChefHat",
+        title: "Chef-Crafted Menu",
+        description:
+          "Every dish is thoughtfully composed by our culinary team using the finest seasonal ingredients.",
+      },
+      {
+        icon: "Wine",
+        title: "Curated Pairings",
+        description:
+          "Our sommelier selects wines and cocktails that elevate each course into a complete experience.",
+      },
+      {
+        icon: "Flame",
+        title: "From Scratch, Daily",
+        description:
+          "Sauces, breads, and pastas made fresh in-house every morning. You can taste the difference.",
+      },
+      {
+        icon: "Sparkles",
+        title: "Unforgettable Ambiance",
+        description:
+          "Warm lighting, curated music, and thoughtful design create the perfect atmosphere for any occasion.",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "The mole negro was transcendent — layers of flavor I've never experienced anywhere else. This is destination dining.",
+        name: "Sofia Marquez",
+        role: "Food Critic, City Eats",
+        rating: 5,
+      },
+      {
+        quote:
+          "We celebrated our anniversary here and every detail was perfect. The tasting menu was a journey from start to finish.",
+        name: "James & Patricia Wells",
+        role: "Anniversary Dinner",
+        rating: 5,
+      },
+      {
+        quote:
+          "I've traveled the world for food and this place competes with the best. The passion in every plate is undeniable.",
+        name: "Carlos Ibarra",
+        role: "Regular Guest",
+        rating: 5,
+      },
+    ],
+    aboutBody: (name, desc) =>
+      `<p>${desc}</p><p>At ${name}, dining is more than a meal — it's an experience crafted with intention, seasonality, and deep respect for culinary tradition. Every plate reflects our commitment to excellence.</p>`,
+  },
+  spa: {
+    taglines: {
+      contact: "Begin your wellness journey",
+      book: "Book your escape today",
+      showcase: "Restore, rejuvenate, reconnect",
+      sell: "The renewal you deserve",
+    },
+    headline: (name) => `${name} — A Sanctuary for Mind and Body`,
+    features: [
+      {
+        icon: "Leaf",
+        title: "Holistic Approach",
+        description:
+          "Treatments designed to restore balance to your entire being — body, mind, and spirit.",
+      },
+      {
+        icon: "Droplets",
+        title: "Premium Products",
+        description:
+          "We use only organic, sustainably sourced products that nourish your skin and respect the environment.",
+      },
+      {
+        icon: "Heart",
+        title: "Expert Therapists",
+        description:
+          "Our licensed therapists bring years of specialized training and genuine care to every session.",
+      },
+      {
+        icon: "Sparkles",
+        title: "Serene Environment",
+        description:
+          "Purpose-built treatment rooms, aromatherapy, and ambient soundscapes create your perfect escape.",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "I walked in carrying the stress of a month and walked out feeling like a completely different person. The deep tissue massage was exactly what I needed.",
+        name: "Amanda Chen",
+        role: "Monthly Member",
+        rating: 5,
+      },
+      {
+        quote:
+          "The attention to detail here is extraordinary — from the herbal tea on arrival to the personalized treatment plan. True luxury.",
+        name: "David Okafor",
+        role: "First-Time Guest",
+        rating: 5,
+      },
+      {
+        quote:
+          "I've tried spas all over the city and nothing compares. The therapists actually listen and customize every session.",
+        name: "Rachel Kim",
+        role: "Regular Client",
+        rating: 5,
+      },
+    ],
+    aboutBody: (name, desc) =>
+      `<p>${desc}</p><p>${name} is a sanctuary where expert care meets intentional design. Every detail — from the products we use to the atmosphere we create — is chosen to help you find stillness, renewal, and balance.</p>`,
+  },
+  photography: {
+    taglines: {
+      contact: "Let's capture your story",
+      hire: "Book your session today",
+      showcase: "Moments preserved, stories told",
+      attention: "Images that move people",
+    },
+    headline: (name) => `${name} — Capturing Moments That Matter`,
+    features: [
+      {
+        icon: "Camera",
+        title: "Artistic Vision",
+        description:
+          "Every shoot is guided by a distinctive creative eye that finds beauty in authentic moments.",
+      },
+      {
+        icon: "Sun",
+        title: "Natural Light Mastery",
+        description:
+          "Expert use of natural and ambient light creates images that feel alive, warm, and timeless.",
+      },
+      {
+        icon: "Image",
+        title: "Professional Editing",
+        description:
+          "Meticulous post-production ensures every image meets gallery-quality standards while staying true to the moment.",
+      },
+      {
+        icon: "Clock",
+        title: "Fast Turnaround",
+        description:
+          "Preview gallery within 48 hours, fully edited collection delivered in two weeks or less.",
+      },
+    ],
+    testimonials: [
+      {
+        quote:
+          "They captured our wedding in a way that makes us relive every emotion. These aren't just photos — they're heirlooms.",
+        name: "Maria & Tom Ashford",
+        role: "Wedding Clients",
+        rating: 5,
+      },
+      {
+        quote:
+          "My headshots completely transformed my professional brand. I've gotten more inquiries in two months than the previous year.",
+        name: "Darnell Brooks",
+        role: "Executive Portrait",
+        rating: 5,
+      },
+      {
+        quote:
+          "The family session was so relaxed and natural. The kids were laughing the whole time and the photos show genuine joy — not forced smiles.",
+        name: "Lin Nakamura",
+        role: "Family Session",
+        rating: 5,
+      },
+    ],
+    aboutBody: (name, desc) =>
+      `<p>${desc}</p><p>${name} believes that photography is the art of seeing what others overlook. Every session is a collaboration — blending your story with a creative vision that produces images you'll treasure for a lifetime.</p>`,
+  },
 };
 
 /* ────────────────────────────────────────────────────────────
@@ -657,10 +926,15 @@ function generateDeterministicSpec(args: {
   const { sessionId, siteType, goal, description, personality } = args;
   const voiceTone = (args.voiceProfile || "polished") as "warm" | "polished" | "direct";
   const antiRefs = args.antiReferences || [];
+  const narrativeData = args.narrativePrompts || {};
 
   // Use explicitly provided business name, fall back to extraction from description
   const businessName = args.businessName || extractBusinessName(description);
-  const industry = INDUSTRY_CONTENT[siteType] || INDUSTRY_CONTENT.business;
+
+  // Infer sub-type for industry-specific content (e.g. "booking" → "restaurant")
+  const subType = inferBusinessSubType(siteType, description);
+  const industry =
+    INDUSTRY_CONTENT[subType] || INDUSTRY_CONTENT[siteType] || INDUSTRY_CONTENT.business;
   const tagline = industry.taglines[goal] || "Building something remarkable together";
 
   // Determine hero variant based on personality
@@ -675,6 +949,9 @@ function generateDeterministicSpec(args: {
   // Voice-keyed CTA text
   const ctaText = getVoiceKeyedCtaText(goal, voiceTone, antiRefs);
 
+  // Sub-type-aware nav links
+  const navLinks = getNavLinksForSubType(subType, siteType);
+
   // Nav
   components.push({
     componentId: "nav-sticky",
@@ -682,18 +959,13 @@ function generateDeterministicSpec(args: {
     order: order++,
     content: {
       logoText: businessName,
-      links: [
-        { label: "Home", href: "#" },
-        { label: "About", href: "#about" },
-        { label: "Services", href: "#services" },
-        { label: "Contact", href: "#contact" },
-      ],
+      links: navLinks,
       cta: { text: ctaText, href: "#contact" },
     },
   });
 
-  // Hero — voice-keyed headline
-  const headline = getVoiceKeyedHeadline(businessName, siteType, voiceTone);
+  // Hero — voice-keyed headline with sub-type awareness
+  const headline = getVoiceKeyedHeadline(businessName, siteType, voiceTone, subType);
   if (heroComponent === "hero-centered") {
     components.push({
       componentId: "hero-centered",
@@ -724,16 +996,26 @@ function generateDeterministicSpec(args: {
     });
   }
 
-  // Content sections based on site type
+  // About section — weave in narrative prompts if available (S5)
+  const aboutBody = buildAboutBody(businessName, description, narrativeData, industry);
+  const aboutEyebrow =
+    subType === "restaurant"
+      ? "Our Story"
+      : subType === "photography"
+        ? "The Photographer"
+        : siteType === "personal"
+          ? "About Me"
+          : "About Us";
+
   components.push({
     componentId: "content-text",
     variant: "centered",
     order: order++,
     content: {
       id: "about",
-      eyebrow: "About Us",
+      eyebrow: aboutEyebrow,
       headline: `Why Choose ${businessName}`,
-      body: industry.aboutBody(businessName, description),
+      body: aboutBody,
     },
   });
 
@@ -743,8 +1025,8 @@ function generateDeterministicSpec(args: {
     order: order++,
     content: {
       id: "services",
-      subheadline: getServicesEyebrow(siteType),
-      headline: getServicesHeadline(siteType),
+      subheadline: getServicesEyebrow(subType, siteType),
+      headline: getServicesHeadline(subType, siteType),
       features: industry.features,
     },
   });
@@ -757,39 +1039,63 @@ function generateDeterministicSpec(args: {
       order: order++,
       content: {
         headline: "By the Numbers",
-        stats: getStatsForSiteType(siteType),
+        stats: getStatsForSiteType(subType, siteType),
       },
     });
   }
 
   // Services section for booking and business with service offerings
   if (["booking", "ecommerce"].includes(siteType)) {
+    const servicesHeadlines: Record<string, { headline: string; subheadline: string }> = {
+      restaurant: { headline: "Our Menu", subheadline: "Signature dishes crafted with passion" },
+      spa: { headline: "Our Treatments", subheadline: "Personalized wellness experiences" },
+      photography: {
+        headline: "Packages & Sessions",
+        subheadline: "Find the perfect package for your vision",
+      },
+    };
+    const sh = servicesHeadlines[subType] || {
+      headline: siteType === "booking" ? "Our Services" : "What We Offer",
+      subheadline:
+        siteType === "booking" ? "Choose the perfect service for you" : "Explore our offerings",
+    };
     components.push({
       componentId: "commerce-services",
       variant: personality[3] > 0.5 ? "card-grid" : "list",
       order: order++,
       content: {
-        headline: siteType === "booking" ? "Our Services" : "What We Offer",
-        subheadline:
-          siteType === "booking" ? "Choose the perfect service for you" : "Explore our offerings",
-        services: getServicesForSiteType(siteType),
+        headline: sh.headline,
+        subheadline: sh.subheadline,
+        services: getServicesForSiteType(subType, siteType),
       },
     });
   }
 
   // Team section for business, booking, portfolio
   if (["business", "booking", "personal"].includes(siteType)) {
+    const teamHeadlines: Record<string, { headline: string; subheadline: string }> = {
+      restaurant: {
+        headline: "Our Culinary Team",
+        subheadline: `The talent behind ${businessName}`,
+      },
+      spa: { headline: "Our Wellness Experts", subheadline: "Dedicated professionals who care" },
+      photography: { headline: "The Creative Team", subheadline: "The artists behind the lens" },
+    };
+    const th = teamHeadlines[subType] || {
+      headline: siteType === "personal" ? "Collaborators" : "Meet the Team",
+      subheadline:
+        siteType === "personal"
+          ? "People I love working with"
+          : `The people behind ${businessName}`,
+    };
     components.push({
       componentId: "team-grid",
       variant: personality[0] > 0.5 ? "cards" : "minimal",
       order: order++,
       content: {
-        headline: siteType === "personal" ? "Collaborators" : "Meet the Team",
-        subheadline:
-          siteType === "personal"
-            ? "People I love working with"
-            : `The people behind ${businessName}`,
-        members: getTeamForSiteType(siteType),
+        headline: th.headline,
+        subheadline: th.subheadline,
+        members: getTeamForSiteType(subType, siteType),
       },
     });
   }
@@ -807,14 +1113,48 @@ function generateDeterministicSpec(args: {
     });
   }
 
-  // Social proof
+  // Gallery for visual businesses (photography, restaurant)
+  if (subType === "photography") {
+    components.push({
+      componentId: "media-gallery",
+      variant: "masonry",
+      order: order++,
+      content: {
+        headline: "Selected Work",
+        subheadline: "A glimpse into our recent sessions",
+        images: [
+          { src: "", alt: "Portrait session in natural light", category: "Portraits" },
+          { src: "", alt: "Wedding ceremony candid moment", category: "Weddings" },
+          { src: "", alt: "Corporate headshot with studio lighting", category: "Commercial" },
+          { src: "", alt: "Family laughing together outdoors", category: "Families" },
+          { src: "", alt: "Editorial fashion photograph", category: "Editorial" },
+          { src: "", alt: "Couple during golden hour engagement shoot", category: "Weddings" },
+        ],
+        columns: 3,
+        showCaptions: true,
+        enableFilter: true,
+      },
+    });
+  }
+
+  // Social proof — sub-type-aware eyebrow
+  const testimonialEyebrows: Record<string, string> = {
+    restaurant: "Guest Reviews",
+    spa: "Client Experiences",
+    photography: "Client Love",
+  };
   components.push({
     componentId: "proof-testimonials",
     variant: "carousel",
     order: order++,
     content: {
-      eyebrow: "Testimonials",
-      headline: "What Our Clients Say",
+      eyebrow: testimonialEyebrows[subType] || "Testimonials",
+      headline:
+        subType === "restaurant"
+          ? "What Our Guests Say"
+          : subType === "spa"
+            ? "What Our Clients Experience"
+            : "What Our Clients Say",
       testimonials: industry.testimonials,
     },
   });
@@ -828,19 +1168,25 @@ function generateDeterministicSpec(args: {
       content: {
         headline: "Frequently Asked Questions",
         subheadline: "Everything you need to know",
-        items: getFaqForSiteType(siteType, businessName),
+        items: getFaqForSiteType(subType, siteType, businessName),
       },
     });
   }
 
-  // CTA
+  // CTA — weave in narrative frustrated_with if available (S5)
+  const ctaSubheadline = narrativeData.frustrated_with
+    ? `Tired of ${narrativeData.frustrated_with
+        .toLowerCase()
+        .replace(/^i'?m\s+/i, "")
+        .replace(/^they'?re\s+/i, "")}? We do things differently.`
+    : "Take the next step and see what we can do for you.";
   components.push({
     componentId: "cta-banner",
     variant: personality[3] > 0.5 ? "full-width" : "contained",
     order: order++,
     content: {
       headline: getCtaHeadline(goal),
-      subheadline: "Take the next step and see what we can do for you.",
+      subheadline: ctaSubheadline,
       ctaPrimary: { text: ctaText, href: "#contact" },
       backgroundVariant: "primary",
     },
@@ -866,7 +1212,7 @@ function generateDeterministicSpec(args: {
     });
   }
 
-  // Footer
+  // Footer — uses same sub-type-aware nav links
   components.push({
     componentId: "footer-standard",
     variant: "multi-column",
@@ -877,12 +1223,7 @@ function generateDeterministicSpec(args: {
       columns: [
         {
           title: "Quick Links",
-          links: [
-            { label: "Home", href: "#" },
-            { label: "About", href: "#about" },
-            { label: "Services", href: "#services" },
-            { label: "Contact", href: "#contact" },
-          ],
+          links: navLinks,
         },
         {
           title: "Contact",
@@ -928,13 +1269,121 @@ function generateDeterministicSpec(args: {
   };
 }
 
+function getNavLinksForSubType(
+  subType: string,
+  siteType: string
+): Array<{ label: string; href: string }> {
+  const navMap: Record<string, Array<{ label: string; href: string }>> = {
+    restaurant: [
+      { label: "Home", href: "#" },
+      { label: "Our Story", href: "#about" },
+      { label: "Menu", href: "#services" },
+      { label: "Reservations", href: "#contact" },
+    ],
+    spa: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Treatments", href: "#services" },
+      { label: "Book Now", href: "#contact" },
+    ],
+    photography: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Portfolio", href: "#services" },
+      { label: "Book a Session", href: "#contact" },
+    ],
+    portfolio: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Work", href: "#services" },
+      { label: "Contact", href: "#contact" },
+    ],
+    ecommerce: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Products", href: "#services" },
+      { label: "Contact", href: "#contact" },
+    ],
+    blog: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Articles", href: "#services" },
+      { label: "Subscribe", href: "#contact" },
+    ],
+    nonprofit: [
+      { label: "Home", href: "#" },
+      { label: "Our Mission", href: "#about" },
+      { label: "Programs", href: "#services" },
+      { label: "Donate", href: "#contact" },
+    ],
+    event: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Schedule", href: "#services" },
+      { label: "Register", href: "#contact" },
+    ],
+    educational: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Courses", href: "#services" },
+      { label: "Enroll", href: "#contact" },
+    ],
+  };
+
+  return (
+    navMap[subType] ||
+    navMap[siteType] || [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Services", href: "#services" },
+      { label: "Contact", href: "#contact" },
+    ]
+  );
+}
+
+function buildAboutBody(
+  businessName: string,
+  description: string,
+  narrativeData: Record<string, string>,
+  industry: IndustryContent
+): string {
+  const parts: string[] = [];
+
+  // User's description is always the foundation
+  parts.push(`<p>${description}</p>`);
+
+  // Weave in narrative prompts if available (S5)
+  if (narrativeData.come_because) {
+    parts.push(`<p>${narrativeData.come_because}</p>`);
+  }
+  if (narrativeData.after_feel) {
+    parts.push(
+      `<p>When you leave ${businessName}, you should feel ${narrativeData.after_feel.toLowerCase()}.</p>`
+    );
+  }
+
+  // Fall back to industry boilerplate only if no narrative prompts
+  if (!narrativeData.come_because && !narrativeData.after_feel) {
+    const boilerplate = industry.aboutBody(businessName, "");
+    // Strip the empty <p></p> that would come from empty description
+    const cleaned = boilerplate.replace(/<p>\s*<\/p>/g, "");
+    if (cleaned.trim()) parts.push(cleaned);
+  }
+
+  return parts.join("");
+}
+
 function getVoiceKeyedHeadline(
   businessName: string,
   siteType: string,
-  voiceTone: "warm" | "polished" | "direct"
+  voiceTone: "warm" | "polished" | "direct",
+  subType?: string
 ): string {
   const headlinesByVoice: Record<string, Record<string, string>> = {
     warm: {
+      restaurant: `Welcome to ${businessName} — pull up a chair, stay a while`,
+      spa: `${businessName} — your escape is waiting`,
+      photography: `${businessName} — let's capture something beautiful`,
       business: `Hey, welcome to ${businessName} — we're glad you're here`,
       portfolio: `${businessName} — Let's create something beautiful together`,
       ecommerce: `${businessName} — Find something you'll love`,
@@ -947,6 +1396,9 @@ function getVoiceKeyedHeadline(
       landing: `${businessName} — We think you'll love this`,
     },
     polished: {
+      restaurant: `${businessName} — A Culinary Experience Beyond Compare`,
+      spa: `${businessName} — Where Wellness Becomes an Art`,
+      photography: `${businessName} — Timeless Images, Artfully Captured`,
       business: `${businessName} — Where Excellence Meets Precision`,
       portfolio: `${businessName} — Refined Creative Vision`,
       ecommerce: `${businessName} — A Curated Collection Awaits`,
@@ -959,6 +1411,9 @@ function getVoiceKeyedHeadline(
       landing: `${businessName} — The Intelligent Choice`,
     },
     direct: {
+      restaurant: `${businessName}. Exceptional food. No compromise.`,
+      spa: `${businessName}. Real relaxation. Real results.`,
+      photography: `${businessName}. Your story. Beautifully told.`,
       business: `${businessName}. Better results, less hassle.`,
       portfolio: `${businessName}. Work that speaks for itself.`,
       ecommerce: `${businessName}. Quality products. Fair prices. Done.`,
@@ -972,7 +1427,9 @@ function getVoiceKeyedHeadline(
     },
   };
 
-  return headlinesByVoice[voiceTone]?.[siteType] || headlinesByVoice.polished.business;
+  // Try sub-type first, then site type, then default
+  const voiceMap = headlinesByVoice[voiceTone] || headlinesByVoice.polished;
+  return (subType && voiceMap[subType]) || voiceMap[siteType] || voiceMap.business;
 }
 
 function getVoiceKeyedCtaText(
@@ -1039,24 +1496,30 @@ function extractBusinessName(description: string): string {
   return "My Business";
 }
 
-function getServicesEyebrow(siteType: string): string {
+function getServicesEyebrow(subType: string, siteType: string): string {
   const map: Record<string, string> = {
+    restaurant: "The Experience",
+    spa: "Our Treatments",
+    photography: "Our Craft",
     business: "Our Services",
     portfolio: "What I Do",
     ecommerce: "Why Choose Us",
     booking: "Our Services",
   };
-  return map[siteType] || "What We Offer";
+  return map[subType] || map[siteType] || "What We Offer";
 }
 
-function getServicesHeadline(siteType: string): string {
+function getServicesHeadline(subType: string, siteType: string): string {
   const map: Record<string, string> = {
+    restaurant: "A Menu Crafted with Passion",
+    spa: "Treatments Tailored to You",
+    photography: "Services for Every Occasion",
     business: "Services That Drive Results",
     portfolio: "Areas of Expertise",
     ecommerce: "The Difference We Make",
-    booking: "Services & Treatments",
+    booking: "What We Offer",
   };
-  return map[siteType] || "What Makes Us Different";
+  return map[subType] || map[siteType] || "What Makes Us Different";
 }
 
 function getCtaHeadline(goal: string): string {
@@ -1072,9 +1535,28 @@ function getCtaHeadline(goal: string): string {
 }
 
 function getStatsForSiteType(
+  subType: string,
   siteType: string
 ): Array<{ value: number; label: string; suffix?: string }> {
   const statsMap: Record<string, Array<{ value: number; label: string; suffix?: string }>> = {
+    restaurant: [
+      { value: 50000, label: "Guests Served", suffix: "+" },
+      { value: 15, label: "Years of Tradition", suffix: "+" },
+      { value: 98, label: "Guest Satisfaction", suffix: "%" },
+      { value: 24, label: "Signature Dishes" },
+    ],
+    spa: [
+      { value: 20000, label: "Treatments Given", suffix: "+" },
+      { value: 99, label: "Client Satisfaction", suffix: "%" },
+      { value: 12, label: "Licensed Therapists" },
+      { value: 10, label: "Years of Wellness", suffix: "+" },
+    ],
+    photography: [
+      { value: 2000, label: "Sessions Completed", suffix: "+" },
+      { value: 500, label: "Happy Clients", suffix: "+" },
+      { value: 8, label: "Years of Experience", suffix: "+" },
+      { value: 15, label: "Awards Won" },
+    ],
     business: [
       { value: 500, label: "Clients Served", suffix: "+" },
       { value: 98, label: "Satisfaction Rate", suffix: "%" },
@@ -1106,12 +1588,112 @@ function getStatsForSiteType(
       { value: 2500, label: "Volunteers", suffix: "+" },
     ],
   };
-  return statsMap[siteType] || statsMap.business;
+  return statsMap[subType] || statsMap[siteType] || statsMap.business;
 }
 
 function getServicesForSiteType(
+  subType: string,
   siteType: string
 ): Array<{ name: string; description: string; price?: string; icon?: string; featured?: boolean }> {
+  if (subType === "restaurant") {
+    return [
+      {
+        name: "Tasting Menu",
+        description:
+          "A seven-course journey through our chef's seasonal inspirations, paired with hand-selected wines.",
+        price: "$125/person",
+        icon: "Sparkles",
+        featured: true,
+      },
+      {
+        name: "Chef's Table",
+        description:
+          "An intimate dining experience in our kitchen with a custom menu and direct access to the culinary team.",
+        price: "$185/person",
+        icon: "ChefHat",
+      },
+      {
+        name: "Private Dining",
+        description:
+          "Exclusive use of our private dining room for groups of 8-20, with a curated menu tailored to your occasion.",
+        price: "From $95/person",
+        icon: "Users",
+      },
+      {
+        name: "Weekend Brunch",
+        description:
+          "A leisurely three-course brunch featuring seasonal dishes, fresh pastries, and bottomless mimosas.",
+        price: "$55/person",
+        icon: "Sun",
+      },
+    ];
+  }
+  if (subType === "spa") {
+    return [
+      {
+        name: "Signature Massage",
+        description:
+          "Our signature full-body massage combining Swedish and deep tissue techniques for total relaxation.",
+        price: "$120",
+        icon: "Heart",
+        featured: true,
+      },
+      {
+        name: "Deep Tissue Therapy",
+        description:
+          "Targeted pressure therapy to release chronic tension and restore mobility in problem areas.",
+        price: "$140",
+        icon: "Zap",
+      },
+      {
+        name: "Hot Stone Ritual",
+        description:
+          "Heated basalt stones melt tension while essential oils soothe the senses in this luxurious treatment.",
+        price: "$155",
+        icon: "Flame",
+      },
+      {
+        name: "Facial Rejuvenation",
+        description:
+          "A customized facial using organic products to cleanse, exfoliate, and restore your natural glow.",
+        price: "$95",
+        icon: "Sparkles",
+      },
+    ];
+  }
+  if (subType === "photography") {
+    return [
+      {
+        name: "Portrait Session",
+        description:
+          "A one-hour session in studio or on location, with 15 professionally edited images delivered digitally.",
+        price: "$350",
+        icon: "Camera",
+      },
+      {
+        name: "Wedding Package",
+        description:
+          "Full-day coverage from preparation to reception, with a second photographer and 400+ edited images.",
+        price: "From $3,500",
+        icon: "Heart",
+        featured: true,
+      },
+      {
+        name: "Commercial Shoot",
+        description:
+          "Half or full-day product and brand photography with art direction and usage licensing included.",
+        price: "From $1,200",
+        icon: "Briefcase",
+      },
+      {
+        name: "Family Session",
+        description:
+          "A relaxed 90-minute session at your favorite outdoor location, with 25 edited images.",
+        price: "$450",
+        icon: "Users",
+      },
+    ];
+  }
   if (siteType === "booking") {
     return [
       {
@@ -1164,7 +1746,77 @@ function getServicesForSiteType(
   ];
 }
 
-function getTeamForSiteType(siteType: string): Array<{ name: string; role: string; bio?: string }> {
+function getTeamForSiteType(
+  subType: string,
+  siteType: string
+): Array<{ name: string; role: string; bio?: string }> {
+  if (subType === "restaurant") {
+    return [
+      {
+        name: "Marco Reyes",
+        role: "Executive Chef",
+        bio: "Trained in Mexico City and Lyon, bringing 20 years of culinary mastery to every dish.",
+      },
+      {
+        name: "Isabella Torres",
+        role: "Sous Chef",
+        bio: "Specializing in seasonal ingredients and innovative flavor combinations.",
+      },
+      {
+        name: "David Hernandez",
+        role: "Sommelier",
+        bio: "Curating wine pairings that elevate every course into a complete experience.",
+      },
+      {
+        name: "Ana Gutierrez",
+        role: "Restaurant Manager",
+        bio: "Ensuring every guest feels welcomed, valued, and delighted from the moment they arrive.",
+      },
+    ];
+  }
+  if (subType === "spa") {
+    return [
+      {
+        name: "Elena Vasquez",
+        role: "Lead Massage Therapist",
+        bio: "Licensed in five modalities with a healing touch perfected over 15 years.",
+      },
+      {
+        name: "Dr. Sarah Lin",
+        role: "Wellness Director",
+        bio: "Integrative health specialist designing personalized treatment protocols.",
+      },
+      {
+        name: "Maya Johnson",
+        role: "Esthetician",
+        bio: "Expert in organic skincare and anti-aging treatments with a loyal client following.",
+      },
+      {
+        name: "Jordan Okafor",
+        role: "Holistic Practitioner",
+        bio: "Combining ancient wisdom with modern techniques for whole-body wellness.",
+      },
+    ];
+  }
+  if (subType === "photography") {
+    return [
+      {
+        name: "Alex Rivera",
+        role: "Lead Photographer",
+        bio: "An award-winning eye for light, composition, and authentic human moments.",
+      },
+      {
+        name: "Sam Nguyen",
+        role: "Second Shooter",
+        bio: "Capturing candid moments and alternative angles that tell the complete story.",
+      },
+      {
+        name: "Jordan Park",
+        role: "Photo Editor",
+        bio: "Meticulous post-production that brings every image to its full potential.",
+      },
+    ];
+  }
   if (siteType === "personal") {
     return [
       {
@@ -1230,10 +1882,65 @@ function getTrustLogos(siteType: string): Array<{ name: string }> {
 }
 
 function getFaqForSiteType(
+  subType: string,
   siteType: string,
   businessName: string
 ): Array<{ question: string; answer: string }> {
   const faqMap: Record<string, Array<{ question: string; answer: string }>> = {
+    restaurant: [
+      {
+        question: "Do I need a reservation?",
+        answer: `<p>Reservations are strongly recommended, especially for weekend evenings. Walk-ins are welcome but subject to availability. You can reserve online or call us directly.</p>`,
+      },
+      {
+        question: "Do you accommodate dietary restrictions?",
+        answer: `<p>Absolutely. Our kitchen is experienced with vegetarian, vegan, gluten-free, and allergen-sensitive preparations. Please mention any dietary needs when booking and your server will guide you through the menu.</p>`,
+      },
+      {
+        question: "Is there a dress code?",
+        answer: `<p>We encourage smart casual attire. While we want you to feel comfortable, we ask that guests avoid athletic wear and flip-flops to preserve the ambiance for everyone.</p>`,
+      },
+      {
+        question: "Can you host private events?",
+        answer: `<p>Yes! ${businessName} offers private dining for groups of 8-40 guests. We create custom menus for weddings, corporate events, birthdays, and special celebrations. Contact us for details.</p>`,
+      },
+    ],
+    spa: [
+      {
+        question: "What should I expect during my first visit?",
+        answer: `<p>Arrive 15 minutes early to complete a brief wellness questionnaire. You'll receive a robe, slippers, and a tour of our facilities. Your therapist will discuss your needs before the treatment begins.</p>`,
+      },
+      {
+        question: "What is your cancellation policy?",
+        answer: `<p>We require 24 hours notice for cancellations or rescheduling. Late cancellations or no-shows may be charged 50% of the treatment price.</p>`,
+      },
+      {
+        question: "Are there health conditions that prevent treatment?",
+        answer: `<p>Certain conditions may require a doctor's note or modified treatment. Please inform us of any health conditions, allergies, or medications when booking so we can ensure your safety and comfort.</p>`,
+      },
+      {
+        question: "Do you offer gift cards?",
+        answer: `<p>Yes! ${businessName} gift cards are available in any amount and make a thoughtful gift. They can be used for any treatment or product and never expire.</p>`,
+      },
+    ],
+    photography: [
+      {
+        question: "How far in advance should I book?",
+        answer: `<p>For weddings, we recommend 6-12 months in advance. Portrait and family sessions can usually be booked 2-4 weeks out. Contact us for current availability.</p>`,
+      },
+      {
+        question: "How long until I receive my photos?",
+        answer: `<p>A preview gallery of 20-30 images is delivered within 48 hours. Your full edited collection is typically ready within 2-3 weeks, depending on the session type.</p>`,
+      },
+      {
+        question: "Do you provide prints and albums?",
+        answer: `<p>Yes! We offer museum-quality prints, custom-designed albums, and canvas wraps. These can be ordered through your private online gallery after delivery.</p>`,
+      },
+      {
+        question: "Can I use the photos on social media?",
+        answer: `<p>Absolutely. All personal session packages include a social media usage license. Commercial usage licensing is included in commercial packages or available as an add-on.</p>`,
+      },
+    ],
     booking: [
       {
         question: "How do I book an appointment?",
@@ -1325,7 +2032,7 @@ function getFaqForSiteType(
       },
     ],
   };
-  return faqMap[siteType] || faqMap.booking;
+  return faqMap[subType] || faqMap[siteType] || faqMap.booking;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -1381,12 +2088,43 @@ export const generateSiteSpec = action({
     try {
       const client = new Anthropic({ apiKey });
 
+      // Infer business sub-type for AI context
+      const aiSubType = inferBusinessSubType(args.siteType, args.description);
+
       const aiResponsesSummary = Object.entries(args.aiResponses as Record<string, string>)
         .map(([key, val]) => `${key}: ${val}`)
         .join("\n");
 
       // Build character context for AI prompt
       const characterPromptLines: string[] = [];
+
+      // S1: Business sub-type awareness — highest priority context
+      if (aiSubType !== args.siteType) {
+        characterPromptLines.push(
+          `BUSINESS SUB-TYPE: This is specifically a ${aiSubType.toUpperCase()}. Use ${aiSubType}-specific vocabulary throughout all content. Nav labels, section headings, CTAs, testimonials, team roles — everything must feel native to the ${aiSubType} industry.`
+        );
+      }
+
+      // S5: User's own words — priority copy material
+      const narrativeData = args.narrativePrompts as Record<string, string> | undefined;
+      if (narrativeData && Object.values(narrativeData).some((v) => v)) {
+        characterPromptLines.push(
+          "USER'S OWN WORDS (highest priority — use these as the foundation for all copy):"
+        );
+        if (narrativeData.come_because)
+          characterPromptLines.push(
+            `  - Why people come: "${narrativeData.come_because}" → Use this insight in the hero subheadline or about section headline.`
+          );
+        if (narrativeData.frustrated_with)
+          characterPromptLines.push(
+            `  - What customers are frustrated with: "${narrativeData.frustrated_with}" → Address this pain point in features or the CTA section.`
+          );
+        if (narrativeData.after_feel)
+          characterPromptLines.push(
+            `  - How customers feel after: "${narrativeData.after_feel}" → Use this emotion in testimonials and the closing CTA.`
+          );
+      }
+
       if (args.emotionalGoals?.length) {
         characterPromptLines.push(
           `EMOTIONAL GOALS: ${args.emotionalGoals.join(", ")}. The design should evoke these emotions through color, spacing, typography, and copy tone.`
@@ -1428,22 +2166,36 @@ export const generateSiteSpec = action({
           `ANTI-REFERENCES (MUST AVOID): ${args.antiReferences.join(", ")}. The site must NEVER feel like any of these. This constrains design choices, copy tone, and component selection.`
         );
       }
-      const narrativeData = args.narrativePrompts as Record<string, string> | undefined;
-      if (narrativeData && Object.values(narrativeData).some((v) => v)) {
-        characterPromptLines.push(
-          "NARRATIVE PROMPTS (use as raw copy material — weave into headlines, testimonials, about sections):"
-        );
-        if (narrativeData.come_because)
-          characterPromptLines.push(`  - Why people come: "${narrativeData.come_because}"`);
-        if (narrativeData.frustrated_with)
-          characterPromptLines.push(`  - Customer frustration: "${narrativeData.frustrated_with}"`);
-        if (narrativeData.after_feel)
-          characterPromptLines.push(`  - Post-experience feeling: "${narrativeData.after_feel}"`);
+
+      // S2: Business vocabulary tables for sub-types
+      const vocabTables: Record<string, string> = {
+        restaurant: `RESTAURANT VOCABULARY (use these terms, not generic business terms):
+  - Nav: "Menu" not "Services", "Reservations" not "Contact", "Our Story" not "About Us"
+  - Sections: "The Experience" not "Our Services", "From Our Kitchen" not "What We Offer"
+  - CTAs: "Reserve a Table" / "View the Menu" / "Make a Reservation" — NEVER "Schedule a Consultation" or "Book an Appointment"
+  - Team: "Executive Chef" / "Sous Chef" / "Sommelier" / "Restaurant Manager" — NEVER "CEO" or "Founder"
+  - Testimonials: "Guest" not "Client", "dining experience" not "service", "dish/course" not "product"`,
+        spa: `SPA & WELLNESS VOCABULARY (use these terms, not generic business terms):
+  - Nav: "Treatments" not "Services", "Book Now" not "Contact"
+  - Sections: "Our Treatments" not "Services & Treatments", "The Sanctuary" not "Our Space"
+  - CTAs: "Book Your Treatment" / "Begin Your Journey" — NEVER "Schedule a Consultation"
+  - Team: "Lead Therapist" / "Esthetician" / "Wellness Director" — NEVER "CEO" or "Strategist"
+  - Testimonials: "Client" not "Customer", "treatment/session" not "appointment", "renewal" not "result"`,
+        photography: `PHOTOGRAPHY VOCABULARY (use these terms, not generic business terms):
+  - Nav: "Portfolio" not "Services", "Book a Session" not "Contact"
+  - Sections: "Our Work" not "What We Offer", "The Process" not "How It Works"
+  - CTAs: "Book Your Session" / "View the Portfolio" / "Let's Create Together" — NEVER "Schedule a Consultation"
+  - Team: "Lead Photographer" / "Second Shooter" / "Photo Editor" — NEVER "CEO" or "Operations Manager"
+  - Testimonials: "Session/shoot" not "appointment", "images/photos" not "deliverables"`,
+      };
+
+      if (vocabTables[aiSubType]) {
+        characterPromptLines.push(vocabTables[aiSubType]);
       }
 
       const characterSection =
         characterPromptLines.length > 0
-          ? `\n\nBRAND CHARACTER CONTEXT:\n${characterPromptLines.join("\n")}\n\nCOPY QUALITY RULES:\n- No generic filler text. Every headline must be specific to this business.\n- Headlines must be evocative, not merely descriptive. "Premium Grooming, Downtown Austin" not "Welcome to Our Barbershop".\n- Match the voice profile EXACTLY in every piece of copy.\n- If narrative prompts are provided, use them as direct raw material for headlines, subheadlines, and body copy.\n- Anti-references are hard constraints — if "salesy" is listed, never use aggressive CTAs or urgency language.`
+          ? `\n\nBRAND CHARACTER CONTEXT:\n${characterPromptLines.join("\n")}\n\nCOPY QUALITY RULES:\n- No generic filler text. Every headline must be specific to this business.\n- Headlines must be evocative, not merely descriptive. "Premium Grooming, Downtown Austin" not "Welcome to Our Barbershop".\n- Match the voice profile EXACTLY in every piece of copy.\n- If the user's own words are provided, they are the HIGHEST PRIORITY source material. Paraphrase and elevate them — do not ignore them.\n- Anti-references are hard constraints — if "salesy" is listed, never use aggressive CTAs or urgency language.\n\nNEGATIVE EXAMPLES (NEVER generate content like this):\n- NEVER use "Services & Treatments" for a restaurant — use "Our Menu" or "The Dining Experience"\n- NEVER use "Schedule a Consultation" for a restaurant — use "Reserve a Table" or "Make a Reservation"\n- NEVER use "Founder & CEO" for a restaurant team — use "Executive Chef" or "Restaurant Manager"\n- NEVER use "Appointments Booked" as a stat for a restaurant — use "Guests Served" or "Dishes Crafted"\n- NEVER use generic nav labels like "Services" when the business type has a specific term (Menu, Treatments, Portfolio, Courses)\n- NEVER use "Welcome to [Business Name]" as a headline — it says nothing about the business`
           : "";
 
       const message = await client.messages.create({
@@ -1557,7 +2309,7 @@ No markdown fencing. No explanation. Just the JSON.`,
           {
             role: "user",
             content: `Business Name: ${args.businessName}
-Site Type: ${args.siteType}
+Site Type: ${args.siteType}${aiSubType !== args.siteType ? `\nInferred Business Sub-Type: ${aiSubType} (USE ${aiSubType.toUpperCase()}-SPECIFIC VOCABULARY THROUGHOUT)` : ""}
 Goal: ${args.goal}
 Description: ${args.description}
 Personality Vector: [${args.personality.join(", ")}]
@@ -1570,7 +2322,7 @@ ${args.antiReferences?.length ? `Anti-references: ${args.antiReferences.join(", 
 Discovery Responses:
 ${aiResponsesSummary}
 
-Generate the SiteIntentDocument for ${args.businessName}.`,
+Generate the SiteIntentDocument for ${args.businessName}. Remember: all content must be specific to a ${aiSubType} business — use industry-appropriate terminology for nav labels, section headings, team roles, testimonials, and CTAs.`,
           },
         ],
       });

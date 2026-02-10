@@ -34,8 +34,11 @@ export function PreviewSidebar({
   const resetStore = useIntakeStore((s) => s.reset);
 
   const theme = useMemo(
-    () => generateThemeFromVector(spec.personalityVector as PersonalityVector),
-    [spec.personalityVector]
+    () =>
+      generateThemeFromVector(spec.personalityVector as PersonalityVector, {
+        businessType: spec.siteType,
+      }),
+    [spec.personalityVector, spec.siteType]
   );
 
   const activePageSpec = spec.pages.find((p) => p.slug === activePage) ?? spec.pages[0];

@@ -11,7 +11,166 @@ interface AIQuestion {
   options?: string[];
 }
 
+/* ── Lightweight sub-type inference (mirrors generateSiteSpec.ts) ── */
+
+const SUB_TYPE_KEYWORDS: Record<string, string[]> = {
+  restaurant: [
+    "restaurant",
+    "dining",
+    "menu",
+    "chef",
+    "cuisine",
+    "food",
+    "bistro",
+    "cafe",
+    "eatery",
+    "kitchen",
+    "grill",
+    "diner",
+    "steakhouse",
+    "sushi",
+    "pizzeria",
+    "trattoria",
+    "brasserie",
+    "gastropub",
+    "fine dining",
+    "brunch",
+    "catering",
+    "taqueria",
+    "bakery",
+    "patisserie",
+  ],
+  spa: [
+    "spa",
+    "massage",
+    "wellness",
+    "treatment",
+    "facial",
+    "skincare",
+    "relaxation",
+    "aromatherapy",
+    "body wrap",
+    "hot stone",
+    "reflexology",
+    "detox",
+    "sauna",
+    "steam room",
+    "hydrotherapy",
+    "day spa",
+    "med spa",
+  ],
+  photography: [
+    "photo",
+    "photographer",
+    "photography",
+    "shoot",
+    "portrait",
+    "wedding photo",
+    "headshot",
+    "studio photo",
+    "editorial photo",
+    "newborn photo",
+    "family photo",
+    "event photo",
+    "commercial photo",
+  ],
+};
+
+function inferBusinessSubType(siteType: string, description: string): string {
+  const lower = description.toLowerCase();
+  for (const [subType, keywords] of Object.entries(SUB_TYPE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (lower.includes(keyword)) return subType;
+    }
+  }
+  return siteType;
+}
+
 const FALLBACK_QUESTIONS: Record<string, AIQuestion[]> = {
+  restaurant: [
+    {
+      id: "q1",
+      question: "What type of cuisine do you serve, and what signature dishes should we highlight?",
+      type: "text",
+    },
+    {
+      id: "q2",
+      question: "What kind of dining experience do you offer?",
+      type: "select",
+      options: ["Fine dining", "Casual dining", "Fast-casual", "Café/bistro"],
+    },
+    {
+      id: "q3",
+      question: "What makes your restaurant different from others in the area?",
+      type: "text",
+    },
+    {
+      id: "q4",
+      question:
+        "Do you offer any special experiences (tasting menus, private dining, chef's table)?",
+      type: "select",
+      options: ["Yes, multiple options", "One or two specials", "Not yet, but interested", "No"],
+    },
+  ],
+  spa: [
+    {
+      id: "q1",
+      question: "What are your most popular treatments, and what should we feature prominently?",
+      type: "text",
+    },
+    {
+      id: "q2",
+      question: "What type of spa experience do you provide?",
+      type: "select",
+      options: [
+        "Day spa (relaxation)",
+        "Med spa (clinical)",
+        "Wellness center (holistic)",
+        "Resort spa",
+      ],
+    },
+    {
+      id: "q3",
+      question: "What sets your spa apart — specific techniques, products, or philosophy?",
+      type: "text",
+    },
+    {
+      id: "q4",
+      question: "Do you offer packages or memberships?",
+      type: "select",
+      options: ["Yes, both", "Packages only", "Memberships only", "Individual treatments only"],
+    },
+  ],
+  photography: [
+    {
+      id: "q1",
+      question:
+        "What types of photography do you specialize in (weddings, portraits, commercial, etc.)?",
+      type: "text",
+    },
+    {
+      id: "q2",
+      question: "How would you describe your photography style?",
+      type: "select",
+      options: ["Light & airy", "Moody & dramatic", "Documentary/candid", "Classic & timeless"],
+    },
+    {
+      id: "q3",
+      question: "What do clients most often say they love about working with you?",
+      type: "text",
+    },
+    {
+      id: "q4",
+      question: "What's most important to showcase on your website?",
+      type: "select",
+      options: [
+        "Portfolio gallery",
+        "Pricing & packages",
+        "Behind-the-scenes process",
+        "Client testimonials",
+      ],
+    },
+  ],
   business: [
     { id: "q1", question: "What industry or niche does your business operate in?", type: "text" },
     { id: "q2", question: "Who is your ideal customer?", type: "text" },
@@ -235,16 +394,25 @@ export const generateQuestions = action({
   handler: async (_ctx, args): Promise<AIQuestion[]> => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
+    // Infer sub-type for industry-specific questions
+    const subType = inferBusinessSubType(args.siteType, args.description);
+
     if (!apiKey) {
-      return FALLBACK_QUESTIONS[args.siteType] || FALLBACK_QUESTIONS._default;
+      return (
+        FALLBACK_QUESTIONS[subType] ||
+        FALLBACK_QUESTIONS[subType] ||
+        FALLBACK_QUESTIONS[args.siteType] ||
+        FALLBACK_QUESTIONS._default
+      );
     }
 
     try {
       const client = new Anthropic({ apiKey });
 
+      const subTypeLabel = subType !== args.siteType ? ` (specifically a ${subType})` : "";
       const businessContext = args.businessName
-        ? `You are discovering details for "${args.businessName}", a ${args.siteType} website. Their description: "${args.description}".`
-        : `You are discovering details for a ${args.siteType} website. Their description: "${args.description}".`;
+        ? `You are discovering details for "${args.businessName}", a ${args.siteType}${subTypeLabel} website. Their description: "${args.description}".`
+        : `You are discovering details for a ${args.siteType}${subTypeLabel} website. Their description: "${args.description}".`;
 
       // Build character context section
       const characterLines: string[] = [];
@@ -307,6 +475,7 @@ Return a JSON array of questions. Each question has:
 Guidelines:
 - Ask questions specific to their industry and business type. Reference their business by name when relevant.
 - NEVER ask generic questions like "What's your business name?" or "What type of website do you want?" — we already know these.
+- If this is a specific sub-type (restaurant, spa, photography), ask industry-specific questions: e.g. cuisine type and signature dishes for restaurants, treatment specialties for spas, photography style and session types for photographers.
 - Focus on: content specifics (what services/products to highlight), visual preferences, target audience details, and differentiators
 - Mix text and select types (at least 1 of each)
 - Keep questions concise and clear
@@ -332,7 +501,11 @@ Generate 4 discovery questions for this client.`,
 
       const textBlock = message.content.find((b) => b.type === "text");
       if (!textBlock || textBlock.type !== "text") {
-        return FALLBACK_QUESTIONS[args.siteType] || FALLBACK_QUESTIONS._default;
+        return (
+          FALLBACK_QUESTIONS[subType] ||
+          FALLBACK_QUESTIONS[args.siteType] ||
+          FALLBACK_QUESTIONS._default
+        );
       }
 
       let raw = textBlock.text.trim();
@@ -346,10 +519,18 @@ Generate 4 discovery questions for this client.`,
         return parsed;
       }
 
-      return FALLBACK_QUESTIONS[args.siteType] || FALLBACK_QUESTIONS._default;
+      return (
+        FALLBACK_QUESTIONS[subType] ||
+        FALLBACK_QUESTIONS[args.siteType] ||
+        FALLBACK_QUESTIONS._default
+      );
     } catch (error) {
       console.error("Failed to generate AI questions:", error);
-      return FALLBACK_QUESTIONS[args.siteType] || FALLBACK_QUESTIONS._default;
+      return (
+        FALLBACK_QUESTIONS[subType] ||
+        FALLBACK_QUESTIONS[args.siteType] ||
+        FALLBACK_QUESTIONS._default
+      );
     }
   },
 });

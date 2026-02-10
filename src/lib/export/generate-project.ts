@@ -22,7 +22,9 @@ export interface ExportResult {
  * Generate a standalone static project from the site spec.
  */
 export function generateProject(spec: SiteIntentDocument): ExportResult {
-  const tokens = generateThemeFromVector(spec.personalityVector as PersonalityVector);
+  const tokens = generateThemeFromVector(spec.personalityVector as PersonalityVector, {
+    businessType: spec.siteType,
+  });
   const cssVars = tokensToCSSProperties(tokens);
 
   const cssContent = generateCSS(cssVars);

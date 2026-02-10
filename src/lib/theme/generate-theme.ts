@@ -130,12 +130,18 @@ function selectFontPairing(pv: PersonalityVector) {
   return best;
 }
 
-/** Generate a harmonious palette from a seed hue + personality. */
-function generatePalette(pv: PersonalityVector, seedHue?: number) {
+/** Generate a harmonious palette from a seed hue + personality + optional industry nudge. */
+function generatePalette(pv: PersonalityVector, seedHue?: number, businessType?: string) {
   const [minRich, , warmCool, lightBold] = pv;
 
   // Default seed hue: warm personalities lean amber/red, cool lean blue/teal
-  const hue = seedHue ?? lerp(30, 220, warmCool);
+  let hue = seedHue ?? lerp(30, 220, warmCool);
+
+  // Industry hue nudge: blend personality hue with industry-appropriate hue (70/30)
+  if (!seedHue && businessType && INDUSTRY_HUE_NUDGE[businessType] !== undefined) {
+    const industryHue = INDUSTRY_HUE_NUDGE[businessType];
+    hue = (hue * 0.7 + industryHue * 0.3) % 360;
+  }
 
   // Saturation: playful + rich = high saturation; serious + minimal = low
   const baseSaturation = lerp(0.35, 0.75, (1 - pv[1] + minRich) / 2);
@@ -231,9 +237,26 @@ function generatePalette(pv: PersonalityVector, seedHue?: number) {
 export interface GenerateThemeOptions {
   /** Override seed hue for primary color (0-360). */
   seedHue?: number;
+  /** Business sub-type for industry hue biasing (e.g. "restaurant", "spa", "photography"). */
+  businessType?: string;
   /** Override specific tokens after generation. */
   overrides?: Partial<ThemeTokens>;
 }
+
+/**
+ * Industry hue nudges — biases the palette hue toward industry-appropriate colors.
+ * The nudge is blended with the personality-derived hue (70% personality, 30% industry).
+ */
+const INDUSTRY_HUE_NUDGE: Record<string, number> = {
+  restaurant: 25, // Warm amber/terracotta
+  spa: 160, // Soft teal/sage
+  photography: 40, // Warm neutral
+  booking: 200, // Professional blue
+  ecommerce: 220, // Trust blue
+  educational: 230, // Knowledge blue
+  nonprofit: 140, // Growth green
+  event: 330, // Vibrant magenta
+};
 
 /**
  * Generate a complete ThemeTokens object from a 6-axis personality vector.
@@ -253,7 +276,7 @@ export function generateThemeFromVector(
   const [minRich, playSerious, , lightBold, , calmDynamic] = pv;
 
   // ── Colors ──────────────────────────────────────────────
-  const palette = generatePalette(pv, options.seedHue);
+  const palette = generatePalette(pv, options.seedHue, options.businessType);
 
   // ── Fonts ───────────────────────────────────────────────
   const fonts = selectFontPairing(pv);
