@@ -35,7 +35,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(npx eslint:*)",
       "Bash(npx vitest run)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(npx playwright install chromium)"
     ]
   }
 }
