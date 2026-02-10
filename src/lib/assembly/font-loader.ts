@@ -14,9 +14,13 @@ function extractFontName(fontFamily: string): string | null {
  * Deduplicates — won't reload fonts that have already been loaded.
  */
 export function loadGoogleFonts(headingFont: string, bodyFont: string): void {
-  const fonts = [headingFont, bodyFont]
-    .map(extractFontName)
-    .filter((name): name is string => name !== null && !loadedFonts.has(name));
+  const fonts = [
+    ...new Set(
+      [headingFont, bodyFont]
+        .map(extractFontName)
+        .filter((name): name is string => name !== null && !loadedFonts.has(name))
+    ),
+  ];
 
   if (fonts.length === 0) return;
 
