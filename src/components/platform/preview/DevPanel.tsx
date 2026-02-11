@@ -10,17 +10,22 @@ import {
   ClipboardList,
   AlertTriangle,
   Code2,
+  Palette,
 } from "lucide-react";
+import { generateThemeFromVector } from "@/lib/theme/generate-theme";
+import { applyEmotionalOverrides } from "@/lib/theme/emotional-overrides";
+import type { ThemeTokens, PersonalityVector } from "@/lib/theme/theme.types";
 
 interface DevPanelProps {
   sessionId: string;
 }
 
-type Tab = "pipeline" | "intake" | "validation" | "raw";
+type Tab = "pipeline" | "intake" | "theme" | "validation" | "raw";
 
 const TAB_CONFIG: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "pipeline", label: "Pipeline", icon: <Activity className="h-3.5 w-3.5" /> },
   { id: "intake", label: "Intake", icon: <ClipboardList className="h-3.5 w-3.5" /> },
+  { id: "theme", label: "Theme", icon: <Palette className="h-3.5 w-3.5" /> },
   { id: "validation", label: "Validation", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
   { id: "raw", label: "Raw", icon: <Code2 className="h-3.5 w-3.5" /> },
 ];
@@ -243,6 +248,230 @@ function ValidationTab({ log }: { log: Record<string, unknown> | null }): React.
   );
 }
 
+const PERSONALITY_AXES = [
+  "Minimal→Rich",
+  "Playful→Serious",
+  "Warm→Cool",
+  "Light→Bold",
+  "Classic→Modern",
+  "Calm→Dynamic",
+];
+
+const COLOR_TOKEN_KEYS = [
+  "colorPrimary",
+  "colorPrimaryLight",
+  "colorPrimaryDark",
+  "colorSecondary",
+  "colorSecondaryLight",
+  "colorAccent",
+  "colorBackground",
+  "colorSurface",
+  "colorSurfaceElevated",
+  "colorText",
+  "colorTextSecondary",
+  "colorTextOnPrimary",
+  "colorTextOnDark",
+  "colorBorder",
+  "colorBorderLight",
+  "colorSuccess",
+  "colorWarning",
+  "colorError",
+] as const;
+
+function ColorSwatch({ color, label }: { color: string; label: string }): React.ReactElement {
+  const isHex = color.startsWith("#");
+  return (
+    <div className="flex items-center gap-2 py-1">
+      <div
+        className="h-4 w-4 shrink-0 rounded border border-[rgba(255,255,255,0.1)]"
+        style={{ backgroundColor: isHex ? color : undefined }}
+      />
+      <span className="w-28 shrink-0 text-[11px] text-[#6b6d80]">{label}</span>
+      <span
+        className="text-[12px] text-[#9496a8]"
+        style={{ fontFamily: "var(--font-mono, monospace)" }}
+      >
+        {color}
+      </span>
+    </div>
+  );
+}
+
+function TokenDiff({
+  label,
+  before,
+  after,
+}: {
+  label: string;
+  before: string;
+  after: string;
+}): React.ReactElement {
+  return (
+    <div className="flex items-center gap-2 py-0.5 text-[12px]">
+      <span className="w-36 shrink-0 text-[11px] text-[#6b6d80]">{label}</span>
+      <span
+        className="text-red-400/60 line-through"
+        style={{ fontFamily: "var(--font-mono, monospace)" }}
+      >
+        {before}
+      </span>
+      <span className="text-[#6b6d80]">&rarr;</span>
+      <span className="text-emerald-400" style={{ fontFamily: "var(--font-mono, monospace)" }}>
+        {after}
+      </span>
+    </div>
+  );
+}
+
+function ThemeTab({ log }: { log: Record<string, unknown> | null }): React.ReactElement {
+  if (!log) {
+    return <p className="py-4 text-center text-[13px] text-[#6b6d80]">No theme data available.</p>;
+  }
+
+  const spec = log.specSnapshot as Record<string, unknown> | undefined;
+  if (!spec) {
+    return (
+      <p className="py-4 text-center text-[13px] text-[#6b6d80]">
+        No spec snapshot in pipeline log.
+      </p>
+    );
+  }
+
+  const pv = spec.personalityVector as number[] | undefined;
+  const siteType = spec.siteType as string | undefined;
+  const emotionalGoals = spec.emotionalGoals as string[] | undefined;
+  const antiReferences = spec.antiReferences as string[] | undefined;
+
+  if (!pv || pv.length !== 6) {
+    return (
+      <p className="py-4 text-center text-[13px] text-[#6b6d80]">Invalid personality vector.</p>
+    );
+  }
+
+  // Generate base theme
+  const baseTheme = generateThemeFromVector(pv as PersonalityVector, { businessType: siteType });
+
+  // Apply emotional overrides if present
+  let finalTheme = baseTheme;
+  const overrideDiffs: { label: string; before: string; after: string }[] = [];
+  if (emotionalGoals?.length) {
+    finalTheme = applyEmotionalOverrides(baseTheme, emotionalGoals, antiReferences ?? []);
+    // Compute diffs
+    for (const key of Object.keys(baseTheme) as (keyof ThemeTokens)[]) {
+      if (baseTheme[key] !== finalTheme[key]) {
+        overrideDiffs.push({ label: key, before: baseTheme[key], after: finalTheme[key] });
+      }
+    }
+  }
+
+  // Dark mode info
+  const lightBold = pv[3];
+  const isDark =
+    finalTheme.colorBackground.startsWith("#0") || finalTheme.colorBackground.startsWith("#1");
+
+  return (
+    <div className="space-y-4 p-4">
+      {/* Personality Vector */}
+      <div>
+        <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+          Personality Vector
+        </h4>
+        <div className="space-y-1">
+          {pv.map((val, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-32 shrink-0 text-[11px] text-[#6b6d80]">
+                {PERSONALITY_AXES[i]}
+              </span>
+              <div className="relative h-2 flex-1 rounded-full bg-[rgba(255,255,255,0.06)]">
+                <div
+                  className="absolute top-0 left-0 h-full rounded-full bg-[#e8a849]"
+                  style={{ width: `${val * 100}%` }}
+                />
+              </div>
+              <span
+                className="w-8 text-right text-[11px] text-[#9496a8]"
+                style={{ fontFamily: "var(--font-mono, monospace)" }}
+              >
+                {val.toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Dark/Light Mode */}
+      <div>
+        <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+          Mode Decision
+        </h4>
+        <div className="flex items-center gap-3 text-[12px]">
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${isDark ? "bg-indigo-500/15 text-indigo-400" : "bg-amber-500/15 text-amber-400"}`}
+          >
+            {isDark ? "Dark" : "Light"}
+          </span>
+          <span className="text-[#6b6d80]">lightBold={lightBold.toFixed(2)}</span>
+          {siteType && <span className="text-[#6b6d80]">business={siteType}</span>}
+        </div>
+      </div>
+
+      {/* Font Pairing */}
+      <div>
+        <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+          Font Pairing
+        </h4>
+        <KeyValue label="Heading" value={finalTheme.fontHeading} />
+        <KeyValue label="Body" value={finalTheme.fontBody} />
+        <KeyValue label="Accent" value={finalTheme.fontAccent} />
+      </div>
+
+      {/* Color Tokens */}
+      <div>
+        <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+          Color Tokens
+        </h4>
+        <div className="space-y-0.5">
+          {COLOR_TOKEN_KEYS.map((key) => (
+            <ColorSwatch key={key} color={finalTheme[key]} label={key.replace("color", "")} />
+          ))}
+        </div>
+      </div>
+
+      {/* Emotional Overrides */}
+      {overrideDiffs.length > 0 && (
+        <div>
+          <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+            Emotional Overrides ({overrideDiffs.length} tokens changed)
+          </h4>
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {emotionalGoals?.map((g) => (
+              <span
+                key={g}
+                className="rounded-full bg-purple-500/15 px-2 py-0.5 text-[10px] font-semibold text-purple-400"
+              >
+                {g}
+              </span>
+            ))}
+            {antiReferences?.map((a) => (
+              <span
+                key={a}
+                className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-400"
+              >
+                {a}
+              </span>
+            ))}
+          </div>
+          <div className="space-y-0.5">
+            {overrideDiffs.map((d) => (
+              <TokenDiff key={d.label} {...d} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RawTab({ log }: { log: Record<string, unknown> | null }): React.ReactElement {
   if (!log) {
     return <p className="py-4 text-center text-[13px] text-[#6b6d80]">No raw data available.</p>;
@@ -351,6 +580,7 @@ export function DevPanel({ sessionId }: DevPanelProps): React.ReactElement {
           <div className="max-h-80 overflow-y-auto">
             {activeTab === "pipeline" && <PipelineTab log={log ?? null} />}
             {activeTab === "intake" && <IntakeTab log={log ?? null} />}
+            {activeTab === "theme" && <ThemeTab log={log ?? null} />}
             {activeTab === "validation" && <ValidationTab log={log ?? null} />}
             {activeTab === "raw" && <RawTab log={log ?? null} />}
           </div>

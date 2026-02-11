@@ -9,7 +9,7 @@
 ## Progress Tracker
 
 > **Last updated:** 2026-02-10
-> **Stories shipped:** 22/33 (67%) — 8 active remaining, 3 deferred
+> **Stories shipped:** 25/33 (76%) — 5 active remaining, 3 deferred
 
 | Story    | Title                                       | Status      | Commit    |
 | -------- | ------------------------------------------- | ----------- | --------- |
@@ -37,12 +37,12 @@
 | T4-E1-S2 | Mood Board Selection Step                   | ⏸ Deferred  | —         |
 | T4-E2-S1 | Visual Reference URL Input                  | ⏸ Deferred  | —         |
 | T4-E3-S1 | A/B Theme Variant Toggle                    | ✅ Done     | —         |
-| T5-E1-S1 | Anti-Reference Redesign                     | ⬚ Remaining | —         |
-| T5-E1-S2 | Business-Specific Anti-Refs                 | ⬚ Remaining | —         |
+| T5-E1-S1 | Anti-Reference Redesign                     | ✅ Done     | —         |
+| T5-E1-S2 | Business-Specific Anti-Refs                 | ✅ Done     | —         |
 | T6-E1-S1 | Dev Panel UI Shell                          | ✅ Done     | `fb1098d` |
 | T6-E1-S2 | Dev Panel: Intake Tab                       | ✅ Done     | `fb1098d` |
 | T6-E1-S3 | Dev Panel: Prompt & AI Response Tab         | ✅ Done     | `fb1098d` |
-| T6-E1-S4 | Dev Panel: Theme Tab                        | ⬚ Remaining | —         |
+| T6-E1-S4 | Dev Panel: Theme Tab                        | ✅ Done     | —         |
 | T6-E1-S5 | Dev Panel: Validation Tab                   | ✅ Done     | `fb1098d` |
 | T6-E2-S1 | Named Test Cases                            | ⬚ Remaining | —         |
 | T6-E2-S2 | Side-by-Side Comparison                     | ⬚ Remaining | —         |
@@ -52,6 +52,7 @@
 - **`afbc34d`** — T1-E1 (S1-S5, S7) + T2-E1 (S1-S3): Industry-aware content, theme hues, emotional color overrides
 - **`038d47f`** — T1-E1-S6 + T2-E1-S4 + T2-E2 (S1-S2): Sub-type-aware variants, CTAs, font pairings, dark mode bias
 - **`fb1098d`** — T1-E2-S1 + T3-E2-S2 + T6-E1 (S1-S3, S5): Content validator, pipeline logging, dev panel with populated tabs
+- **`be702c4`** — T1-E2-S2 + T4-E3-S1 + T3-E2-S1: Auto-fix, A/B theme variants, feedback banner
 
 ---
 

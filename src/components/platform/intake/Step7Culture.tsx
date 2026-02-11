@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useIntakeStore } from "@/lib/stores/intake-store";
-import { BRAND_ARCHETYPES, ANTI_REFERENCES } from "@/lib/types/brand-character";
+import {
+  BRAND_ARCHETYPES,
+  ANTI_REFERENCES,
+  INDUSTRY_ANTI_REFERENCES,
+} from "@/lib/types/brand-character";
 
 const ARCHETYPE_ICON_MAP: Record<string, LucideIcon> = {
   Compass,
@@ -33,7 +37,11 @@ interface Step7CultureProps {
 }
 
 export function Step7Culture({ onComplete, onBack }: Step7CultureProps): React.ReactElement {
-  const { brandArchetype, setBrandArchetype, antiReferences, setAntiReferences } = useIntakeStore();
+  const { brandArchetype, setBrandArchetype, antiReferences, setAntiReferences, siteType } =
+    useIntakeStore();
+
+  // Get industry-specific anti-references for the current site type
+  const industryRefs = (siteType ? INDUSTRY_ANTI_REFERENCES[siteType] : null) ?? [];
 
   const toggleAntiRef = useCallback(
     (id: string): void => {
@@ -147,6 +155,36 @@ export function Step7Culture({ onComplete, onBack }: Step7CultureProps): React.R
             );
           })}
         </div>
+
+        {/* Industry-specific anti-references */}
+        {industryRefs.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-center text-xs text-[var(--color-text-tertiary)]">
+              For your industry specifically:
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {industryRefs.map((ref) => {
+                const isActive = antiReferences.includes(ref.id);
+
+                return (
+                  <button
+                    key={ref.id}
+                    onClick={() => toggleAntiRef(ref.id)}
+                    className={`group inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+                      isActive
+                        ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
+                        : "border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:border-amber-500/30 hover:text-amber-400"
+                    }`}
+                    title={ref.description}
+                  >
+                    {isActive && <X className="h-3 w-3" />}
+                    {ref.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

@@ -31,7 +31,7 @@ describe("applyEmotionalOverrides", () => {
       const base = getBaseTokens();
       const originalSpaceSection = base.spaceSection;
       const originalColorPrimary = base.colorPrimary;
-      applyEmotionalOverrides(base, ["luxury"], ["cluttered"]);
+      applyEmotionalOverrides(base, ["luxury"], ["corporate"]);
       expect(base.spaceSection).toBe(originalSpaceSection);
       expect(base.colorPrimary).toBe(originalColorPrimary);
     });
@@ -222,15 +222,18 @@ describe("applyEmotionalOverrides", () => {
 
   /* ── Anti-reference overrides ──────────────────────────── */
 
-  describe("cluttered anti-reference", () => {
-    it("increases all spacing tokens", () => {
+  describe("corporate anti-reference", () => {
+    it("increases border radius for warmer feel", () => {
       const base = getBaseTokens();
-      const result = applyEmotionalOverrides(base, [], ["cluttered"]);
-      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
-      expect(parseNumeric(result.spaceComponent)).toBeGreaterThan(
-        parseNumeric(base.spaceComponent)
-      );
-      expect(parseNumeric(result.spaceElement)).toBeGreaterThan(parseNumeric(base.spaceElement));
+      const result = applyEmotionalOverrides(base, [], ["corporate"]);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+      expect(parseNumeric(result.radiusMd)).toBeGreaterThan(parseNumeric(base.radiusMd));
+    });
+
+    it("shifts colorPrimary warmer (negative temperature)", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["corporate"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
     });
   });
 
@@ -248,39 +251,131 @@ describe("applyEmotionalOverrides", () => {
     });
   });
 
-  describe("aggressive anti-reference", () => {
+  describe("generic anti-reference", () => {
+    it("boosts saturation on colorPrimary", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["generic"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+
+    it("increases weightBold for stronger contrast", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["generic"]);
+      expect(parseInt(result.weightBold)).toBeGreaterThanOrEqual(800);
+    });
+  });
+
+  describe("minimalist anti-reference", () => {
+    it("tightens spacing for richer surfaces", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["minimalist"]);
+      expect(parseNumeric(result.spaceSection)).toBeLessThan(parseNumeric(base.spaceSection));
+      expect(parseNumeric(result.spaceComponent)).toBeLessThan(parseNumeric(base.spaceComponent));
+    });
+
+    it("thickens borderWidth", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["minimalist"]);
+      expect(parseNumeric(result.borderWidth)).toBeGreaterThan(parseNumeric(base.borderWidth));
+    });
+  });
+
+  describe("maximalist anti-reference", () => {
+    it("increases all spacing tokens for cleaner surfaces", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["maximalist"]);
+      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
+      expect(parseNumeric(result.spaceComponent)).toBeGreaterThan(
+        parseNumeric(base.spaceComponent)
+      );
+      expect(parseNumeric(result.spaceElement)).toBeGreaterThan(parseNumeric(base.spaceElement));
+    });
+  });
+
+  describe("traditional anti-reference", () => {
+    it("increases border radius for modern look", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["traditional"]);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+      expect(parseNumeric(result.radiusMd)).toBeGreaterThan(parseNumeric(base.radiusMd));
+    });
+
+    it("increases weightBold", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["traditional"]);
+      expect(parseInt(result.weightBold)).toBeGreaterThanOrEqual(800);
+    });
+  });
+
+  describe("trendy anti-reference", () => {
+    it("desaturates colorPrimary for classic look", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["trendy"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+
     it("slows down transitions", () => {
       const base = getBaseTokens();
-      const result = applyEmotionalOverrides(base, [], ["aggressive"]);
+      const result = applyEmotionalOverrides(base, [], ["trendy"]);
+      expect(parseMs(result.transitionBase)).toBeGreaterThan(parseMs(base.transitionBase));
+    });
+  });
+
+  describe("playful anti-reference", () => {
+    it("sharpens border radius", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["playful"]);
+      expect(parseNumeric(result.radiusSm)).toBeLessThan(parseNumeric(base.radiusSm));
+      expect(parseNumeric(result.radiusMd)).toBeLessThan(parseNumeric(base.radiusMd));
+    });
+
+    it("darkens colorPrimary", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["playful"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+  });
+
+  describe("formal anti-reference", () => {
+    it("increases border radius for approachable feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["formal"]);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+      expect(parseNumeric(result.radiusMd)).toBeGreaterThan(parseNumeric(base.radiusMd));
+    });
+
+    it("reduces weightBold for relaxed feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["formal"]);
+      expect(parseInt(result.weightBold)).toBeLessThanOrEqual(600);
+    });
+  });
+
+  describe("dramatic anti-reference", () => {
+    it("slows down transitions", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["dramatic"]);
+      expect(parseMs(result.transitionBase)).toBeGreaterThan(parseMs(base.transitionBase));
       expect(parseMs(result.transitionFast)).toBeGreaterThan(parseMs(base.transitionFast));
     });
 
     it("reduces animation intensity", () => {
       const base = getBaseTokens();
-      const result = applyEmotionalOverrides(base, [], ["aggressive"]);
+      const result = applyEmotionalOverrides(base, [], ["dramatic"]);
       expect(parseNumeric(result.animationDistance)).toBeLessThan(
         parseNumeric(base.animationDistance)
       );
-    });
-  });
-
-  describe("boring anti-reference", () => {
-    it("increases animationDistance", () => {
-      const base = getBaseTokens();
-      const result = applyEmotionalOverrides(base, [], ["boring"]);
-      expect(parseNumeric(result.animationDistance)).toBeGreaterThan(
-        parseNumeric(base.animationDistance)
-      );
+      expect(parseFloat(result.animationScale)).toBeLessThanOrEqual(1.02);
     });
   });
 
   /* ── Combination behavior ──────────────────────────────── */
 
   describe("combined goals and anti-references", () => {
-    it("luxury + cluttered produces even more spacing than either alone", () => {
+    it("luxury + maximalist produces even more spacing than either alone", () => {
       const base = getBaseTokens();
       const luxuryOnly = applyEmotionalOverrides(base, ["luxury"], []);
-      const combined = applyEmotionalOverrides(base, ["luxury"], ["cluttered"]);
+      const combined = applyEmotionalOverrides(base, ["luxury"], ["maximalist"]);
       expect(parseNumeric(combined.spaceSection)).toBeGreaterThan(
         parseNumeric(luxuryOnly.spaceSection)
       );
@@ -293,6 +388,136 @@ describe("applyEmotionalOverrides", () => {
       // Both luxury and calm increase spaceSection, so combined should be larger
       expect(parseNumeric(doubleGoal.spaceSection)).toBeGreaterThan(
         parseNumeric(singleGoal.spaceSection)
+      );
+    });
+  });
+
+  /* ── Industry-specific anti-reference overrides ───────── */
+
+  describe("fast-food anti-reference (restaurant industry)", () => {
+    it("increases spaceSection for refined feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["fast-food"]);
+      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
+    });
+
+    it("enriches colorPrimary", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["fast-food"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+  });
+
+  describe("cafeteria anti-reference (restaurant industry)", () => {
+    it("uses same overrides as fast-food (shared case)", () => {
+      const base = getBaseTokens();
+      const fastFood = applyEmotionalOverrides(base, [], ["fast-food"]);
+      const cafeteria = applyEmotionalOverrides(base, [], ["cafeteria"]);
+      expect(cafeteria.spaceSection).toBe(fastFood.spaceSection);
+      expect(cafeteria.colorPrimary).toBe(fastFood.colorPrimary);
+    });
+  });
+
+  describe("budget-salon anti-reference (spa/booking industry)", () => {
+    it("increases spacing substantially", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["budget-salon"]);
+      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
+      expect(parseNumeric(result.spaceComponent)).toBeGreaterThan(
+        parseNumeric(base.spaceComponent)
+      );
+    });
+
+    it("deepens colorPrimary", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["budget-salon"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+  });
+
+  describe("medical-clinic anti-reference (spa/booking industry)", () => {
+    it("shifts colorPrimary warmer", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["medical-clinic"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+    });
+
+    it("rounds border radius", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["medical-clinic"]);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+      expect(parseNumeric(result.radiusMd)).toBeGreaterThan(parseNumeric(base.radiusMd));
+    });
+  });
+
+  describe("stock-agency anti-reference (photography industry)", () => {
+    it("increases weightBold for personality", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["stock-agency"]);
+      expect(parseInt(result.weightBold)).toBeGreaterThanOrEqual(800);
+    });
+
+    it("enriches accent color", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["stock-agency"]);
+      expect(result.colorAccent).not.toBe(base.colorAccent);
+    });
+  });
+
+  describe("mega-retailer anti-reference (ecommerce industry)", () => {
+    it("warms primary color and rounds shapes", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["mega-retailer"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+    });
+  });
+
+  describe("content-farm anti-reference (blog industry)", () => {
+    it("increases weightBold and spacing", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["content-farm"]);
+      expect(parseInt(result.weightBold)).toBeGreaterThanOrEqual(800);
+      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
+    });
+  });
+
+  describe("government-agency anti-reference (nonprofit industry)", () => {
+    it("warms palette and rounds shapes", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["government-agency"]);
+      expect(result.colorPrimary).not.toBe(base.colorPrimary);
+      expect(parseNumeric(result.radiusSm)).toBeGreaterThan(parseNumeric(base.radiusSm));
+    });
+
+    it("reduces weightBold for friendlier feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["government-agency"]);
+      expect(parseInt(result.weightBold)).toBeLessThanOrEqual(600);
+    });
+  });
+
+  describe("textbook anti-reference (educational industry)", () => {
+    it("tightens spacing for modern feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["textbook"]);
+      expect(parseNumeric(result.spaceSection)).toBeLessThan(parseNumeric(base.spaceSection));
+    });
+
+    it("speeds up transitions", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["textbook"]);
+      expect(parseMs(result.transitionBase)).toBeLessThan(parseMs(base.transitionBase));
+    });
+  });
+
+  describe("flyer anti-reference (event industry)", () => {
+    it("increases spacing for premium feel", () => {
+      const base = getBaseTokens();
+      const result = applyEmotionalOverrides(base, [], ["flyer"]);
+      expect(parseNumeric(result.spaceSection)).toBeGreaterThan(parseNumeric(base.spaceSection));
+      expect(parseNumeric(result.spaceComponent)).toBeGreaterThan(
+        parseNumeric(base.spaceComponent)
       );
     });
   });

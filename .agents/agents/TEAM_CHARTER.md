@@ -190,8 +190,10 @@ Blocked by dependency  → Document what's needed, move to next task
 
 ## Current Phase
 
-**Phase 4C: Brand Character System** — COMPLETE
-**Next: Phase 5** — Visual editor, multi-page support, deployment pipeline
+**Output Quality Overhaul** — 76% complete (25/33 stories shipped)
+**Completed tiers**: Tier 1 (Content Fidelity), Tier 2 (Visual Character), Tier 4 (Intake Upgrades), Tier 5 (Anti-References)
+**In progress**: Tier 3 (Feedback Loop — screenshot capture + VLM remaining), Tier 6 (Dev Tooling — test cases + comparison remaining)
+**Next**: Phase 5 — Multi-page generation, real images, Next.js export upgrade
 
 See `docs/ROADMAP.md` for full phase details.
 

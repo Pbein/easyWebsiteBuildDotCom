@@ -23,12 +23,14 @@ export type BrandArchetype = "guide" | "expert" | "creative" | "caretaker" | "re
 export type AntiReference =
   | "corporate"
   | "cheap"
-  | "clinical"
-  | "salesy"
-  | "cluttered"
-  | "boring"
-  | "aggressive"
-  | "generic";
+  | "generic"
+  | "minimalist"
+  | "maximalist"
+  | "traditional"
+  | "trendy"
+  | "playful"
+  | "formal"
+  | "dramatic";
 
 /* ── Display Data ──────────────────────────────────────── */
 
@@ -219,18 +221,138 @@ export const BRAND_ARCHETYPES: BrandArchetypeData[] = [
 ];
 
 export interface AntiReferenceData {
-  id: AntiReference;
+  id: AntiReference | string;
   label: string;
   description: string;
 }
 
+/* ── Industry-Specific Anti-References ──────────────────── */
+
+export interface IndustryAntiRefData {
+  id: string;
+  label: string;
+  description: string;
+}
+
+/**
+ * Business-type-specific anti-references shown alongside general ones.
+ * Keys are siteType ids or inferred sub-types from the intake flow.
+ * Each entry provides 2-3 industry-specific options.
+ */
+export const INDUSTRY_ANTI_REFERENCES: Record<string, IndustryAntiRefData[]> = {
+  restaurant: [
+    { id: "fast-food", label: "Fast Food", description: "We're not a drive-through chain" },
+    { id: "cafeteria", label: "Cafeteria", description: "We're not institutional dining" },
+    {
+      id: "chain-restaurant",
+      label: "Chain Restaurant",
+      description: "We're not a franchise operation",
+    },
+  ],
+  booking: [
+    { id: "budget-salon", label: "Budget Salon", description: "We're not a walk-in discount shop" },
+    { id: "medical-clinic", label: "Medical Clinic", description: "We're not cold and clinical" },
+    { id: "call-center", label: "Call Center", description: "We're not impersonal phone booking" },
+  ],
+  spa: [
+    {
+      id: "budget-salon",
+      label: "Budget Nail Salon",
+      description: "We're not a strip-mall quick-fix",
+    },
+    {
+      id: "medical-clinic",
+      label: "Medical Clinic",
+      description: "We're not sterile and clinical",
+    },
+  ],
+  photography: [
+    {
+      id: "stock-agency",
+      label: "Stock Photo Agency",
+      description: "We're not faceless bulk content",
+    },
+    {
+      id: "snapshot-studio",
+      label: "Snapshot Studio",
+      description: "We're not a mall portrait kiosk",
+    },
+  ],
+  ecommerce: [
+    { id: "flea-market", label: "Flea Market", description: "We're not a bargain-bin bazaar" },
+    { id: "mega-retailer", label: "Mega Retailer", description: "We're not an Amazon clone" },
+    { id: "dropship", label: "Dropship Store", description: "We're not a faceless reseller" },
+  ],
+  portfolio: [
+    { id: "stock-agency", label: "Stock Agency", description: "We're not generic clip art" },
+    {
+      id: "student-project",
+      label: "Student Project",
+      description: "We're not a homework assignment",
+    },
+  ],
+  blog: [
+    { id: "content-farm", label: "Content Farm", description: "We're not clickbait SEO filler" },
+    { id: "news-wire", label: "News Wire", description: "We're not a dry newsfeed" },
+  ],
+  nonprofit: [
+    {
+      id: "government-agency",
+      label: "Government Agency",
+      description: "We're not bureaucratic and stiff",
+    },
+    { id: "charity-guilt", label: "Guilt Trip", description: "We inspire action, not guilt" },
+  ],
+  educational: [
+    { id: "textbook", label: "Textbook", description: "We're not dry and academic" },
+    {
+      id: "children-site",
+      label: "Children's Site",
+      description: "We're not juvenile or cartoonish",
+    },
+  ],
+  event: [
+    {
+      id: "ticket-booth",
+      label: "Ticket Booth",
+      description: "We're not just a transaction point",
+    },
+    {
+      id: "flyer",
+      label: "Paper Flyer",
+      description: "We're not a stapled bulletin board posting",
+    },
+  ],
+  // 'personal', 'community', 'landing', 'directory' fall through — general refs only
+};
+
 export const ANTI_REFERENCES: AntiReferenceData[] = [
+  // Universal negatives (nobody wants these)
   { id: "corporate", label: "Corporate", description: "Stiff, suit-and-tie, forgettable" },
   { id: "cheap", label: "Cheap", description: "Discount-bin, bargain-basement feel" },
-  { id: "clinical", label: "Clinical", description: "Cold, sterile, impersonal" },
-  { id: "salesy", label: "Salesy", description: "Pushy, aggressive, infomercial energy" },
-  { id: "cluttered", label: "Cluttered", description: "Too much going on, overwhelming" },
-  { id: "boring", label: "Boring", description: "Forgettable, seen-it-a-million-times" },
-  { id: "aggressive", label: "Aggressive", description: "In-your-face, confrontational" },
   { id: "generic", label: "Generic", description: "Template-y, could be any business" },
+  // Genuine aesthetic trade-offs (valid for some, wrong for others)
+  {
+    id: "minimalist",
+    label: "Minimalist",
+    description: "We want richness and detail, not sparse and empty",
+  },
+  {
+    id: "maximalist",
+    label: "Maximalist",
+    description: "We want clean and focused, not overwhelming",
+  },
+  {
+    id: "traditional",
+    label: "Traditional",
+    description: "We're forward-looking, not heritage-bound",
+  },
+  { id: "trendy", label: "Trendy", description: "We want timeless, not chasing the latest fad" },
+  {
+    id: "playful",
+    label: "Playful",
+    description: "We're serious about what we do, not lighthearted",
+  },
+  { id: "formal", label: "Formal", description: "We're approachable, not stiff and ceremonial" },
+  { id: "dramatic", label: "Dramatic", description: "We're grounded and steady, not over-the-top" },
 ];

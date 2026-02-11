@@ -152,32 +152,214 @@ export function applyEmotionalOverrides(
 
   for (const antiRef of antiReferences) {
     switch (antiRef) {
-      case "cluttered":
-        // Ensure generous spacing
-        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.1);
-        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.08);
-        tokens.spaceElement = scaleValue(tokens.spaceElement, 1.05);
+      // Universal negatives
+      case "corporate":
+        // Anti-corporate: warmer colors, rounder shapes, relaxed spacing
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.3);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.25);
+        tokens.radiusLg = scaleValue(tokens.radiusLg, 1.2);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -10 });
+        tokens.colorBackground = adjustColor(tokens.colorBackground, { temperature: -5 });
+        tokens.leadingRelaxed = "1.85";
         break;
 
       case "cheap":
-        // Ensure refined radius, generous spacing, and richer colors
-        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.05);
-        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.05);
+        // Anti-cheap: richer colors, more spacing, refined shadows
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.08);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.06);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.25, darken: 0.1 });
+        tokens.colorAccent = adjustColor(tokens.colorAccent, { saturate: 0.2 });
+        break;
+
+      case "generic":
+        // Anti-generic: boost saturation, add stronger contrast
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.3 });
+        tokens.colorAccent = adjustColor(tokens.colorAccent, { saturate: 0.25, brighten: 0.1 });
+        tokens.weightBold = "800";
+        break;
+
+      // Aesthetic trade-offs
+      case "minimalist":
+        // Anti-minimalist: richer surfaces, more shadows, tighter spacing
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 0.9);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 0.92);
+        tokens.borderWidth = scaleValue(tokens.borderWidth, 1.5);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2 });
+        break;
+
+      case "maximalist":
+        // Anti-maximalist: generous spacing, minimal shadows, clean surfaces
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.12);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.1);
+        tokens.spaceElement = scaleValue(tokens.spaceElement, 1.08);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: -0.15 });
+        break;
+
+      case "traditional":
+        // Anti-traditional: modern radius, bolder weights, cooler temps
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.4);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.3);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: 15 });
+        tokens.weightBold = "800";
+        tokens.trackingTight = "-0.03em";
+        break;
+
+      case "trendy":
+        // Anti-trendy: classic proportions, serif-friendly spacing, muted palette
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: -0.15, darken: 0.1 });
+        tokens.colorAccent = adjustColor(tokens.colorAccent, { saturate: -0.1 });
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.15);
+        tokens.leadingRelaxed = "1.85";
+        break;
+
+      case "playful":
+        // Anti-playful: sharper radius, deeper colors, tighter leading
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 0.6);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 0.65);
+        tokens.radiusLg = scaleValue(tokens.radiusLg, 0.7);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { darken: 0.15 });
+        tokens.leadingTight = "1.15";
+        break;
+
+      case "formal":
+        // Anti-formal: warmer palette, rounder shapes, relaxed weight
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.35);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.3);
+        tokens.radiusLg = scaleValue(tokens.radiusLg, 1.25);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -12 });
+        tokens.colorBackground = adjustColor(tokens.colorBackground, { temperature: -5 });
+        tokens.weightBold = "600";
+        break;
+
+      case "dramatic":
+        // Anti-dramatic: slower transitions, muted animations, steady palette
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.3);
+        tokens.transitionFast = scaleTransition(tokens.transitionFast, 1.25);
+        tokens.animationDistance = scaleValue(tokens.animationDistance, 0.6);
+        tokens.animationScale = "1.01";
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: -0.2 });
+        break;
+
+      // ── Industry-specific anti-references ────────────────────
+
+      case "fast-food":
+      case "cafeteria":
+      case "chain-restaurant":
+        // Anti-fast-food/cafeteria/chain: richer colors, more spacing, refined feel
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.1);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.08);
         tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2, darken: 0.1 });
         tokens.colorAccent = adjustColor(tokens.colorAccent, { saturate: 0.15 });
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.1);
         break;
 
-      case "aggressive":
-        // Slow down transitions, reduce animation intensity
-        tokens.transitionFast = scaleTransition(tokens.transitionFast, 1.2);
-        tokens.animationDistance = scaleValue(tokens.animationDistance, 0.8);
-        tokens.animationScale = "1.02";
+      case "budget-salon":
+        // Anti-budget-salon: premium spacing, richer surfaces, deeper colors
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.12);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.1);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.25, darken: 0.15 });
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.15);
         break;
 
-      case "boring":
-        // Increase animation slightly to add interest
-        tokens.animationDistance = scaleValue(tokens.animationDistance, 1.15);
-        tokens.animationScale = "1.03";
+      case "medical-clinic":
+        // Anti-clinical: warmer palette, rounder shapes, relaxed transitions
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -15 });
+        tokens.colorBackground = adjustColor(tokens.colorBackground, { temperature: -8 });
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.25);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.2);
+        break;
+
+      case "call-center":
+        // Anti-call-center: warmer palette, personal feel
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -10 });
+        tokens.leadingRelaxed = "1.85";
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.06);
+        break;
+
+      case "stock-agency":
+        // Anti-stock: bolder weights, richer accent, more personality
+        tokens.weightBold = "800";
+        tokens.colorAccent = adjustColor(tokens.colorAccent, { saturate: 0.3, brighten: 0.1 });
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2 });
+        break;
+
+      case "snapshot-studio":
+      case "student-project":
+        // Anti-snapshot/student: premium feel, refined spacing, deeper colors
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.08);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.15, darken: 0.1 });
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.1);
+        break;
+
+      case "flea-market":
+      case "dropship":
+        // Anti-flea-market/dropship: premium spacing, richer palette
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.1);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.08);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2, darken: 0.1 });
+        break;
+
+      case "mega-retailer":
+        // Anti-mega-retailer: warmer, more personal, rounder shapes
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -10 });
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.2);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.15);
+        tokens.leadingRelaxed = "1.85";
+        break;
+
+      case "content-farm":
+        // Anti-content-farm: richer typography, more spacing, bolder contrast
+        tokens.weightBold = "800";
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.08);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2 });
+        break;
+
+      case "news-wire":
+        // Anti-news-wire: warmer palette, relaxed leading
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -10 });
+        tokens.leadingRelaxed = "1.85";
+        break;
+
+      case "government-agency":
+        // Anti-government: warmer, rounder, friendlier
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { temperature: -12 });
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 1.3);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 1.25);
+        tokens.weightBold = "600";
+        break;
+
+      case "charity-guilt":
+        // Anti-guilt-trip: brighter, more hopeful palette
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { brighten: 0.15 });
+        tokens.colorAccent = adjustColor(tokens.colorAccent, { brighten: 0.1, saturate: 0.15 });
+        break;
+
+      case "textbook":
+        // Anti-textbook: richer colors, tighter spacing, modern feel
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2 });
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 0.92);
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 0.85);
+        break;
+
+      case "children-site":
+        // Anti-children's-site: deeper, more serious palette, sharper shapes
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { darken: 0.15, saturate: -0.1 });
+        tokens.radiusSm = scaleValue(tokens.radiusSm, 0.7);
+        tokens.radiusMd = scaleValue(tokens.radiusMd, 0.75);
+        break;
+
+      case "ticket-booth":
+        // Anti-ticket-booth: more spacing, richer experience feel
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.1);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.15 });
+        break;
+
+      case "flyer":
+        // Anti-flyer: premium spacing, refined transitions, deeper colors
+        tokens.spaceSection = scaleValue(tokens.spaceSection, 1.12);
+        tokens.spaceComponent = scaleValue(tokens.spaceComponent, 1.08);
+        tokens.colorPrimary = adjustColor(tokens.colorPrimary, { saturate: 0.2, darken: 0.1 });
+        tokens.transitionBase = scaleTransition(tokens.transitionBase, 1.15);
         break;
     }
   }

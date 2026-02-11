@@ -192,6 +192,38 @@
 
 ---
 
+## Output Quality Overhaul (Cross-cutting — In Progress)
+
+**Goal**: Fix content fidelity, visual character accuracy, and developer tooling across the assembly pipeline. Tracked in [EPICS_AND_STORIES.md](./EPICS_AND_STORIES.md).
+
+### Shipped (25/33 stories — 76%)
+
+- [x] **Tier 1: Content Fidelity** (9/9) — COMPLETE
+  - AI prompt restructured to emphasize user's own words and business sub-type vocabulary
+  - Business-type-aware nav labels, CTAs, discovery questions, and deterministic content (3 sub-types)
+  - Narrative prompts woven into deterministic fallback
+  - Content validator + auto-fix pipeline (vocab swaps, headline replacements, role corrections)
+- [x] **Tier 2: Visual Character** (6/6) — COMPLETE
+  - Business type + emotional goals in theme generator
+  - Industry color hue shifting, dark/light mode business bias
+  - Business-aware font pairing selection and variant selection
+- [x] **Tier 3 partial**: Pipeline session logging, quick satisfaction rating (feedback banner)
+- [x] **Tier 4: Intake Upgrades** (1/1 active) — COMPLETE (3 deferred)
+  - A/B theme variant toggle in preview
+- [x] **Tier 5: Anti-References** (2/2) — COMPLETE
+  - Anti-reference redesign: 10 genuine aesthetic trade-offs (replaced generic negatives)
+  - Business-specific anti-refs: 10 industry maps (restaurant, spa, photography, ecommerce, etc.) with targeted theme overrides
+- [x] **Tier 6 partial**: Dev panel with populated Intake, Prompt/AI Response, Validation, and Theme tabs
+- [x] **Testing**: 323 tests across 19 test files (validate-spec, emotional-overrides, fix-spec, theme-variants, feedback-banner, industry-anti-refs + 13 existing suites)
+
+### Remaining (5 active + 3 deferred)
+
+- [ ] **T3-E1**: Screenshot capture + VLM evaluation + feedback-to-adjustments (3 stories)
+- [ ] **T6-E2**: Named test cases + side-by-side comparison (2 stories)
+- [ ] _Deferred_: Mood board curation (T4-E1-S1/S2), Visual reference URL input (T4-E2-S1)
+
+---
+
 ## Phase 5: Multi-Page Generation & Core Quality (Next — Weeks 1-4)
 
 **Goal**: Transform single-page output into multi-page websites with real images and polished export.
