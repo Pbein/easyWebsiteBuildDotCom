@@ -144,6 +144,15 @@ export default defineSchema({
     createdAt: v.float64(),
   }).index("by_session", ["sessionId"]),
 
+  vlmEvaluations: defineTable({
+    sessionId: v.string(),
+    overallScore: v.float64(),
+    dimensions: v.any(),
+    summary: v.string(),
+    themeAdjustments: v.any(),
+    evaluatedAt: v.float64(),
+  }).index("by_session", ["sessionId"]),
+
   testCases: defineTable({
     name: v.string(),
     intakeSnapshot: v.any(),

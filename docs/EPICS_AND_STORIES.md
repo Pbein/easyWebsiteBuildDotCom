@@ -9,43 +9,43 @@
 ## Progress Tracker
 
 > **Last updated:** 2026-02-10
-> **Stories shipped:** 27/33 (82%) — 3 active remaining, 3 deferred
+> **Stories shipped:** 30/33 (91%) — 0 active remaining, 3 deferred
 
-| Story    | Title                                       | Status      | Commit    |
-| -------- | ------------------------------------------- | ----------- | --------- |
-| T1-E1-S1 | AI Prompt: User's Own Words                 | ✅ Done     | `afbc34d` |
-| T1-E1-S2 | AI Prompt: Business Sub-Type Vocabulary     | ✅ Done     | `afbc34d` |
-| T1-E1-S3 | Business-Type-Aware Nav Labels              | ✅ Done     | `afbc34d` |
-| T1-E1-S4 | Sub-Type Deterministic Content (3 types)    | ✅ Done     | `afbc34d` |
-| T1-E1-S5 | Narrative Prompts in Deterministic Fallback | ✅ Done     | `afbc34d` |
-| T1-E1-S6 | Business-Specific CTAs                      | ✅ Done     | `038d47f` |
-| T1-E1-S7 | Business-Sub-Type Discovery Questions       | ✅ Done     | `afbc34d` |
-| T1-E2-S1 | Content Validator (safety net)              | ✅ Done     | `fb1098d` |
-| T1-E2-S2 | Auto-Fix Mismatches                         | ✅ Done     | —         |
-| T2-E1-S1 | Business Type in Theme Generator            | ✅ Done     | `afbc34d` |
-| T2-E1-S2 | Industry Color Association Hue Shifting     | ✅ Done     | `afbc34d` |
-| T2-E1-S3 | Emotional Goals Influence Colors            | ✅ Done     | `afbc34d` |
-| T2-E1-S4 | Dark/Light Mode Business Bias               | ✅ Done     | `038d47f` |
-| T2-E2-S1 | Business-Aware Font Selection               | ✅ Done     | `038d47f` |
-| T2-E2-S2 | Business-Aware Variant Selection            | ✅ Done     | `038d47f` |
-| T3-E1-S1 | Screenshot Capture                          | ⬚ Remaining | —         |
-| T3-E1-S2 | VLM Evaluation                              | ⬚ Remaining | —         |
-| T3-E1-S3 | Feedback → Adjustments                      | ⬚ Remaining | —         |
-| T3-E2-S1 | Quick Satisfaction Rating                   | ✅ Done     | —         |
-| T3-E2-S2 | Pipeline Session Logging                    | ✅ Done     | `fb1098d` |
-| T4-E1-S1 | Curate Mood Board Images                    | ⏸ Deferred  | —         |
-| T4-E1-S2 | Mood Board Selection Step                   | ⏸ Deferred  | —         |
-| T4-E2-S1 | Visual Reference URL Input                  | ⏸ Deferred  | —         |
-| T4-E3-S1 | A/B Theme Variant Toggle                    | ✅ Done     | —         |
-| T5-E1-S1 | Anti-Reference Redesign                     | ✅ Done     | —         |
-| T5-E1-S2 | Business-Specific Anti-Refs                 | ✅ Done     | —         |
-| T6-E1-S1 | Dev Panel UI Shell                          | ✅ Done     | `fb1098d` |
-| T6-E1-S2 | Dev Panel: Intake Tab                       | ✅ Done     | `fb1098d` |
-| T6-E1-S3 | Dev Panel: Prompt & AI Response Tab         | ✅ Done     | `fb1098d` |
-| T6-E1-S4 | Dev Panel: Theme Tab                        | ✅ Done     | —         |
-| T6-E1-S5 | Dev Panel: Validation Tab                   | ✅ Done     | `fb1098d` |
-| T6-E2-S1 | Named Test Cases                            | ✅ Done     | —         |
-| T6-E2-S2 | Side-by-Side Comparison                     | ✅ Done     | —         |
+| Story    | Title                                       | Status     | Commit    |
+| -------- | ------------------------------------------- | ---------- | --------- |
+| T1-E1-S1 | AI Prompt: User's Own Words                 | ✅ Done    | `afbc34d` |
+| T1-E1-S2 | AI Prompt: Business Sub-Type Vocabulary     | ✅ Done    | `afbc34d` |
+| T1-E1-S3 | Business-Type-Aware Nav Labels              | ✅ Done    | `afbc34d` |
+| T1-E1-S4 | Sub-Type Deterministic Content (3 types)    | ✅ Done    | `afbc34d` |
+| T1-E1-S5 | Narrative Prompts in Deterministic Fallback | ✅ Done    | `afbc34d` |
+| T1-E1-S6 | Business-Specific CTAs                      | ✅ Done    | `038d47f` |
+| T1-E1-S7 | Business-Sub-Type Discovery Questions       | ✅ Done    | `afbc34d` |
+| T1-E2-S1 | Content Validator (safety net)              | ✅ Done    | `fb1098d` |
+| T1-E2-S2 | Auto-Fix Mismatches                         | ✅ Done    | —         |
+| T2-E1-S1 | Business Type in Theme Generator            | ✅ Done    | `afbc34d` |
+| T2-E1-S2 | Industry Color Association Hue Shifting     | ✅ Done    | `afbc34d` |
+| T2-E1-S3 | Emotional Goals Influence Colors            | ✅ Done    | `afbc34d` |
+| T2-E1-S4 | Dark/Light Mode Business Bias               | ✅ Done    | `038d47f` |
+| T2-E2-S1 | Business-Aware Font Selection               | ✅ Done    | `038d47f` |
+| T2-E2-S2 | Business-Aware Variant Selection            | ✅ Done    | `038d47f` |
+| T3-E1-S1 | Screenshot Capture                          | ✅ Done    | —         |
+| T3-E1-S2 | VLM Evaluation                              | ✅ Done    | —         |
+| T3-E1-S3 | Feedback → Adjustments                      | ✅ Done    | —         |
+| T3-E2-S1 | Quick Satisfaction Rating                   | ✅ Done    | —         |
+| T3-E2-S2 | Pipeline Session Logging                    | ✅ Done    | `fb1098d` |
+| T4-E1-S1 | Curate Mood Board Images                    | ⏸ Deferred | —         |
+| T4-E1-S2 | Mood Board Selection Step                   | ⏸ Deferred | —         |
+| T4-E2-S1 | Visual Reference URL Input                  | ⏸ Deferred | —         |
+| T4-E3-S1 | A/B Theme Variant Toggle                    | ✅ Done    | —         |
+| T5-E1-S1 | Anti-Reference Redesign                     | ✅ Done    | —         |
+| T5-E1-S2 | Business-Specific Anti-Refs                 | ✅ Done    | —         |
+| T6-E1-S1 | Dev Panel UI Shell                          | ✅ Done    | `fb1098d` |
+| T6-E1-S2 | Dev Panel: Intake Tab                       | ✅ Done    | `fb1098d` |
+| T6-E1-S3 | Dev Panel: Prompt & AI Response Tab         | ✅ Done    | `fb1098d` |
+| T6-E1-S4 | Dev Panel: Theme Tab                        | ✅ Done    | —         |
+| T6-E1-S5 | Dev Panel: Validation Tab                   | ✅ Done    | `fb1098d` |
+| T6-E2-S1 | Named Test Cases                            | ✅ Done    | —         |
+| T6-E2-S2 | Side-by-Side Comparison                     | ✅ Done    | —         |
 
 ### Shipping Log
 
@@ -53,6 +53,7 @@
 - **`038d47f`** — T1-E1-S6 + T2-E1-S4 + T2-E2 (S1-S2): Sub-type-aware variants, CTAs, font pairings, dark mode bias
 - **`fb1098d`** — T1-E2-S1 + T3-E2-S2 + T6-E1 (S1-S3, S5): Content validator, pipeline logging, dev panel with populated tabs
 - **`be702c4`** — T1-E2-S2 + T4-E3-S1 + T3-E2-S1: Auto-fix, A/B theme variants, feedback banner
+- **(pending)** — T3-E1 (S1-S3): Screenshot capture (html2canvas + Playwright), Claude Vision evaluation, VLM feedback → theme adjustments
 
 ---
 
@@ -521,26 +522,29 @@ Each epic follows this structure:
 
 **Story:** As the preview system, I should be able to capture a screenshot of the generated site preview for use in quality evaluation.
 
+**Status:** ✅ SHIPPED
+
 **Acceptance Criteria:**
 
-- [ ] New utility function: `capturePreviewScreenshot(url: string): Promise<Buffer>` using Puppeteer or Playwright
-- [ ] Can capture full-page screenshot at 1280px viewport width
-- [ ] Can capture above-the-fold screenshot (first 900px height)
-- [ ] Screenshot is returned as a base64-encoded image
-- [ ] Works in both local development and Vercel serverless environment (or is server-side only)
-- [ ] Screenshot capture is triggered by a button in the preview toolbar (dev-only initially)
+- [x] New utility function: `capturePreviewScreenshot(element: HTMLElement): Promise<ScreenshotResult>` using html2canvas (client) + Playwright (server)
+- [x] Can capture full-page screenshot at 1280px viewport width (Playwright route supports desktop/tablet/mobile viewports)
+- [x] Client capture capped at 4000px height to keep base64 manageable for VLM
+- [x] Screenshot is returned as a base64-encoded image (`ScreenshotResult.base64`)
+- [x] Hybrid approach: html2canvas for quick client-side capture, Playwright API route for high-quality server-side
+- [x] Screenshot capture is triggered by a Camera button in the preview toolbar
 
-**Technical Notes:**
+**Implementation:**
 
-- This likely needs a Next.js API route handler that uses Puppeteer/Playwright
-- On Vercel, use `@sparticuz/chromium` for serverless Puppeteer
-- Initially this can be a dev-only API endpoint: `/api/dev/screenshot?url=...`
-- The preview at `/demo/preview` is client-rendered — the screenshot needs to wait for hydration
+- `src/lib/screenshot/types.ts` — `ScreenshotResult` type (base64, width, height, captureMethod, capturedAt)
+- `src/lib/screenshot/capture-client.ts` — `capturePreviewScreenshot()` using dynamic `html2canvas` import, waits for `document.fonts.ready` + 300ms settle
+- `src/app/api/screenshot/route.ts` — Playwright server-side capture, localhost-only security check, viewport selection
+- `PreviewToolbar.tsx` — Camera button with `isCapturing` loading state
+- `demo/preview/page.tsx` — `previewRef` on DOM container, `handleScreenshot` callback, `lastScreenshot` state
 
 **Dependencies:** None
-**Scope:** M (3-5 days)
-**Cost Tier:** full-product (Puppeteer + serverless compute)
-**LuxuryFine Validation:** Yes — produces a screenshot for manual comparison
+**Scope:** M (delivered in 1 session)
+**Cost Tier:** hook-safe (html2canvas is free; Playwright is dev-only)
+**LuxuryFine Validation:** Yes — produces a screenshot for VLM evaluation
 
 ---
 
@@ -548,33 +552,43 @@ Each epic follows this structure:
 
 **Story:** As the quality evaluation system, I should send a screenshot + intake context to Claude Vision and receive a structured quality assessment.
 
+**Status:** ✅ SHIPPED
+
 **Acceptance Criteria:**
 
-- [ ] New function: `evaluateOutputQuality(screenshot: Buffer, intakeContext: IntakeContext): Promise<QualityScore>`
-- [ ] Claude Vision evaluates on 5 dimensions (1-10 scale each):
+- [x] New Convex action: `evaluateScreenshot` sends screenshot base64 + full business context to Claude Vision
+- [x] Claude Vision evaluates on 5 dimensions (1-10 scale each):
   1. **Content Relevance** — Does the text match the business type?
-  2. **Visual Character Match** — Does the design match the emotional goals and personality?
-  3. **Color Appropriateness** — Are colors suitable for the industry and cultural context?
-  4. **Typography Fit** — Do fonts match the brand character?
+  2. **Visual Character** — Does the design match the emotional goals and personality?
+  3. **Color Appropriateness** — Are colors suitable for the industry and brand archetype?
+  4. **Typography Fit** — Do fonts match the personality axes and voice profile?
   5. **Overall Cohesion** — Does everything work together as a unified design?
-- [ ] Response includes per-dimension scores, textual explanations, and suggested adjustments
-- [ ] Suggested adjustments are structured as `{ dimension: string, severity: "low"|"medium"|"high", direction: string, tokensToAdjust?: string[] }`
-- [ ] Response is JSON-parseable
+- [x] Response includes per-dimension scores, textual explanations, and suggested adjustments
+- [x] Response includes `themeAdjustments` as a `Record<string, string>` mapping ThemeTokens keys to CSS values
+- [x] Response is JSON-parseable (markdown fence stripping + validation)
+- [x] Deterministic fallback: all dimensions scored 5/10 with "no API key" explanation when `ANTHROPIC_API_KEY` is not set
+- [x] Results persisted in Convex `vlmEvaluations` table (sessionId indexed)
+- [x] DevPanel VLM tab shows score bars (green 7+, yellow 4-6, red 1-3), explanations, and suggestions
 
-**Technical Notes:**
+**Implementation:**
 
-- New file: `src/lib/evaluation/vlm-evaluate.ts` or a Convex action
-- Uses `@anthropic-ai/sdk` with Claude Sonnet's vision capability
-- The prompt should include:
-  - The screenshot (base64 image)
-  - The full intake context (business name, type, description, emotional goals, voice, archetype, anti-references, narrative prompts)
-  - Explicit scoring rubric for each dimension
-- Budget: ~$0.02-0.05 per evaluation (one vision call)
+- `convex/ai/evaluateScreenshot.ts` — Convex action using `@anthropic-ai/sdk` with Claude Sonnet vision, multimodal message (image + text prompt), structured JSON response
+- `convex/vlmEvaluations.ts` — `saveEvaluationInternal` (internalMutation) + `getLatestEvaluation` (query by sessionId)
+- `convex/schema.ts` — `vlmEvaluations` table with `by_session` index
+- `src/lib/vlm/types.ts` — `DimensionScore`, `VLMEvaluation` types
+- `DevPanel.tsx` — VLM tab with Evaluate button, loading state, 5-dimension score visualization, summary, cost note (~$0.03/eval)
 
-**Dependencies:** T3-E1-S1 (needs screenshot capture)
-**Scope:** L (1-2 weeks)
-**Cost Tier:** full-product (additional AI call with vision)
-**LuxuryFine Validation:** Yes — should score low on Content Relevance and Color Appropriateness for current output
+**Evaluation prompt includes:**
+
+- Full business context (siteType, businessName, conversionGoal, tagline)
+- Personality vector with labeled axes (minimal_rich, playful_serious, warm_cool, light_bold, classic_modern, calm_dynamic)
+- Emotional goals, voice profile, brand archetype, anti-references
+- Explicit instruction to return `themeAdjustments` as valid ThemeTokens keys with CSS values
+
+**Dependencies:** T3-E1-S1 (screenshot capture)
+**Scope:** L (delivered in 1 session)
+**Cost Tier:** full-product (~$0.03 per evaluation, on-demand only)
+**LuxuryFine Validation:** Yes — scores reveal content/color mismatches with actionable adjustments
 
 ---
 
@@ -582,19 +596,36 @@ Each epic follows this structure:
 
 **Story:** As the feedback routing system, when VLM evaluation identifies specific issues (e.g., "colors too cold for a warm restaurant"), I should map those to concrete parameter adjustments that can be applied.
 
+**Status:** ✅ SHIPPED
+
 **Acceptance Criteria:**
 
-- [ ] New function: `routeFeedbackToAdjustments(evaluation: QualityScore): ThemeAdjustments`
-- [ ] "Colors too cold" → shift hue toward warm range, increase saturation
-- [ ] "Too corporate for a restaurant" → adjust font pairing, increase radius, warm up neutrals
-- [ ] "Text doesn't match business" → flag for AI re-generation of specific components
-- [ ] Adjustments are expressed as `Partial<ThemeTokens>` overrides
-- [ ] System can apply adjustments and re-render without full regeneration
+- [x] New function: `mapAdjustmentsToTokenOverrides(rawAdjustments): Partial<ThemeTokens>` — safety filter for VLM suggestions
+- [x] Validates keys against all 66 ThemeTokens keys (rejects unknown keys silently)
+- [x] Validates hex format for color tokens (`/^#[0-9a-fA-F]{3,8}$/`), passes non-color tokens as-is
+- [x] Adjustments are expressed as `Partial<ThemeTokens>` overrides
+- [x] System applies adjustments and re-renders without full regeneration (merged into `activeTheme` via `useMemo`)
+- [x] "Apply Adjustments" button in DevPanel VLM tab triggers `onApplyAdjustments` callback
+- [x] `vlmOverrides` state merges onto active variant theme — instant re-render
+
+**Implementation:**
+
+- `src/lib/vlm/map-adjustments.ts` — `mapAdjustmentsToTokenOverrides()` validates against `VALID_TOKEN_KEYS` set, hex-checks color tokens, returns filtered `Partial<ThemeTokens>`
+- `src/lib/vlm/index.ts` — Barrel export for `mapAdjustmentsToTokenOverrides` + types
+- `demo/preview/page.tsx` — `vlmOverrides` state, `handleApplyAdjustments` callback using `mapAdjustmentsToTokenOverrides`, `activeTheme` memo merges `{ ...base, ...vlmOverrides }`
+- `DevPanel.tsx` — "Apply Adjustments" button (teal, only visible when themeAdjustments has entries), adjustment key/value display with color swatches
+
+**Tests:** 45 tests across 4 files:
+
+- `tests/unit/vlm/map-adjustments.test.ts` — 18 tests (key validation, hex validation, mixed valid/invalid, all 66 keys)
+- `tests/unit/vlm/vlm-types.test.ts` — 5 tests (type construction, timestamps)
+- `tests/unit/vlm/evaluation-parsing.test.ts` — 19 tests (JSON parsing, fence stripping, validation errors, fallback)
+- `tests/unit/screenshot/screenshot-types.test.ts` — 3 tests (client/server capture methods)
 
 **Dependencies:** T3-E1-S2
-**Scope:** L (1-2 weeks)
-**Cost Tier:** full-product (may trigger re-generation)
-**LuxuryFine Validation:** Yes — should produce adjustments that fix the acid-green palette
+**Scope:** L (delivered in 1 session)
+**Cost Tier:** hook-safe (deterministic mapping, no API calls)
+**LuxuryFine Validation:** Yes — VLM suggests color/font adjustments, Apply button fixes them instantly
 
 ---
 

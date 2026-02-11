@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Tablet, Smartphone, Download, Shuffle } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Download, Shuffle, Camera } from "lucide-react";
 
 interface PreviewToolbarProps {
   businessName: string;
@@ -8,6 +8,8 @@ interface PreviewToolbarProps {
   onViewportChange: (viewport: "desktop" | "tablet" | "mobile") => void;
   onExport?: () => void;
   isExporting?: boolean;
+  onScreenshot?: () => void;
+  isCapturing?: boolean;
   activeVariant?: "A" | "B";
   onVariantChange?: (variant: "A" | "B") => void;
 }
@@ -28,6 +30,8 @@ export function PreviewToolbar({
   onViewportChange,
   onExport,
   isExporting = false,
+  onScreenshot,
+  isCapturing = false,
   activeVariant,
   onVariantChange,
 }: PreviewToolbarProps): React.ReactElement {
@@ -86,6 +90,19 @@ export function PreviewToolbar({
             ))}
           </div>
         )}
+        <button
+          onClick={onScreenshot}
+          disabled={!onScreenshot || isCapturing}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+            onScreenshot && !isCapturing
+              ? "cursor-pointer text-[#3ecfb4] hover:bg-[rgba(62,207,180,0.1)]"
+              : "cursor-not-allowed text-[#9496a8] opacity-50"
+          }`}
+          title={isCapturing ? "Capturing..." : "Take Screenshot"}
+        >
+          <Camera className={`h-3.5 w-3.5 ${isCapturing ? "animate-pulse" : ""}`} />
+          <span className="hidden sm:inline">{isCapturing ? "Capturing..." : "Screenshot"}</span>
+        </button>
         <button
           onClick={onExport}
           disabled={!onExport || isExporting}

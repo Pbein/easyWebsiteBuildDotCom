@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import {
   ChevronDown,
@@ -13,16 +13,23 @@ import {
   Palette,
   Save,
   Check,
+  Eye,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { generateThemeFromVector } from "@/lib/theme/generate-theme";
 import { applyEmotionalOverrides } from "@/lib/theme/emotional-overrides";
 import type { ThemeTokens, PersonalityVector } from "@/lib/theme/theme.types";
+import type { SiteIntentDocument } from "@/lib/assembly/spec.types";
 
 interface DevPanelProps {
   sessionId: string;
+  screenshotBase64?: string;
+  spec?: SiteIntentDocument;
+  onApplyAdjustments?: (adjustments: Record<string, string>) => void;
 }
 
-type Tab = "pipeline" | "intake" | "theme" | "validation" | "raw";
+type Tab = "pipeline" | "intake" | "theme" | "validation" | "raw" | "vlm";
 
 const TAB_CONFIG: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "pipeline", label: "Pipeline", icon: <Activity className="h-3.5 w-3.5" /> },
@@ -30,6 +37,7 @@ const TAB_CONFIG: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "theme", label: "Theme", icon: <Palette className="h-3.5 w-3.5" /> },
   { id: "validation", label: "Validation", icon: <AlertTriangle className="h-3.5 w-3.5" /> },
   { id: "raw", label: "Raw", icon: <Code2 className="h-3.5 w-3.5" /> },
+  { id: "vlm", label: "VLM", icon: <Eye className="h-3.5 w-3.5" /> },
 ];
 
 function MethodBadge({ method }: { method: string }): React.ReactElement {
@@ -508,7 +516,255 @@ function RawTab({ log }: { log: Record<string, unknown> | null }): React.ReactEl
   );
 }
 
-export function DevPanel({ sessionId }: DevPanelProps): React.ReactElement {
+/* ────────────────────────────────────────────────────────────
+ * Score bar color helper
+ * ──────────────────────────────────────────────────────────── */
+function scoreColor(score: number): string {
+  if (score >= 7) return "bg-emerald-500";
+  if (score >= 4) return "bg-yellow-500";
+  return "bg-red-500";
+}
+
+function scoreTextColor(score: number): string {
+  if (score >= 7) return "text-emerald-400";
+  if (score >= 4) return "text-yellow-400";
+  return "text-red-400";
+}
+
+const DIMENSION_LABELS: Record<string, string> = {
+  content_relevance: "Content Relevance",
+  visual_character: "Visual Character",
+  color_appropriateness: "Color Appropriateness",
+  typography_fit: "Typography Fit",
+  overall_cohesion: "Overall Cohesion",
+};
+
+interface DimensionScoreData {
+  dimension: string;
+  score: number;
+  explanation: string;
+  suggestedAdjustments: string[];
+}
+
+function VLMTab({
+  sessionId,
+  screenshotBase64,
+  spec,
+  onApplyAdjustments,
+}: {
+  sessionId: string;
+  screenshotBase64?: string;
+  spec?: SiteIntentDocument;
+  onApplyAdjustments?: (adjustments: Record<string, string>) => void;
+}): React.ReactElement {
+  const [evaluating, setEvaluating] = useState(false);
+  const [localResult, setLocalResult] = useState<{
+    overallScore: number;
+    dimensions: DimensionScoreData[];
+    summary: string;
+    themeAdjustments: Record<string, string>;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const evaluate = useAction(api.ai.evaluateScreenshot.evaluateScreenshot);
+  const savedEvaluation = useQuery(api.vlmEvaluations.getLatestEvaluation, { sessionId });
+
+  // Use local result if available, otherwise fall back to saved
+  const result = localResult ?? (savedEvaluation as typeof localResult | null | undefined) ?? null;
+
+  const handleEvaluate = useCallback(async (): Promise<void> => {
+    if (!screenshotBase64 || !spec || evaluating) return;
+    setEvaluating(true);
+    setError(null);
+    try {
+      const evaluation = await evaluate({
+        sessionId,
+        screenshotBase64,
+        siteType: spec.siteType,
+        businessName: spec.businessName,
+        conversionGoal: spec.conversionGoal,
+        personalityVector: spec.personalityVector,
+        tagline: spec.tagline || undefined,
+        emotionalGoals: spec.emotionalGoals,
+        voiceProfile: spec.voiceProfile,
+        brandArchetype: spec.brandArchetype,
+        antiReferences: spec.antiReferences,
+      });
+      setLocalResult(evaluation);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Evaluation failed");
+    } finally {
+      setEvaluating(false);
+    }
+  }, [screenshotBase64, spec, evaluating, evaluate, sessionId]);
+
+  // No screenshot yet
+  if (!screenshotBase64) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8">
+        <Eye className="h-6 w-6 text-[#6b6d80]" />
+        <p className="text-[13px] text-[#6b6d80]">
+          Take a screenshot first using the toolbar button
+        </p>
+      </div>
+    );
+  }
+
+  const adjustmentCount = result ? Object.keys(result.themeAdjustments).length : 0;
+
+  return (
+    <div className="space-y-4 p-4">
+      {/* Evaluate button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => void handleEvaluate()}
+          disabled={evaluating}
+          className={`flex items-center gap-2 rounded-md px-4 py-2 text-[12px] font-semibold transition-colors ${
+            evaluating
+              ? "cursor-not-allowed bg-purple-500/10 text-purple-400/50"
+              : "bg-purple-500/15 text-purple-400 hover:bg-purple-500/25"
+          }`}
+        >
+          {evaluating ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Sending to Claude Vision...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-3.5 w-3.5" />
+              Evaluate Design
+            </>
+          )}
+        </button>
+        <span className="text-[10px] text-[#6b6d80]">~$0.03/evaluation</span>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-[12px] text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* Results */}
+      {result && (
+        <>
+          {/* Overall Score */}
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${scoreTextColor(result.overallScore)} bg-[rgba(255,255,255,0.04)]`}
+              style={{ fontFamily: "var(--font-mono, monospace)" }}
+            >
+              {result.overallScore.toFixed(1)}
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#c8c9d4]">Overall Score</p>
+              <p className="text-[11px] text-[#6b6d80]">Weighted average across 5 dimensions</p>
+            </div>
+          </div>
+
+          {/* Dimension scores */}
+          <div className="space-y-2.5">
+            {result.dimensions.map((d: DimensionScoreData) => (
+              <div
+                key={d.dimension}
+                className="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-3"
+              >
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[12px] font-medium text-[#c8c9d4]">
+                    {DIMENSION_LABELS[d.dimension] ?? d.dimension}
+                  </span>
+                  <span
+                    className={`text-[13px] font-bold ${scoreTextColor(d.score)}`}
+                    style={{ fontFamily: "var(--font-mono, monospace)" }}
+                  >
+                    {d.score}/10
+                  </span>
+                </div>
+                {/* Score bar */}
+                <div className="mb-2 h-1.5 w-full rounded-full bg-[rgba(255,255,255,0.06)]">
+                  <div
+                    className={`h-full rounded-full transition-all ${scoreColor(d.score)}`}
+                    style={{ width: `${d.score * 10}%` }}
+                  />
+                </div>
+                <p className="text-[11px] leading-relaxed text-[#9496a8]">{d.explanation}</p>
+                {d.suggestedAdjustments.length > 0 && (
+                  <ul className="mt-1.5 space-y-0.5">
+                    {d.suggestedAdjustments.map((adj, i) => (
+                      <li
+                        key={i}
+                        className="text-[11px] text-[#6b6d80] before:mr-1.5 before:content-['•']"
+                      >
+                        {adj}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Summary */}
+          <div>
+            <h4 className="mb-1 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+              Summary
+            </h4>
+            <p className="text-[12px] leading-relaxed text-[#c8c9d4]">{result.summary}</p>
+          </div>
+
+          {/* Apply Adjustments */}
+          {adjustmentCount > 0 && onApplyAdjustments && (
+            <div>
+              <h4 className="mb-2 text-[11px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                Suggested Theme Adjustments ({adjustmentCount})
+              </h4>
+              <div className="mb-3 space-y-0.5">
+                {Object.entries(result.themeAdjustments).map(([key, val]) => (
+                  <div key={key} className="flex items-center gap-2 text-[11px]">
+                    <span
+                      className="w-36 shrink-0 text-[#6b6d80]"
+                      style={{ fontFamily: "var(--font-mono, monospace)" }}
+                    >
+                      {key}
+                    </span>
+                    <span
+                      className="text-[#c8c9d4]"
+                      style={{ fontFamily: "var(--font-mono, monospace)" }}
+                    >
+                      {val}
+                    </span>
+                    {key.startsWith("color") && key !== "shadowColor" && (
+                      <div
+                        className="h-3 w-3 shrink-0 rounded border border-[rgba(255,255,255,0.1)]"
+                        style={{ backgroundColor: val }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => onApplyAdjustments(result.themeAdjustments)}
+                className="flex items-center gap-2 rounded-md bg-[#3ecfb4]/15 px-4 py-2 text-[12px] font-semibold text-[#3ecfb4] transition-colors hover:bg-[#3ecfb4]/25"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Apply Adjustments
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+export function DevPanel({
+  sessionId,
+  screenshotBase64,
+  spec,
+  onApplyAdjustments,
+}: DevPanelProps): React.ReactElement {
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("pipeline");
   const [saveState, setSaveState] = useState<"idle" | "naming" | "saving" | "saved">("idle");
@@ -672,6 +928,14 @@ export function DevPanel({ sessionId }: DevPanelProps): React.ReactElement {
             {activeTab === "theme" && <ThemeTab log={log ?? null} />}
             {activeTab === "validation" && <ValidationTab log={log ?? null} />}
             {activeTab === "raw" && <RawTab log={log ?? null} />}
+            {activeTab === "vlm" && (
+              <VLMTab
+                sessionId={sessionId}
+                screenshotBase64={screenshotBase64}
+                spec={spec}
+                onApplyAdjustments={onApplyAdjustments}
+              />
+            )}
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -8,8 +8,11 @@ import { api } from "../../../../convex/_generated/api";
 import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ExportResult } from "@/lib/export/generate-project";
+import { capturePreviewScreenshot } from "@/lib/screenshot";
+import type { ScreenshotResult } from "@/lib/screenshot";
 import { generateThemeVariants, applyEmotionalOverrides } from "@/lib/theme";
-import type { PersonalityVector } from "@/lib/theme";
+import type { PersonalityVector, ThemeTokens } from "@/lib/theme";
+import { mapAdjustmentsToTokenOverrides } from "@/lib/vlm";
 import { PreviewSidebar } from "@/components/platform/preview/PreviewSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
@@ -31,6 +34,8 @@ function PreviewContent(): React.ReactElement {
   const [activePage, setActivePage] = useState("/");
   const [isExporting, setIsExporting] = useState(false);
   const [activeVariant, setActiveVariant] = useState<"A" | "B">("A");
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [lastScreenshot, setLastScreenshot] = useState<ScreenshotResult | null>(null);
 
   // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
   const isDevParam = searchParams.get("dev") === "true";
@@ -176,6 +181,10 @@ function PreviewContent(): React.ReactElement {
       handleExport={handleExport}
       activeVariant={activeVariant}
       setActiveVariant={setActiveVariant}
+      isCapturing={isCapturing}
+      setIsCapturing={setIsCapturing}
+      lastScreenshot={lastScreenshot}
+      setLastScreenshot={setLastScreenshot}
       devPanelOpen={devPanelOpen}
       sessionId={sessionId}
     />
@@ -194,6 +203,10 @@ function PreviewLayout({
   handleExport,
   activeVariant,
   setActiveVariant,
+  isCapturing,
+  setIsCapturing,
+  lastScreenshot,
+  setLastScreenshot,
   devPanelOpen,
   sessionId,
 }: {
@@ -208,6 +221,10 @@ function PreviewLayout({
   handleExport: (spec: SiteIntentDocument) => Promise<void>;
   activeVariant: "A" | "B";
   setActiveVariant: (v: "A" | "B") => void;
+  isCapturing: boolean;
+  setIsCapturing: (v: boolean) => void;
+  lastScreenshot: ScreenshotResult | null;
+  setLastScreenshot: (v: ScreenshotResult | null) => void;
   devPanelOpen: boolean;
   sessionId: string | null;
 }): React.ReactElement {
@@ -233,7 +250,32 @@ function PreviewLayout({
     return variants;
   }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
 
-  const activeTheme = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
+  const [vlmOverrides, setVlmOverrides] = useState<Partial<ThemeTokens> | null>(null);
+
+  const activeTheme = useMemo(() => {
+    const base = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
+    return vlmOverrides ? { ...base, ...vlmOverrides } : base;
+  }, [activeVariant, themeVariants, vlmOverrides]);
+
+  const handleApplyAdjustments = useCallback((adjustments: Record<string, string>) => {
+    const overrides = mapAdjustmentsToTokenOverrides(adjustments);
+    setVlmOverrides(overrides);
+  }, []);
+
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const handleScreenshot = useCallback(async (): Promise<void> => {
+    if (!previewRef.current || isCapturing) return;
+    setIsCapturing(true);
+    try {
+      const result = await capturePreviewScreenshot(previewRef.current);
+      setLastScreenshot(result);
+    } catch (err) {
+      console.error("Screenshot capture failed:", err);
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [isCapturing, setIsCapturing, setLastScreenshot]);
 
   return (
     <div className="flex h-screen flex-col bg-[#0a0b0f]">
@@ -244,6 +286,8 @@ function PreviewLayout({
         onViewportChange={setViewport}
         onExport={() => handleExport(spec)}
         isExporting={isExporting}
+        onScreenshot={() => void handleScreenshot()}
+        isCapturing={isCapturing}
         activeVariant={activeVariant}
         onVariantChange={setActiveVariant}
       />
@@ -288,7 +332,10 @@ function PreviewLayout({
               maxWidth: "100%",
             }}
           >
-            <div className="h-full overflow-auto rounded-lg border border-[rgba(255,255,255,0.06)]">
+            <div
+              ref={previewRef}
+              className="h-full overflow-auto rounded-lg border border-[rgba(255,255,255,0.06)]"
+            >
               <AssemblyRenderer
                 spec={spec}
                 activePage={activePage}
@@ -301,7 +348,14 @@ function PreviewLayout({
       </div>
 
       {/* Dev Panel — bottom drawer */}
-      {devPanelOpen && sessionId && <DevPanel sessionId={sessionId} />}
+      {devPanelOpen && sessionId && (
+        <DevPanel
+          sessionId={sessionId}
+          screenshotBase64={lastScreenshot?.base64}
+          spec={spec}
+          onApplyAdjustments={handleApplyAdjustments}
+        />
+      )}
 
       {/* Feedback Banner — floating bottom-right */}
       {sessionId && <FeedbackBanner sessionId={sessionId} />}

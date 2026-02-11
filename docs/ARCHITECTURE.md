@@ -389,6 +389,68 @@ Curated starting points that can be adjusted:
 
 ---
 
+## Layer 3.5: Design Feedback Loop (VLM Evaluation)
+
+> **Status:** Implemented (T3-E1). Screenshot capture, Claude Vision evaluation, and feedback-to-theme-adjustment pipeline are fully wired. On-demand via DevPanel.
+
+### Overview
+
+The Design Feedback Loop closes the generate → evaluate → adjust → re-render cycle. After assembling a site, developers can capture a screenshot, send it to Claude Vision for quality scoring, and apply suggested theme adjustments — all without regenerating the spec.
+
+### Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  Preview Page    │────▶│  Screenshot      │────▶│  Claude Vision   │
+│  (AssemblyRender │     │  (html2canvas or  │     │  (Convex action)  │
+│   + ThemeProvider│     │   Playwright)     │     │  5-dimension      │
+│   + vlmOverrides)│     └──────────────────┘     │  scoring          │
+│                  │◀────────────────────────────│  + themeAdjustments│
+│  Re-renders with │     mapAdjustmentsTo         └──────────────────┘
+│  merged overrides│     TokenOverrides()                │
+└─────────────────┘                                     ▼
+                                                  ┌──────────────────┐
+                                                  │  Convex DB       │
+                                                  │  vlmEvaluations  │
+                                                  └──────────────────┘
+```
+
+### Screenshot Capture (Hybrid)
+
+Two capture methods for different use cases:
+
+- **Client-side** (`src/lib/screenshot/capture-client.ts`): Uses `html2canvas` for quick DOM-to-PNG capture. Waits for fonts + 300ms settle. Capped at 4000px height. Used for VLM evaluation input.
+- **Server-side** (`src/app/api/screenshot/route.ts`): Uses Playwright for pixel-perfect full-page capture. Restricted to localhost URLs. Supports viewport selection (desktop/tablet/mobile).
+
+### VLM Evaluation (5 Dimensions)
+
+The Claude Vision action (`convex/ai/evaluateScreenshot.ts`) scores screenshots on 5 dimensions (1-10 each):
+
+1. **Content Relevance** — Text matches business type and goals
+2. **Visual Character** — Design matches personality vector and emotional goals
+3. **Color Appropriateness** — Colors suit industry and brand archetype
+4. **Typography Fit** — Fonts match personality axes and voice profile
+5. **Overall Cohesion** — Unified professional design
+
+Includes deterministic fallback (all 5/10 scores) when no API key is configured.
+
+### Adjustment Mapping
+
+`mapAdjustmentsToTokenOverrides()` (`src/lib/vlm/map-adjustments.ts`) filters VLM-suggested adjustments:
+
+- Validates keys against the 66 ThemeTokens keys
+- Validates hex format for color tokens
+- Returns `Partial<ThemeTokens>` merged onto the active theme variant
+
+### Integration Points
+
+- **PreviewToolbar**: Screenshot button triggers `capturePreviewScreenshot()`
+- **DevPanel VLM tab**: Evaluate button, score visualization, Apply Adjustments button
+- **Preview page**: `vlmOverrides` state merged into `activeTheme` via `useMemo`
+- **Convex**: `vlmEvaluations` table persists results by session
+
+---
+
 ## Layer 4: Evolving Knowledge Base
 
 > **Status:** Schema tables created in Convex (`intentPaths`, `recipes`, `components`, `themes`, `assets`) with indexes. The tables are ready for data but the embedding/similarity matching system, path lifecycle management, and analytics dashboard have not been built. Planned for Phase 5.
