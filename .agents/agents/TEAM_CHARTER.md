@@ -190,9 +190,9 @@ Blocked by dependency  → Document what's needed, move to next task
 
 ## Current Phase
 
-**Output Quality Overhaul** — 82% complete (27/33 stories shipped)
-**Completed tiers**: Tier 1 (Content Fidelity), Tier 2 (Visual Character), Tier 4 (Intake Upgrades), Tier 5 (Anti-References), Tier 6 (Dev Tooling)
-**In progress**: Tier 3 (Feedback Loop — screenshot capture + VLM remaining, 3 stories)
+**Output Quality Overhaul** — 91% complete (30/33 stories shipped, 3 deferred)
+**Completed tiers**: Tier 1 (Content Fidelity), Tier 2 (Visual Character), Tier 3 (Feedback Loop), Tier 4 (Intake Upgrades), Tier 5 (Anti-References), Tier 6 (Dev Tooling)
+**Deferred**: T4-E1 (Mood Board — premium feature candidate), T4-E2 (Visual Reference URL — depends on T4-E1)
 **Next**: Phase 5 — Multi-page generation, real images, Next.js export upgrade
 
 See `docs/ROADMAP.md` for full phase details.
