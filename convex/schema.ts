@@ -144,6 +144,18 @@ export default defineSchema({
     createdAt: v.float64(),
   }).index("by_session", ["sessionId"]),
 
+  testCases: defineTable({
+    name: v.string(),
+    intakeSnapshot: v.any(),
+    specSnapshot: v.optional(v.any()),
+    personalityVector: v.optional(v.array(v.float64())),
+    pipelineMethod: v.optional(v.string()),
+    validationResult: v.optional(v.any()),
+    notes: v.optional(v.string()),
+    createdAt: v.float64(),
+    lastRunAt: v.optional(v.float64()),
+  }).index("by_name", ["name"]),
+
   users: defineTable({
     email: v.optional(v.string()),
     name: v.optional(v.string()),

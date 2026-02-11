@@ -9,7 +9,7 @@
 ## Progress Tracker
 
 > **Last updated:** 2026-02-10
-> **Stories shipped:** 25/33 (76%) — 5 active remaining, 3 deferred
+> **Stories shipped:** 27/33 (82%) — 3 active remaining, 3 deferred
 
 | Story    | Title                                       | Status      | Commit    |
 | -------- | ------------------------------------------- | ----------- | --------- |
@@ -44,8 +44,8 @@
 | T6-E1-S3 | Dev Panel: Prompt & AI Response Tab         | ✅ Done     | `fb1098d` |
 | T6-E1-S4 | Dev Panel: Theme Tab                        | ✅ Done     | —         |
 | T6-E1-S5 | Dev Panel: Validation Tab                   | ✅ Done     | `fb1098d` |
-| T6-E2-S1 | Named Test Cases                            | ⬚ Remaining | —         |
-| T6-E2-S2 | Side-by-Side Comparison                     | ⬚ Remaining | —         |
+| T6-E2-S1 | Named Test Cases                            | ✅ Done     | —         |
+| T6-E2-S2 | Side-by-Side Comparison                     | ✅ Done     | —         |
 
 ### Shipping Log
 

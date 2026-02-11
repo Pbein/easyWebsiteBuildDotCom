@@ -14,6 +14,7 @@ import type * as feedback from "../feedback.js";
 import type * as intakeResponses from "../intakeResponses.js";
 import type * as pipelineLogs from "../pipelineLogs.js";
 import type * as siteSpecs from "../siteSpecs.js";
+import type * as testCases from "../testCases.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   intakeResponses: typeof intakeResponses;
   pipelineLogs: typeof pipelineLogs;
   siteSpecs: typeof siteSpecs;
+  testCases: typeof testCases;
 }>;
 
 /**

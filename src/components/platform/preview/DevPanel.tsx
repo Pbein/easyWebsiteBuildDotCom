@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import {
   ChevronDown,
@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   Code2,
   Palette,
+  Save,
+  Check,
 } from "lucide-react";
 import { generateThemeFromVector } from "@/lib/theme/generate-theme";
 import { applyEmotionalOverrides } from "@/lib/theme/emotional-overrides";
@@ -509,9 +511,35 @@ function RawTab({ log }: { log: Record<string, unknown> | null }): React.ReactEl
 export function DevPanel({ sessionId }: DevPanelProps): React.ReactElement {
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("pipeline");
+  const [saveState, setSaveState] = useState<"idle" | "naming" | "saving" | "saved">("idle");
+  const [testCaseName, setTestCaseName] = useState("");
 
   const pipelineLog = useQuery(api.pipelineLogs.getPipelineLog, { sessionId });
   const log = pipelineLog as Record<string, unknown> | null | undefined;
+  const saveTestCase = useMutation(api.testCases.saveTestCase);
+
+  const handleSaveTestCase = useCallback(async (): Promise<void> => {
+    if (!log || !testCaseName.trim()) return;
+    setSaveState("saving");
+    try {
+      const intake = log.intakeData as Record<string, unknown> | undefined;
+      const spec = log.specSnapshot as Record<string, unknown> | undefined;
+      const pv = spec?.personalityVector as number[] | undefined;
+      await saveTestCase({
+        name: testCaseName.trim(),
+        intakeSnapshot: intake ?? {},
+        specSnapshot: spec,
+        personalityVector: pv,
+        pipelineMethod: log.method as string | undefined,
+        validationResult: log.validationResult as Record<string, unknown> | undefined,
+      });
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 2000);
+      setTestCaseName("");
+    } catch {
+      setSaveState("idle");
+    }
+  }, [log, testCaseName, saveTestCase]);
 
   // Keyboard shortcut info
   useEffect(() => {
@@ -543,12 +571,73 @@ export function DevPanel({ sessionId }: DevPanelProps): React.ReactElement {
             <span className="text-[11px] text-[#6b6d80]">{String(log.processingTimeMs)}ms</span>
           )}
         </div>
-        {collapsed ? (
-          <ChevronUp className="h-4 w-4 text-[#6b6d80]" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-[#6b6d80]" />
-        )}
+        <div className="flex items-center gap-2">
+          {/* Save as Test Case */}
+          {log && saveState === "idle" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSaveState("naming");
+              }}
+              className="flex items-center gap-1.5 rounded-md border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] px-2.5 py-1 text-[11px] font-medium text-[#6b6d80] transition-colors hover:border-[#e8a849]/30 hover:text-[#e8a849]"
+              title="Save as test case"
+            >
+              <Save className="h-3 w-3" />
+              Save Test Case
+            </button>
+          )}
+          {saveState === "saved" && (
+            <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+              <Check className="h-3 w-3" />
+              Saved
+            </span>
+          )}
+          {collapsed ? (
+            <ChevronUp className="h-4 w-4 text-[#6b6d80]" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-[#6b6d80]" />
+          )}
+        </div>
       </button>
+
+      {/* Test case naming dialog */}
+      {saveState === "naming" && (
+        <div className="flex items-center gap-2 border-t border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-4 py-2.5">
+          <input
+            type="text"
+            value={testCaseName}
+            onChange={(e) => setTestCaseName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && testCaseName.trim()) {
+                void handleSaveTestCase();
+              } else if (e.key === "Escape") {
+                setSaveState("idle");
+                setTestCaseName("");
+              }
+            }}
+            placeholder="Test case name (e.g., LuxuryFine Mexican Restaurant)"
+            className="flex-1 rounded-md border border-[rgba(255,255,255,0.1)] bg-[rgba(0,0,0,0.3)] px-3 py-1.5 text-[12px] text-[#c8c9d4] placeholder-[#6b6d80] outline-none focus:border-[#e8a849]/40"
+            style={{ fontFamily: "var(--font-mono, monospace)" }}
+            autoFocus
+          />
+          <button
+            onClick={() => void handleSaveTestCase()}
+            disabled={!testCaseName.trim()}
+            className="rounded-md bg-[#e8a849] px-3 py-1.5 text-[11px] font-semibold text-[#0a0b0f] transition-opacity hover:opacity-90 disabled:opacity-30"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => {
+              setSaveState("idle");
+              setTestCaseName("");
+            }}
+            className="text-[11px] text-[#6b6d80] hover:text-[#c8c9d4]"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       {/* Collapsible content */}
       {!collapsed && (

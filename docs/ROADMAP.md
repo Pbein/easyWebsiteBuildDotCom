@@ -196,7 +196,7 @@
 
 **Goal**: Fix content fidelity, visual character accuracy, and developer tooling across the assembly pipeline. Tracked in [EPICS_AND_STORIES.md](./EPICS_AND_STORIES.md).
 
-### Shipped (25/33 stories — 76%)
+### Shipped (27/33 stories — 82%)
 
 - [x] **Tier 1: Content Fidelity** (9/9) — COMPLETE
   - AI prompt restructured to emphasize user's own words and business sub-type vocabulary
@@ -213,13 +213,15 @@
 - [x] **Tier 5: Anti-References** (2/2) — COMPLETE
   - Anti-reference redesign: 10 genuine aesthetic trade-offs (replaced generic negatives)
   - Business-specific anti-refs: 10 industry maps (restaurant, spa, photography, ecommerce, etc.) with targeted theme overrides
-- [x] **Tier 6 partial**: Dev panel with populated Intake, Prompt/AI Response, Validation, and Theme tabs
-- [x] **Testing**: 323 tests across 19 test files (validate-spec, emotional-overrides, fix-spec, theme-variants, feedback-banner, industry-anti-refs + 13 existing suites)
+- [x] **Tier 6: Dev Tooling** (7/7) — COMPLETE
+  - Dev panel with populated Intake, Prompt/AI Response, Validation, and Theme tabs
+  - Named test cases: save intake snapshots from Dev Panel, re-run spec generation, view results
+  - Side-by-side comparison: theme diff, content diff, component stack diff between sessions
+- [x] **Testing**: 331 tests across 20 test files (validate-spec, emotional-overrides, fix-spec, theme-variants, feedback-banner, industry-anti-refs, dev-test-cases + 13 existing suites)
 
-### Remaining (5 active + 3 deferred)
+### Remaining (3 active + 3 deferred)
 
 - [ ] **T3-E1**: Screenshot capture + VLM evaluation + feedback-to-adjustments (3 stories)
-- [ ] **T6-E2**: Named test cases + side-by-side comparison (2 stories)
 - [ ] _Deferred_: Mood board curation (T4-E1-S1/S2), Visual reference URL input (T4-E2-S1)
 
 ---
