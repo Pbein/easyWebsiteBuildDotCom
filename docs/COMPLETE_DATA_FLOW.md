@@ -15,25 +15,27 @@ The system operates as a 6-phase pipeline. Each phase feeds the next.
   (Deterministic)    (Reaction-Based)   (AI + Fallback)    (Automated)     (AI Chat)         or Deploy
 ```
 
-### What Exists Today (Phases 1-4 + Export)
+### What Exists Today (Phases 1-4 + Export + VLM Feedback Loop)
 
 ✅ Structured Input (Steps 1-4)
-✅ AI Processing (Steps 5-6, now 8-9)
-✅ Assembly (AssemblyRenderer + ThemeProvider)
+✅ Character Capture (Steps 5-7: emotional goals, brand voice, archetype, anti-references) — Phase 4C
+✅ AI Processing (Steps 8-9)
+✅ Assembly (AssemblyRenderer + ThemeProvider + emotional overrides)
 ✅ Export (HTML/CSS ZIP)
+✅ VLM Design Feedback Loop (screenshot → Claude Vision evaluation → theme adjustments)
+✅ Dev Tooling (DevPanel with 6 tabs, named test cases, side-by-side comparison)
+✅ User Satisfaction Capture (feedback banner + pipeline session logging)
 
-### What's Planned (Phase 4C)
-
-🔲 Character Capture (Steps 5-7: emotional goals, brand voice, archetype, anti-references)
-
-### What's Missing (Identified in This Document)
+### What's Missing (Phase 5+)
 
 🔲 Refinement Loop (conversational chat for post-generation adjustments)
-🔲 Visual Mood Board system (reaction-based image/reference selection)
+🔲 Visual Mood Board system (reaction-based image/reference selection) — deferred
 🔲 Image strategy system (stock selection, AI generation, placeholder guidance)
 🔲 Multi-page management (add/remove/reorder pages post-generation)
 🔲 Component-level editing (swap, configure, reorder sections)
 🔲 Deploy pipeline (Vercel API, custom domains, hosting)
+🔲 WCAG contrast enforcement (chroma.contrast() validation in theme generation)
+🔲 Authentication (Clerk) + Admin Dashboard
 
 ---
 
@@ -70,7 +72,7 @@ Step 4: Personality ────────┘
 
 ---
 
-## Phase 2: Character Capture (Steps 5-7) 🔲 PLANNED (Phase 4C)
+## Phase 2: Character Capture (Steps 5-7) ✅ COMPLETE (Phase 4C)
 
 Purpose: Extract the emotional, vocal, and cultural identity that makes the site unique.
 
@@ -117,7 +119,7 @@ This is the highest-impact future feature for visual accuracy but requires a cur
 
 ---
 
-## Phase 3: AI Processing (Steps 8-9) ✅ BUILT (being enhanced in 4C)
+## Phase 3: AI Processing (Steps 8-9) ✅ BUILT (enhanced with character context)
 
 Purpose: Generate targeted questions and a complete site specification.
 
@@ -226,7 +228,7 @@ interface ComponentPlacement {
 
 ---
 
-## Phase 4: Assembly ✅ BUILT (being enhanced)
+## Phase 4: Assembly ✅ BUILT (enhanced with emotional overrides + VLM feedback loop)
 
 Purpose: Render the spec as a live, interactive website preview.
 

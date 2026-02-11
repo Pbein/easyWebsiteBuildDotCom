@@ -1,13 +1,15 @@
 # Theme System Specification
 
-> **Implementation Status (as of Feb 2026):** Fully implemented.
+> **Implementation Status (as of Feb 2026):** Fully implemented with emotional overrides and VLM feedback loop.
 >
 > - **87 CSS Custom Properties** across 6 categories (colors, typography, spacing, shape, shadows, animation)
 > - **Token map** (`src/lib/theme/token-map.ts`) — camelCase ↔ CSS variable mapping with `tokensToCSSProperties()` and `tokensToCSSString()` converters. Accepts `Partial<ThemeTokens>`.
-> - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation and 10 curated font pairings scored by personality fit
+> - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation, 14 curated font pairings scored by personality fit + business type, industry color hue shifting, dark/light mode business bias
+> - **Emotional overrides** (`src/lib/theme/emotional-overrides.ts`) — Adjusts spacing, transitions, animation intensity, radius, AND colors based on emotional goals and anti-references
 > - **ThemeProvider + useTheme** (`src/lib/theme/ThemeProvider.tsx`) — React context that injects tokens as CSS custom properties on a wrapper `<div>`, supports nested overrides
-> - **3 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional
-> - **Preview page** (`/preview`) — live theme switching across all 10 components with preset selector + custom personality vector sliders
+> - **7 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional, Bold Creative, Editorial, Tech Forward, Organic Natural
+> - **Preview page** (`/preview`) — live theme switching across all 18 components with preset selector + custom personality vector sliders
+> - **VLM feedback** — Claude Vision evaluates screenshots against intent, suggests `Partial<ThemeTokens>` adjustments, merged onto active theme via `useMemo` for instant re-render
 
 ## Overview
 

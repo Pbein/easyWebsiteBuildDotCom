@@ -196,7 +196,7 @@
 
 **Goal**: Fix content fidelity, visual character accuracy, and developer tooling across the assembly pipeline. Tracked in [EPICS_AND_STORIES.md](./EPICS_AND_STORIES.md).
 
-### Shipped (27/33 stories — 82%)
+### Shipped (30/33 stories — 91%)
 
 - [x] **Tier 1: Content Fidelity** (9/9) — COMPLETE
   - AI prompt restructured to emphasize user's own words and business sub-type vocabulary
@@ -217,12 +217,23 @@
   - Dev panel with populated Intake, Prompt/AI Response, Validation, and Theme tabs
   - Named test cases: save intake snapshots from Dev Panel, re-run spec generation, view results
   - Side-by-side comparison: theme diff, content diff, component stack diff between sessions
+- [x] **Tier 3 complete**: Screenshot capture (html2canvas + Playwright), Claude Vision 5-dimension evaluation, VLM feedback → theme adjustments pipeline (45 new tests)
 - [x] **Testing**: 331 tests across 20 test files (validate-spec, emotional-overrides, fix-spec, theme-variants, feedback-banner, industry-anti-refs, dev-test-cases + 13 existing suites)
 
-### Remaining (3 active + 3 deferred)
+### Remaining (3 deferred)
 
-- [ ] **T3-E1**: Screenshot capture + VLM evaluation + feedback-to-adjustments (3 stories)
 - [ ] _Deferred_: Mood board curation (T4-E1-S1/S2), Visual reference URL input (T4-E2-S1)
+
+### VLM Design Feedback Loop ✅ COMPLETE (T3-E1)
+
+The design feedback loop closes the generate → evaluate → adjust → re-render cycle:
+
+- **Screenshot capture** — html2canvas (client, quick) + Playwright (server, high-quality)
+- **Claude Vision evaluation** — 5 dimensions scored 1-10 (content relevance, visual character, color appropriateness, typography fit, overall cohesion)
+- **Adjustment mapping** — `mapAdjustmentsToTokenOverrides()` validates VLM suggestions against ThemeTokens keys, filters invalid entries, returns `Partial<ThemeTokens>`
+- **Instant re-render** — Overrides merged onto active theme via `useMemo`, no spec regeneration needed
+- **On-demand only** — Triggered via DevPanel VLM tab, ~$0.03/evaluation
+- **Persisted** — Results stored in Convex `vlmEvaluations` table by session
 
 ---
 
@@ -238,6 +249,9 @@
 - [ ] **Descriptive image placeholders** — Replace gray placeholder divs with styled cards describing what image should go there (e.g., "Upload: A warm photo of your barbershop interior")
 - [ ] **Stock photo API integration** — Unsplash/Pexels free API; AI includes image search keywords per component; fetch and display real stock photos
 - [ ] **Next.js project export upgrade** — Proper App Router project with component files, routing, and `npm run dev` support (replacing static HTML/CSS export)
+- [ ] **WCAG contrast enforcement** — Prevent theme generation from producing inaccessible color combinations (yellow text on white, low-contrast CTA buttons) using chroma.contrast() validation at theme generation layer
+- [ ] **Section dividers & visual patterns** — SVG section separators, subtle background patterns/textures, decorative elements to break visual monotony between sections
+- [ ] **AI image generation** — Generate custom imagery (DALL-E / Stable Diffusion) matching brand character, emotional goals, and industry for hero sections and feature illustrations
 
 ---
 
@@ -264,7 +278,7 @@
 
 ### Deliverables
 
-- [ ] User authentication (Clerk or Convex auth)
+- [ ] User authentication via **Clerk** — admin dashboard, role-based access (admin vs public), protected /docs page, data flow visibility
 - [ ] Project dashboard — save projects, return later, manage multiple sites
 - [ ] Preview sharing — shareable links for client review
 - [ ] Custom domain configuration for deployed sites

@@ -14,22 +14,24 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 
 ### Limitation Inventory
 
-| #   | Limitation                                                                                                                    | Impact                                                          | Difficulty to Fix                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------- |
-| 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                          | High — clients expect About, Services, Contact pages at minimum | Medium                              |
-| 2   | **No real images** — every image is a placeholder div                                                                         | High — sites look obviously fake/incomplete                     | Medium (API integration)            |
-| 3   | **No post-generation editing** — one-shot generation, take it or leave it                                                     | High — clients always want changes                              | High (refinement chat system)       |
-| 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured | ~~High~~                                                        | ~~Medium~~                          |
-| 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                         | Medium — works for simple sites, limiting for anything more     | Medium                              |
-| 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                               | Medium — common expectation                                     | Low                                 |
-| 7   | **No booking functionality** — booking sites have no actual booking flow                                                      | High for booking-type clients                                   | Medium-High                         |
-| 8   | **No e-commerce** — no cart, no checkout, no product management                                                               | High for e-commerce clients                                     | High (but solvable via integration) |
-| 9   | **No CMS/blog** — content sites have no way to add posts                                                                      | Medium — common expectation                                     | Medium                              |
-| 10  | **No third-party integrations** — Stripe, Calendly, Mailchimp, analytics = zero                                               | Medium-High                                                     | Varies per integration              |
-| 11  | **No deployment** — users get a ZIP, must self-host                                                                           | Medium — friction for non-technical users                       | Medium (Vercel API)                 |
-| 12  | **No user accounts** — can't save projects, return later, manage multiple sites                                               | Medium — essential for a real product                           | Medium                              |
-| 13  | **Component variety still limited** — 18 components covers basics but not all site types                                      | Medium — diminishing returns per component                      | Low per component                   |
-| 14  | **No mobile app preview** — viewport toggle simulates but isn't a real device test                                            | Low — nice to have                                              | Low                                 |
+| #   | Limitation                                                                                                                    | Impact                                                                                                                | Difficulty to Fix                   |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                          | High — clients expect About, Services, Contact pages at minimum                                                       | Medium                              |
+| 2   | **No real images** — every image is a placeholder div                                                                         | High — sites look obviously fake/incomplete                                                                           | Medium (API integration)            |
+| 3   | **No post-generation editing** — one-shot generation, take it or leave it                                                     | High — clients always want changes                                                                                    | High (refinement chat system)       |
+| 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured | ~~High~~                                                                                                              | ~~Medium~~                          |
+| 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                         | Medium — works for simple sites, limiting for anything more                                                           | Medium                              |
+| 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                               | Medium — common expectation                                                                                           | Low                                 |
+| 7   | **No booking functionality** — booking sites have no actual booking flow                                                      | High for booking-type clients                                                                                         | Medium-High                         |
+| 8   | **No e-commerce** — no cart, no checkout, no product management                                                               | High for e-commerce clients                                                                                           | High (but solvable via integration) |
+| 9   | **No CMS/blog** — content sites have no way to add posts                                                                      | Medium — common expectation                                                                                           | Medium                              |
+| 10  | **No third-party integrations** — Stripe, Calendly, Mailchimp, analytics = zero                                               | Medium-High                                                                                                           | Varies per integration              |
+| 11  | **No deployment** — users get a ZIP, must self-host                                                                           | Medium — friction for non-technical users                                                                             | Medium (Vercel API)                 |
+| 12  | **No user accounts** — can't save projects, return later, manage multiple sites                                               | Medium — essential for a real product                                                                                 | Medium                              |
+| 13  | **Component variety still limited** — 18 components covers basics but not all site types                                      | Medium — diminishing returns per component                                                                            | Low per component                   |
+| 14  | **No mobile app preview** — viewport toggle simulates but isn't a real device test                                            | Low — nice to have                                                                                                    | Low                                 |
+| 15  | **No WCAG contrast enforcement** — Theme generation can produce inaccessible color combinations (yellow CTA + white text)     | Medium — accessibility & readability                                                                                  | Low (chroma.contrast() check)       |
+| 16  | **No design evaluation feedback** — No automated way to assess if generated site matches intent                               | ~~Medium~~ ✅ **RESOLVED** — VLM Design Feedback Loop (T3-E1) evaluates screenshots against intent with Claude Vision | ~~High~~                            |
 
 ### What Competitors Do
 
@@ -128,6 +130,28 @@ We do NOT build e-commerce, booking, payments, or CMS from scratch. We build bea
 - User authentication systems (that's Auth0/Clerk)
 - Database-heavy applications (that's custom development)
 
+### VLM Design Feedback Loop ✅ IMPLEMENTED
+
+The VLM (Vision Language Model) Design Feedback Loop is operational and closes the generate → evaluate → adjust cycle:
+
+**Current State (On-Demand, Per-Session):**
+
+- Screenshot via html2canvas → Claude Vision evaluates 5 dimensions (1-10 each)
+- `mapAdjustmentsToTokenOverrides()` → `Partial<ThemeTokens>` merged onto active theme
+- Instant re-render without spec regeneration, ~$0.03/evaluation
+- Results persisted in Convex `vlmEvaluations` table
+
+**Evolution Roadmap:**
+
+| Phase                 | Capability                                                                                                                                                       | Status             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| 1. Manual Per-Session | Screenshot → Evaluate → Apply adjustments (DevPanel)                                                                                                             | ✅ Done            |
+| 2. Pattern Mining     | Aggregate VLM scores across sessions → identify systematic weaknesses (e.g., "restaurants always score low on color") → feed back into theme generation defaults | Planned (Phase 5+) |
+| 3. Auto-Evaluation    | Auto-capture screenshot after generation → auto-evaluate → auto-fix if score < threshold → present improved version to user                                      | Planned (Phase 6)  |
+| 4. Predictive Quality | Use accumulated evaluation data to pre-adjust theme generation parameters before rendering — skip the evaluate step entirely for high-confidence patterns        | Future             |
+
+**Key Insight:** The VLM feedback loop becomes exponentially more valuable as it accumulates data. Each evaluation teaches the system what "good" looks like for a specific business type + personality + character combination.
+
 ---
 
 ## High-Value Development Priority (Ranked by Impact × Feasibility)
@@ -181,6 +205,22 @@ Sites with placeholder divs will never impress. Three approaches (do all three, 
 **Phase B: Stock Photo API** — Integrate Unsplash or Pexels free API. When generating the spec, include image search keywords per component (e.g., "luxury barbershop interior", "barber cutting hair"). Fetch and display real stock photos. The user can swap them later.
 
 **Phase C: User Upload** — Let users upload their own images during or after generation. Store in Convex File Storage. Replace stock images with real ones.
+
+#### 5. WCAG Contrast Enforcement
+
+**Impact: 7/10 | Effort: Low**
+
+The theme generation layer can produce inaccessible color combinations (e.g., yellow CTA background with white text). Fix at the source:
+
+**What to build:**
+
+- Add `chroma.contrast(bg, text)` validation after theme generation
+- Enforce minimum 4.5:1 contrast for body text, 3:1 for large text (WCAG AA)
+- Auto-adjust: if CTA background + text contrast < 3:1, darken the text or lighten the background
+- Apply to: `colorTextOnPrimary` vs `colorPrimary`, `colorTextOnDark` vs dark backgrounds, CTA text vs CTA background
+- Run as a post-processing step in `generateThemeFromVector()` before returning tokens
+
+This prevents accessibility issues at the theme layer rather than relying on VLM evaluation to catch them after rendering.
 
 ### 🟡 HIGH VALUE — Do These Next (2-4 Months)
 
@@ -337,7 +377,7 @@ THEN (Weeks 5-8):
 AFTER (Weeks 9-16):
   🟡 Working contact forms
   🟡 Vercel deployment
-  🟡 User accounts & dashboard
+  🟡 Clerk authentication + admin dashboard
 
 LATER (Months 4-8):
   🟢 Booking integration (Calendly embed)
@@ -351,6 +391,118 @@ FUTURE (Months 8+):
 ```
 
 Each step makes the product more complete and more sellable. The first 8 weeks alone would take you from "demo that generates a single page" to "tool that generates multi-page, image-rich, character-specific websites that can be refined through conversation and deployed to Vercel."
+
+---
+
+## Visual Character Strategy (Phase 5+)
+
+The biggest gap between "generated" and "crafted" websites is visual character — real images, textures, patterns, custom graphics, and the design details that make each site unique.
+
+### The Visual Character Gap
+
+**What we have now:** Flat themed sections with placeholder images. Theme tokens control colors, fonts, spacing — but every site still feels like the same template with different paint.
+
+**What makes a site feel unique:**
+
+1. **Real, contextual images** — Not stock photos, but images that feel like they belong to THIS business
+2. **Section dividers & textures** — SVG wave separators, grain overlays, subtle patterns that break visual monotony
+3. **Custom graphics & illustrations** — Hero illustrations, icon sets, decorative elements that match the brand character
+4. **Background treatments** — Gradient meshes, image overlays, blur effects, parallax layers
+5. **Micro-interactions** — Cursor effects, scroll-triggered reveals, hover states that feel intentional
+
+### Visual Character Roadmap
+
+| Priority  | Feature                   | Approach                                                              | Phase |
+| --------- | ------------------------- | --------------------------------------------------------------------- | ----- |
+| 🔴 High   | Stock photo integration   | Unsplash/Pexels API with AI-generated search keywords per component   | 5     |
+| 🔴 High   | Descriptive placeholders  | Styled cards with "Upload: warm photo of your shop interior" guidance | 5     |
+| 🔴 High   | WCAG contrast enforcement | chroma.contrast() validation in theme generation                      | 5     |
+| 🟡 Medium | Section dividers          | SVG wave/angle/curve separators, personality-driven selection         | 5-6   |
+| 🟡 Medium | Background patterns       | Subtle grain, dot grids, line patterns as CSS/SVG textures            | 5-6   |
+| 🟡 Medium | AI image generation       | DALL-E/Stable Diffusion for hero imagery and illustrations            | 6     |
+| 🟢 Low    | Custom icon sets          | Industry-specific icon libraries matching brand character             | 7     |
+| 🟢 Low    | Animated backgrounds      | Gradient mesh animations, particle effects, parallax layers           | 7     |
+| 🔵 Future | User image upload         | Drag-and-drop image replacement in preview with Convex File Storage   | 6-7   |
+| 🔵 Future | Brand asset extraction    | Upload logo → extract colors, fonts, style signals automatically      | 8+    |
+
+### How VLM Feedback Improves Future Designs
+
+The VLM evaluation loop creates a flywheel:
+
+1. **Generate** → Site with current best-guess theme + content
+2. **Evaluate** → Claude Vision scores 5 dimensions, suggests adjustments
+3. **Adjust** → Apply `Partial<ThemeTokens>` overrides, instant re-render
+4. **Learn** → Aggregate scores reveal patterns ("restaurants with luxury + warm consistently score low on color → adjust industry hue bias")
+5. **Improve** → Feed patterns back into `generateThemeFromVector()` defaults, reducing need for VLM corrections over time
+
+This is the same flywheel that made recommendation systems powerful — each interaction makes the next generation better.
+
+---
+
+## Authentication & Admin Dashboard (Clerk)
+
+### Overview
+
+Clerk authentication enables admin-only features, data visibility, and protected routes without building auth from scratch.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    CLERK AUTH                         │
+│                                                      │
+│  Public Routes (no auth required):                   │
+│    /            Homepage                             │
+│    /demo        Intake flow                          │
+│    /demo/preview Generated site preview              │
+│    /preview     Component library demo               │
+│                                                      │
+│  Admin Routes (Clerk admin role required):            │
+│    /docs        Full project documentation           │
+│    /admin       Admin dashboard                      │
+│    /admin/sessions  Session browser & pipeline logs   │
+│    /admin/evaluations  VLM evaluation history        │
+│    /admin/test-cases  Backtesting infrastructure     │
+│    /admin/feedback  User satisfaction ratings        │
+│    /dev/*       Dev tools (existing, move behind auth)│
+│                                                      │
+│  Auth Flow:                                          │
+│    ClerkProvider wraps app in layout.tsx              │
+│    Middleware protects /admin/* and /docs routes      │
+│    Admin role checked via Clerk metadata              │
+└─────────────────────────────────────────────────────┘
+```
+
+### Admin Dashboard Features
+
+| Feature          | Data Source                  | Purpose                                                                  |
+| ---------------- | ---------------------------- | ------------------------------------------------------------------------ |
+| Session Browser  | `siteSpecs` + `pipelineLogs` | Browse all generation sessions, see intake data, spec output, AI prompts |
+| Pipeline Trace   | `pipelineLogs`               | Full prompt → response → validation → timing for each generation         |
+| VLM Evaluations  | `vlmEvaluations`             | Score history, dimension breakdowns, applied adjustments                 |
+| Feedback Summary | `feedback`                   | Satisfaction ratings with dimension breakdowns                           |
+| Test Cases       | `testCases`                  | Named test cases with run history                                        |
+| System Health    | Aggregated queries           | Generation success rate, avg scores, API usage, error rates              |
+
+### Implementation Plan
+
+1. **Install Clerk** — `npm install @clerk/nextjs`, configure environment variables
+2. **ClerkProvider** — Wrap app in `layout.tsx` (alongside ConvexClientProvider)
+3. **Middleware** — Protect `/admin/*` and `/docs` routes with `clerkMiddleware()`
+4. **Admin role** — Set admin metadata in Clerk dashboard (not self-service)
+5. **Admin layout** — Shared sidebar navigation for admin pages
+6. **Session browser** — Query `siteSpecs` + `pipelineLogs`, display in searchable table
+7. **Pipeline viewer** — Detailed view of a single generation session
+8. **Replace /docs redirect** — Check Clerk auth instead of unconditional redirect
+9. **Move /dev/\* behind auth** — Existing dev tools become admin-only
+
+### Integration with Convex
+
+Clerk + Convex integration uses Clerk's JWT tokens verified by Convex:
+
+- Convex `auth.config.ts` configured with Clerk issuer URL
+- Protected Convex functions use `ctx.auth.getUserIdentity()` to verify admin role
+- Public functions (getSiteSpec, saveSiteSpec) remain unauthenticated for the demo flow
 
 ---
 

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { DocsShell } from "@/components/platform/docs/DocsShell";
 
 /* ------------------------------------------------------------------ */
@@ -5,6 +6,11 @@ import { DocsShell } from "@/components/platform/docs/DocsShell";
 /* ------------------------------------------------------------------ */
 
 export default function DocsPage(): React.ReactElement {
+  // Temporarily disconnected from public access.
+  // Will be gated behind Clerk admin auth in a future phase.
+  // All code below is preserved for when admin access is implemented.
+  redirect("/");
+
   const sectionContent: Record<string, React.ReactNode> = {
     overview: <OverviewContent />,
     "data-flow": <DataFlowContent />,

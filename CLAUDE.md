@@ -21,6 +21,8 @@ This is NOT a drag-and-drop builder. It is an intelligent assembly system that g
 - **Animations**: framer-motion
 - **Color Manipulation**: chroma-js (theme generation)
 - **ZIP Export**: JSZip (project export bundling)
+- **Screenshot**: html2canvas (client-side DOM capture)
+- **Screenshot (server)**: Playwright (high-quality server-side capture)
 - **Fonts**: Use distinctive, high-quality Google Fonts — NEVER use Inter, Roboto, Arial, or system fonts
   - Platform: Space Grotesk (headings), Outfit (body), JetBrains Mono (code)
 - **Deployment**: Vercel (target)
@@ -75,15 +77,23 @@ easywebsitebuild/
 │   ├── THEME_SYSTEM.md          # Theming and design token specification
 │   ├── ASSEMBLY_ENGINE.md       # How sites get composed from specs
 │   ├── KNOWLEDGE_BASE.md        # Evolving decision tree & learning system
-│   └── ROADMAP.md               # Development phases and priorities
+│   ├── ROADMAP.md               # Development phases and priorities
+│   ├── BRAND_CHARACTER_SYSTEM.md  # Brand character design philosophy
+│   ├── COMPLETE_DATA_FLOW.md      # End-to-end system data flow
+│   ├── EPICS_AND_STORIES.md       # Output Quality Overhaul tracking (33 stories)
+│   └── STRATEGIC_ROADMAP.md       # Strategic priorities and competitive analysis
 ├── src/
 │   ├── app/                     # Next.js App Router pages
 │   │   ├── page.tsx             # Homepage — product overview
 │   │   ├── layout.tsx           # Root layout (ConvexClientProvider → ConditionalLayout)
 │   │   ├── demo/
-│   │   │   ├── page.tsx         # Demo — 6-step intake flow experience
+│   │   │   ├── page.tsx         # Demo — 9-step intake flow experience
 │   │   │   └── preview/page.tsx # Demo preview — assembled site with viewport controls + export
-│   │   ├── docs/page.tsx        # Documentation — full project spec
+│   │   ├── docs/page.tsx        # Documentation — (temporarily redirects to /, will be admin-only with Clerk)
+│   │   ├── api/screenshot/route.ts # Playwright server-side screenshot API
+│   │   ├── dev/
+│   │   │   ├── test-cases/page.tsx # Dev-only: named test case management
+│   │   │   └── compare/page.tsx    # Dev-only: side-by-side session comparison
 │   │   └── preview/page.tsx     # Preview — live component library demo with theme switching
 │   ├── components/
 │   │   ├── platform/            # Platform UI
@@ -101,7 +111,9 @@ easywebsitebuild/
 │   │   │   │   └── index.ts
 │   │   │   └── preview/         # Preview UI components
 │   │   │       ├── PreviewSidebar.tsx # Spec metadata sidebar
-│   │   │       └── PreviewToolbar.tsx # Viewport controls + export toolbar
+│   │   │       ├── PreviewToolbar.tsx # Viewport controls + export toolbar
+│   │   │       ├── DevPanel.tsx        # Developer diagnostic panel (6 tabs)
+│   │   │       └── FeedbackBanner.tsx  # Quick satisfaction rating banner
 │   │   └── library/             # Component library (18 components)
 │   │       ├── base.types.ts    # BaseComponentProps, ImageSource, LinkItem, CTAButton
 │   │       ├── index.ts         # Barrel exports for all components
@@ -138,11 +150,23 @@ easywebsitebuild/
 │       │   ├── presets.ts       # 7 presets
 │       │   ├── ThemeProvider.tsx # React context + CSS variable injection
 │       │   └── index.ts         # Barrel export
+│       ├── screenshot/           # Screenshot capture
+│       │   ├── types.ts          # ScreenshotResult type
+│       │   ├── capture-client.ts # html2canvas DOM-to-base64
+│       │   └── index.ts          # Barrel export
+│       ├── vlm/                  # VLM evaluation utilities
+│       │   ├── types.ts          # DimensionScore, VLMEvaluation
+│       │   ├── map-adjustments.ts # VLM feedback → Partial<ThemeTokens>
+│       │   └── index.ts          # Barrel export
 │       └── types/               # Shared type definitions
 │           └── brand-character.ts # Brand character types + display constants
 ├── convex/                      # Convex backend (excluded from tsconfig)
 │   ├── schema.ts                # Database schema (9 tables)
 │   ├── siteSpecs.ts             # Site spec CRUD (saveSiteSpec, getSiteSpec)
+│   ├── vlmEvaluations.ts         # VLM evaluation save/query
+│   ├── pipelineLogs.ts           # Pipeline session logging
+│   ├── feedback.ts               # User satisfaction ratings
+│   ├── testCases.ts              # Named test case CRUD
 │   └── ai/                      # AI integration actions
 │       ├── generateQuestions.ts  # Claude-powered discovery questions
 │       └── generateSiteSpec.ts   # Claude-powered site spec generation (18 components)
@@ -266,6 +290,17 @@ easywebsitebuild/
 - **Responsive masonry**: MediaGallery adapts column count by viewport width
 - **Overflow fix**: CommerceServices tiered card `scale(1.05)` removed to prevent horizontal scroll
 
+### Output Quality Overhaul — 91% COMPLETE (30/33 stories shipped)
+
+- **Tier 1: Content Fidelity** (9/9) — AI prompt restructured, business-type-aware content, narrative prompts, content validator + auto-fix
+- **Tier 2: Visual Character** (6/6) — Industry color hues, emotional color overrides, business-aware fonts and variants
+- **Tier 3: Feedback Loop** (5/5) — Screenshot capture (html2canvas + Playwright), Claude Vision evaluation (5 dimensions), VLM feedback → theme adjustments, satisfaction rating, pipeline logging
+- **Tier 4: Intake Upgrades** (1/1 active, 3 deferred) — A/B theme variant toggle; mood boards deferred as premium
+- **Tier 5: Anti-References** (2/2) — Redesigned with genuine aesthetic trade-offs + industry-specific suggestions
+- **Tier 6: Dev Tooling** (7/7) — Dev panel (6 tabs), named test cases, side-by-side comparison
+- 376+ tests across 24+ test files
+- Tracked in `docs/EPICS_AND_STORIES.md`
+
 ### Next: Phase 5 — Multi-Page Generation & Core Quality
 
 > Priorities informed by [docs/STRATEGIC_ROADMAP.md](docs/STRATEGIC_ROADMAP.md) — honest assessment, impact × feasibility ranking, integration-first strategy.
@@ -340,6 +375,11 @@ easywebsitebuild/
 - **Emotional overrides**: `applyEmotionalOverrides()` adjusts spacing, transitions, animation intensity, radius based on emotional goals and anti-references
 - **Responsive carousel**: ProofTestimonials `perPage` adapts via `useState` + `resize` listener — 1 (mobile), 2 (tablet), 3 (desktop); page resets on breakpoint change
 - **Responsive masonry**: MediaGallery `masonryColumns` adapts via `useState<number>` + `resize` listener — 1 (<640px), min(columns, 2) (640-1023px), columns (>=1024px)
+- **VLM feedback loop**: Screenshot (html2canvas client / Playwright server) → Claude Vision 5-dimension scoring → mapAdjustmentsToTokenOverrides() → Partial<ThemeTokens> merged into activeTheme
+- **VLM evaluation**: On-demand via DevPanel VLM tab, ~$0.03/eval, deterministic fallback returns 5/10 for all dimensions
+- **vlmOverrides state**: In preview page, merged into activeTheme via useMemo, triggers instant re-render without spec regeneration
+- **Screenshot capture**: html2canvas dynamic import, fonts.ready + 300ms settle, 4000px height cap, scale=1
+- **Convex vlmEvaluations table**: sessionId index, stores dimensions/summary/themeAdjustments per evaluation
 
 ## Content Field Naming (Critical for Spec Generation)
 
@@ -352,6 +392,7 @@ When generating component content, field names MUST match type interfaces exactl
 | `content-timeline`  | `date` (not `year`)           | `TimelineItem`          |
 | `proof-beforeafter` | `comparisons` (not `items`)   | `ProofBeforeAfterProps` |
 | `content-stats`     | `value` (number, not string)  | `StatItem`              |
+| `content-split`     | `sections` (not `rows`)       | `ContentSplitProps`     |
 | `content-logos`     | `headline` (no `subheadline`) | `ContentLogosProps`     |
 
 ## Key Files to Reference
@@ -360,8 +401,9 @@ Before starting work, always read:
 
 1. This file (CLAUDE.md)
 2. `docs/ARCHITECTURE.md` — for system design context
-3. `docs/ROADMAP.md` — for current priorities
-4. Relevant doc files for the specific area you're working on
+3. `docs/ROADMAP.md` — for current priorities (Phase 5: multi-page generation is next)
+4. `docs/EPICS_AND_STORIES.md` — for Output Quality Overhaul tracking (30/33 shipped)
+5. Relevant doc files for the specific area you're working on
 
 ## Commands
 

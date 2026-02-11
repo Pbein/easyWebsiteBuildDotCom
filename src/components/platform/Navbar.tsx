@@ -9,7 +9,7 @@ import { Menu, X, Sparkles } from "lucide-react";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo" },
-  { href: "/docs", label: "Docs" },
+  // { href: "/docs", label: "Docs" }, // Temporarily hidden — will be gated behind Clerk admin auth
 ];
 
 export function Navbar(): React.ReactElement {
