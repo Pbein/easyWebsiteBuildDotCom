@@ -5,7 +5,7 @@ import type { SiteIntentDocument } from "./spec.types";
 import { getComponent, UNWRAPPED_COMPONENTS } from "./component-registry";
 import { loadGoogleFonts } from "./font-loader";
 import { generateThemeFromVector, ThemeProvider, applyEmotionalOverrides } from "@/lib/theme";
-import type { PersonalityVector } from "@/lib/theme";
+import type { PersonalityVector, ThemeTokens } from "@/lib/theme";
 import { Section } from "@/components/library";
 
 interface AssemblyRendererProps {
@@ -13,6 +13,8 @@ interface AssemblyRendererProps {
   activePage?: string;
   /** When true, renders nav-sticky as relative instead of fixed to avoid toolbar overlap */
   previewMode?: boolean;
+  /** When provided, bypasses internal theme generation and uses this theme directly */
+  themeOverride?: ThemeTokens;
 }
 
 /**
@@ -27,15 +29,18 @@ export function AssemblyRenderer({
   spec,
   activePage = "/",
   previewMode = false,
+  themeOverride,
 }: AssemblyRendererProps): React.ReactElement {
   const pv = spec.personalityVector as PersonalityVector;
 
-  const theme = useMemo(() => {
+  const generatedTheme = useMemo(() => {
     const baseTheme = generateThemeFromVector(pv, { businessType: spec.siteType });
     return spec.emotionalGoals?.length
       ? applyEmotionalOverrides(baseTheme, spec.emotionalGoals, spec.antiReferences || [])
       : baseTheme;
   }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
+
+  const theme = themeOverride ?? generatedTheme;
 
   // Load fonts when theme is ready
   useEffect(() => {

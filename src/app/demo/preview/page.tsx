@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -8,9 +8,12 @@ import { api } from "../../../../convex/_generated/api";
 import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ExportResult } from "@/lib/export/generate-project";
+import { generateThemeVariants, applyEmotionalOverrides } from "@/lib/theme";
+import type { PersonalityVector } from "@/lib/theme";
 import { PreviewSidebar } from "@/components/platform/preview/PreviewSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
+import { FeedbackBanner } from "@/components/platform/preview/FeedbackBanner";
 import { Loader2 } from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
@@ -27,6 +30,7 @@ function PreviewContent(): React.ReactElement {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activePage, setActivePage] = useState("/");
   const [isExporting, setIsExporting] = useState(false);
+  const [activeVariant, setActiveVariant] = useState<"A" | "B">("A");
 
   // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
   const isDevParam = searchParams.get("dev") === "true";
@@ -160,6 +164,78 @@ function PreviewContent(): React.ReactElement {
   };
 
   return (
+    <PreviewLayout
+      spec={spec}
+      viewport={viewport}
+      setViewport={setViewport}
+      sidebarOpen={sidebarOpen}
+      setSidebarOpen={setSidebarOpen}
+      activePage={activePage}
+      setActivePage={setActivePage}
+      isExporting={isExporting}
+      handleExport={handleExport}
+      activeVariant={activeVariant}
+      setActiveVariant={setActiveVariant}
+      devPanelOpen={devPanelOpen}
+      sessionId={sessionId}
+    />
+  );
+}
+
+function PreviewLayout({
+  spec,
+  viewport,
+  setViewport,
+  sidebarOpen,
+  setSidebarOpen,
+  activePage,
+  setActivePage,
+  isExporting,
+  handleExport,
+  activeVariant,
+  setActiveVariant,
+  devPanelOpen,
+  sessionId,
+}: {
+  spec: SiteIntentDocument;
+  viewport: "desktop" | "tablet" | "mobile";
+  setViewport: (v: "desktop" | "tablet" | "mobile") => void;
+  sidebarOpen: boolean;
+  setSidebarOpen: (v: boolean) => void;
+  activePage: string;
+  setActivePage: (v: string) => void;
+  isExporting: boolean;
+  handleExport: (spec: SiteIntentDocument) => Promise<void>;
+  activeVariant: "A" | "B";
+  setActiveVariant: (v: "A" | "B") => void;
+  devPanelOpen: boolean;
+  sessionId: string | null;
+}): React.ReactElement {
+  const pv = spec.personalityVector as PersonalityVector;
+
+  const themeVariants = useMemo(() => {
+    const variants = generateThemeVariants(pv, { businessType: spec.siteType });
+    if (spec.emotionalGoals?.length) {
+      return {
+        ...variants,
+        variantA: applyEmotionalOverrides(
+          variants.variantA,
+          spec.emotionalGoals,
+          spec.antiReferences || []
+        ),
+        variantB: applyEmotionalOverrides(
+          variants.variantB,
+          spec.emotionalGoals,
+          spec.antiReferences || []
+        ),
+      };
+    }
+    return variants;
+  }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
+
+  const activeTheme = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
+
+  return (
     <div className="flex h-screen flex-col bg-[#0a0b0f]">
       {/* Toolbar */}
       <PreviewToolbar
@@ -168,6 +244,8 @@ function PreviewContent(): React.ReactElement {
         onViewportChange={setViewport}
         onExport={() => handleExport(spec)}
         isExporting={isExporting}
+        activeVariant={activeVariant}
+        onVariantChange={setActiveVariant}
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
@@ -211,7 +289,12 @@ function PreviewContent(): React.ReactElement {
             }}
           >
             <div className="h-full overflow-auto rounded-lg border border-[rgba(255,255,255,0.06)]">
-              <AssemblyRenderer spec={spec} activePage={activePage} previewMode />
+              <AssemblyRenderer
+                spec={spec}
+                activePage={activePage}
+                previewMode
+                themeOverride={activeTheme}
+              />
             </div>
           </div>
         </div>
@@ -219,6 +302,9 @@ function PreviewContent(): React.ReactElement {
 
       {/* Dev Panel — bottom drawer */}
       {devPanelOpen && sessionId && <DevPanel sessionId={sessionId} />}
+
+      {/* Feedback Banner — floating bottom-right */}
+      {sessionId && <FeedbackBanner sessionId={sessionId} />}
     </div>
   );
 }

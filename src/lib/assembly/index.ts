@@ -2,5 +2,5 @@ export type { SiteIntentDocument, PageSpec, ComponentPlacement } from "./spec.ty
 export { AssemblyRenderer } from "./AssemblyRenderer";
 export { getComponent, isRegistered, UNWRAPPED_COMPONENTS } from "./component-registry";
 export { loadGoogleFonts } from "./font-loader";
-export { validateSpecContent } from "./validate-spec";
-export type { ValidationResult, ValidationWarning } from "./validate-spec";
+export { validateSpecContent, fixSpecContent } from "./validate-spec";
+export type { ValidationResult, ValidationWarning, AutoFix, FixResult } from "./validate-spec";

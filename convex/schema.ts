@@ -136,6 +136,14 @@ export default defineSchema({
     createdAt: v.float64(),
   }).index("by_session", ["sessionId"]),
 
+  feedback: defineTable({
+    sessionId: v.string(),
+    rating: v.string(),
+    dimensions: v.optional(v.array(v.string())),
+    freeText: v.optional(v.string()),
+    createdAt: v.float64(),
+  }).index("by_session", ["sessionId"]),
+
   users: defineTable({
     email: v.optional(v.string()),
     name: v.optional(v.string()),

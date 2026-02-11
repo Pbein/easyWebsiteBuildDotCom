@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Tablet, Smartphone, Paintbrush, Download } from "lucide-react";
+import { Monitor, Tablet, Smartphone, Download, Shuffle } from "lucide-react";
 
 interface PreviewToolbarProps {
   businessName: string;
@@ -8,6 +8,8 @@ interface PreviewToolbarProps {
   onViewportChange: (viewport: "desktop" | "tablet" | "mobile") => void;
   onExport?: () => void;
   isExporting?: boolean;
+  activeVariant?: "A" | "B";
+  onVariantChange?: (variant: "A" | "B") => void;
 }
 
 const viewportOptions: {
@@ -26,6 +28,8 @@ export function PreviewToolbar({
   onViewportChange,
   onExport,
   isExporting = false,
+  activeVariant,
+  onVariantChange,
 }: PreviewToolbarProps): React.ReactElement {
   return (
     <div className="flex h-12 shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.06)] bg-[#0d0e14] px-4">
@@ -63,14 +67,25 @@ export function PreviewToolbar({
 
       {/* Action buttons */}
       <div className="flex items-center gap-2">
-        <button
-          disabled
-          className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-[#9496a8] opacity-50 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none"
-          title="Coming Soon"
-        >
-          <Paintbrush className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Edit Theme</span>
-        </button>
+        {activeVariant && onVariantChange && (
+          <div className="flex items-center gap-1 rounded-lg bg-[rgba(255,255,255,0.04)] p-0.5">
+            <Shuffle className="mx-1.5 h-3.5 w-3.5 text-[#6b6d80]" />
+            {(["A", "B"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => onVariantChange(v)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+                  activeVariant === v
+                    ? "bg-[rgba(232,168,73,0.15)] text-[#e8a849]"
+                    : "text-[#9496a8] hover:text-white"
+                }`}
+                title={`Theme Variant ${v}`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        )}
         <button
           onClick={onExport}
           disabled={!onExport || isExporting}

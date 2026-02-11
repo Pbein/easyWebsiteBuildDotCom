@@ -9,7 +9,7 @@
 ## Progress Tracker
 
 > **Last updated:** 2026-02-10
-> **Stories shipped:** 19/33 (58%) — 11 active remaining, 3 deferred
+> **Stories shipped:** 22/33 (67%) — 8 active remaining, 3 deferred
 
 | Story    | Title                                       | Status      | Commit    |
 | -------- | ------------------------------------------- | ----------- | --------- |
@@ -21,7 +21,7 @@
 | T1-E1-S6 | Business-Specific CTAs                      | ✅ Done     | `038d47f` |
 | T1-E1-S7 | Business-Sub-Type Discovery Questions       | ✅ Done     | `afbc34d` |
 | T1-E2-S1 | Content Validator (safety net)              | ✅ Done     | `fb1098d` |
-| T1-E2-S2 | Auto-Fix Mismatches                         | ⬚ Remaining | —         |
+| T1-E2-S2 | Auto-Fix Mismatches                         | ✅ Done     | —         |
 | T2-E1-S1 | Business Type in Theme Generator            | ✅ Done     | `afbc34d` |
 | T2-E1-S2 | Industry Color Association Hue Shifting     | ✅ Done     | `afbc34d` |
 | T2-E1-S3 | Emotional Goals Influence Colors            | ✅ Done     | `afbc34d` |
@@ -31,12 +31,12 @@
 | T3-E1-S1 | Screenshot Capture                          | ⬚ Remaining | —         |
 | T3-E1-S2 | VLM Evaluation                              | ⬚ Remaining | —         |
 | T3-E1-S3 | Feedback → Adjustments                      | ⬚ Remaining | —         |
-| T3-E2-S1 | Quick Satisfaction Rating                   | ⬚ Remaining | —         |
+| T3-E2-S1 | Quick Satisfaction Rating                   | ✅ Done     | —         |
 | T3-E2-S2 | Pipeline Session Logging                    | ✅ Done     | `fb1098d` |
 | T4-E1-S1 | Curate Mood Board Images                    | ⏸ Deferred  | —         |
 | T4-E1-S2 | Mood Board Selection Step                   | ⏸ Deferred  | —         |
 | T4-E2-S1 | Visual Reference URL Input                  | ⏸ Deferred  | —         |
-| T4-E3-S1 | A/B Theme Variant Toggle                    | ⬚ Remaining | —         |
+| T4-E3-S1 | A/B Theme Variant Toggle                    | ✅ Done     | —         |
 | T5-E1-S1 | Anti-Reference Redesign                     | ⬚ Remaining | —         |
 | T5-E1-S2 | Business-Specific Anti-Refs                 | ⬚ Remaining | —         |
 | T6-E1-S1 | Dev Panel UI Shell                          | ✅ Done     | `fb1098d` |
@@ -1109,15 +1109,15 @@ These can run in parallel with Phase C:
 
 # Summary Metrics
 
-| Tier                        | Epics  | Stories | Done   | Remaining                  | Notes                                                            |
-| --------------------------- | ------ | ------- | ------ | -------------------------- | ---------------------------------------------------------------- |
-| Tier 1: Content Fidelity    | 2      | 9       | 8/9    | 1                          | Only T1-E2-S2 (auto-fix) remains                                 |
-| Tier 2: Visual Character    | 2      | 6       | 6/6    | 0                          | **COMPLETE**                                                     |
-| Tier 3: Feedback Loop       | 2      | 5       | 1/5    | 4                          | Pipeline logging done; screenshot + VLM + satisfaction remaining |
-| Tier 4: Intake Improvements | 3      | 4       | 0/1    | 1                          | T4-E1 deferred; only T4-E3-S1 (A/B variants) in active scope     |
-| Tier 5: Anti-References     | 1      | 2       | 0/2    | 2                          | No changes                                                       |
-| Tier 6: Dev Tooling         | 2      | 7       | 4/7    | 3                          | Dev panel shell + 3 tabs done; Theme tab + backtesting remaining |
-| **TOTAL**                   | **12** | **33**  | **19** | **11 active + 3 deferred** | 58% complete                                                     |
+| Tier                        | Epics  | Stories | Done   | Remaining                 | Notes                                                            |
+| --------------------------- | ------ | ------- | ------ | ------------------------- | ---------------------------------------------------------------- |
+| Tier 1: Content Fidelity    | 2      | 9       | 9/9    | 0                         | **COMPLETE** — validator + auto-fix shipped                      |
+| Tier 2: Visual Character    | 2      | 6       | 6/6    | 0                         | **COMPLETE**                                                     |
+| Tier 3: Feedback Loop       | 2      | 5       | 2/5    | 3                         | Pipeline logging + satisfaction done; screenshot + VLM remaining |
+| Tier 4: Intake Improvements | 3      | 4       | 1/1    | 0                         | **COMPLETE** (active scope) — T4-E1 deferred                     |
+| Tier 5: Anti-References     | 1      | 2       | 0/2    | 2                         | No changes                                                       |
+| Tier 6: Dev Tooling         | 2      | 7       | 4/7    | 3                         | Dev panel shell + 3 tabs done; Theme tab + backtesting remaining |
+| **TOTAL**                   | **12** | **33**  | **22** | **8 active + 3 deferred** | 67% complete                                                     |
 
 **Critical path to "LuxuryFine fixed":** T1-E1-S1 + T1-E1-S2 + T1-E1-S3 + T1-E1-S7 + T2-E1-S1 + T2-E1-S2 + T2-E1-S3 = **COMPLETE** — all critical path stories are shipped.
 

@@ -127,6 +127,14 @@ interface ValidationWarningData {
   suggestion?: string;
 }
 
+interface AutoFixData {
+  componentRef: string;
+  field: string;
+  original: string;
+  replacement: string;
+  rule: string;
+}
+
 function ValidationTab({ log }: { log: Record<string, unknown> | null }): React.ReactElement {
   if (!log) {
     return (
@@ -134,9 +142,10 @@ function ValidationTab({ log }: { log: Record<string, unknown> | null }): React.
     );
   }
   const result = log.validationResult as
-    | { warnings: ValidationWarningData[]; subType: string }
+    | { warnings: ValidationWarningData[]; subType: string; autoFixes?: AutoFixData[] }
     | undefined;
-  if (!result || result.warnings.length === 0) {
+  const autoFixes = result?.autoFixes ?? [];
+  if (!result || (result.warnings.length === 0 && autoFixes.length === 0)) {
     return (
       <div className="flex flex-col items-center gap-2 py-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/15">
@@ -172,7 +181,42 @@ function ValidationTab({ log }: { log: Record<string, unknown> | null }): React.
             {warnings.length} warning{warnings.length !== 1 ? "s" : ""}
           </span>
         )}
+        {autoFixes.length > 0 && (
+          <span className="text-emerald-400">
+            {autoFixes.length} auto-fix{autoFixes.length !== 1 ? "es" : ""}
+          </span>
+        )}
       </div>
+      {autoFixes.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-[11px] font-semibold tracking-wider text-emerald-400/70 uppercase">
+            Auto-Fixes Applied
+          </h4>
+          {autoFixes.map((f, i) => (
+            <div
+              key={`fix-${i}`}
+              className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 p-3"
+            >
+              <div className="mb-1.5 flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
+                  {f.rule}
+                </span>
+                <span
+                  className="text-[11px] text-[#6b6d80]"
+                  style={{ fontFamily: "var(--font-mono, monospace)" }}
+                >
+                  {f.componentRef}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[12px]">
+                <span className="text-red-400/70 line-through">{f.original}</span>
+                <span className="text-[#6b6d80]">&rarr;</span>
+                <span className="text-emerald-400">{f.replacement}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="space-y-2">
         {result.warnings.map((w, i) => (
           <div

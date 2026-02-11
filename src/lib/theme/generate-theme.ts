@@ -501,3 +501,52 @@ export function generateThemeFromVector(
 
   return tokens;
 }
+
+/* ────────────────────────────────────────────────────────────
+ * Theme variant generator — produces two A/B theme options
+ * from the same personality vector.
+ * ──────────────────────────────────────────────────────────── */
+
+export interface ThemeVariantPair {
+  variantA: ThemeTokens;
+  variantB: ThemeTokens;
+  labelA: string;
+  labelB: string;
+}
+
+/**
+ * Generate two theme variants from the same personality vector.
+ *
+ * Variant A = default theme (no hue override).
+ * Variant B = hue-shifted by `hueShift` degrees (default ±45).
+ * If signals are weak (all axes near 0.5), the shift is larger
+ * for more differentiation.
+ */
+export function generateThemeVariants(
+  pv: PersonalityVector,
+  options: GenerateThemeOptions = {}
+): ThemeVariantPair {
+  const variantA = generateThemeFromVector(pv, options);
+
+  // Determine hue shift amount based on signal strength
+  const signalStrength = pv.reduce((sum, v) => sum + Math.abs(v - 0.5), 0) / pv.length;
+  // signalStrength: 0 = all at 0.5 (weak), 0.5 = all at extremes (strong)
+  // Weak signals → larger shift (60°), strong signals → subtle shift (30°)
+  const hueShift = lerp(60, 30, clamp(signalStrength * 2, 0, 1));
+
+  // Extract the hue from variant A's primary color to compute the shifted hue
+  const baseHue = chroma(variantA.colorPrimary).get("hsl.h") || 0;
+  const shiftedHue = (baseHue + hueShift) % 360;
+
+  const variantB = generateThemeFromVector(pv, {
+    ...options,
+    seedHue: shiftedHue,
+  });
+
+  return {
+    variantA,
+    variantB,
+    labelA: "Variant A",
+    labelB: "Variant B",
+  };
+}

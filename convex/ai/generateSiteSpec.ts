@@ -352,6 +352,247 @@ function validateSpecContent(
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Auto-fix replacement maps (inlined copy of validate-spec.ts fixSpecContent)
+ * ──────────────────────────────────────────────────────────── */
+
+interface AutoFix {
+  componentRef: string;
+  field: string;
+  original: string;
+  replacement: string;
+  rule: string;
+}
+
+const VOCAB_REPLACEMENTS: Record<string, Array<{ pattern: RegExp; replacement: string }>> = {
+  restaurant: [
+    { pattern: /\bappointment\b/gi, replacement: "reservation" },
+    { pattern: /\bsession\b/gi, replacement: "dining experience" },
+    { pattern: /\btreatment\b/gi, replacement: "course" },
+    { pattern: /\bconsultation\b/gi, replacement: "reservation" },
+    { pattern: /\btherapist\b/gi, replacement: "chef" },
+    { pattern: /\besthetician\b/gi, replacement: "sommelier" },
+  ],
+  spa: [
+    { pattern: /\breservation\b/gi, replacement: "appointment" },
+    { pattern: /\btable for\b/gi, replacement: "session for" },
+    { pattern: /\bfood menu\b/gi, replacement: "treatment menu" },
+    { pattern: /\bentrée\b/gi, replacement: "treatment" },
+    { pattern: /\bappetizer\b/gi, replacement: "add-on" },
+    { pattern: /\bchef\b/gi, replacement: "therapist" },
+    { pattern: /\bsous chef\b/gi, replacement: "lead therapist" },
+    { pattern: /\bsommelier\b/gi, replacement: "wellness advisor" },
+  ],
+  photography: [
+    { pattern: /\bappointment\b/gi, replacement: "session" },
+    { pattern: /\btreatment\b/gi, replacement: "shoot" },
+    { pattern: /\btherapist\b/gi, replacement: "photographer" },
+    { pattern: /\breservation\b/gi, replacement: "booking" },
+    { pattern: /\bentrée\b/gi, replacement: "package" },
+    { pattern: /\besthetician\b/gi, replacement: "photo editor" },
+  ],
+};
+
+const HEADLINE_REPLACEMENTS: Record<string, Array<{ pattern: RegExp; replacement: string }>> = {
+  restaurant: [
+    { pattern: /\bServices & Treatments\b/gi, replacement: "Our Menu" },
+    { pattern: /\bOur Services\b/gi, replacement: "Our Menu" },
+    { pattern: /\bSchedule a Consultation\b/gi, replacement: "Reserve a Table" },
+    { pattern: /\bBook an Appointment\b/gi, replacement: "Reserve a Table" },
+    { pattern: /\bBook Your Appointment\b/gi, replacement: "Reserve Your Table" },
+  ],
+  spa: [
+    { pattern: /\bOur Menu\b/gi, replacement: "Our Treatments" },
+    { pattern: /\bReserve a Table\b/gi, replacement: "Book a Treatment" },
+  ],
+  photography: [
+    { pattern: /\bServices & Treatments\b/gi, replacement: "Our Work" },
+    { pattern: /\bOur Services\b/gi, replacement: "Our Portfolio" },
+    { pattern: /\bSchedule a Consultation\b/gi, replacement: "Book a Session" },
+    { pattern: /\bBook an Appointment\b/gi, replacement: "Book a Session" },
+  ],
+};
+
+const ROLE_REPLACEMENTS: Record<string, Array<{ pattern: RegExp; replacement: string }>> = {
+  restaurant: [
+    { pattern: /\bFounder & CEO\b/gi, replacement: "Executive Chef" },
+    { pattern: /\bCEO\b/gi, replacement: "Executive Chef" },
+    { pattern: /\bCreative Director\b/gi, replacement: "Sous Chef" },
+    { pattern: /\bCTO\b/gi, replacement: "Head Sommelier" },
+    { pattern: /\bCOO\b/gi, replacement: "Restaurant Manager" },
+  ],
+  spa: [
+    { pattern: /\bFounder & CEO\b/gi, replacement: "Lead Therapist" },
+    { pattern: /\bCEO\b/gi, replacement: "Wellness Director" },
+    { pattern: /\bCreative Director\b/gi, replacement: "Senior Esthetician" },
+  ],
+  photography: [
+    { pattern: /\bFounder & CEO\b/gi, replacement: "Lead Photographer" },
+    { pattern: /\bCEO\b/gi, replacement: "Lead Photographer" },
+    { pattern: /\bCreative Director\b/gi, replacement: "Studio Director" },
+  ],
+};
+
+function applyReplacements(
+  content: Record<string, unknown>,
+  replacements: Array<{ pattern: RegExp; replacement: string }>,
+  componentRef: string,
+  fieldPrefix: string,
+  fixes: AutoFix[],
+  rule: string
+): void {
+  for (const [key, value] of Object.entries(content)) {
+    if (typeof value === "string") {
+      let current = value;
+      for (const { pattern, replacement } of replacements) {
+        const p = new RegExp(pattern.source, pattern.flags);
+        if (p.test(current)) {
+          const original = current;
+          current = current.replace(pattern, replacement);
+          fixes.push({
+            componentRef,
+            field: fieldPrefix ? `${fieldPrefix}.${key}` : key,
+            original,
+            replacement: current,
+            rule,
+          });
+        }
+      }
+      if (current !== value) content[key] = current;
+    } else if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        if (typeof value[i] === "object" && value[i] !== null) {
+          applyReplacements(
+            value[i] as Record<string, unknown>,
+            replacements,
+            componentRef,
+            `${key}[${i}]`,
+            fixes,
+            rule
+          );
+        } else if (typeof value[i] === "string") {
+          let current = value[i] as string;
+          for (const { pattern, replacement } of replacements) {
+            const p = new RegExp(pattern.source, pattern.flags);
+            if (p.test(current)) {
+              const original = current;
+              current = current.replace(pattern, replacement);
+              fixes.push({
+                componentRef,
+                field: `${key}[${i}]`,
+                original,
+                replacement: current,
+                rule,
+              });
+            }
+          }
+          if (current !== (value[i] as string)) value[i] = current;
+        }
+      }
+    } else if (typeof value === "object" && value !== null) {
+      applyReplacements(
+        value as Record<string, unknown>,
+        replacements,
+        componentRef,
+        fieldPrefix ? `${fieldPrefix}.${key}` : key,
+        fixes,
+        rule
+      );
+    }
+  }
+}
+
+function fixSpecContent(
+  spec: SiteIntentDocument,
+  context: { description: string; siteType: string }
+): { spec: SiteIntentDocument; fixes: AutoFix[]; subType: string } {
+  const fixed = JSON.parse(JSON.stringify(spec)) as SiteIntentDocument;
+  const fixes: AutoFix[] = [];
+  const subType = inferBusinessSubType(context.siteType, context.description);
+  const vocabReps = VOCAB_REPLACEMENTS[subType];
+  const headlineReps = HEADLINE_REPLACEMENTS[subType];
+  const roleReps = ROLE_REPLACEMENTS[subType];
+
+  for (const page of fixed.pages) {
+    for (const comp of page.components) {
+      const ref = `${comp.componentId}[${comp.order}]`;
+      const content = comp.content as Record<string, unknown>;
+
+      // Fix business name in logoText
+      if (comp.componentId === "nav-sticky" || comp.componentId === "footer-standard") {
+        const logoText = content.logoText;
+        if (
+          typeof logoText === "string" &&
+          !logoText.toLowerCase().includes(fixed.businessName.toLowerCase())
+        ) {
+          fixes.push({
+            componentRef: ref,
+            field: "logoText",
+            original: logoText,
+            replacement: fixed.businessName,
+            rule: "business-name",
+          });
+          content.logoText = fixed.businessName;
+        }
+      }
+      // Headline replacements
+      if (headlineReps) applyReplacements(content, headlineReps, ref, "", fixes, "headline-swap");
+      // Team role replacements
+      if (roleReps && comp.componentId === "team-grid") {
+        const members = content.members;
+        if (Array.isArray(members)) {
+          for (let i = 0; i < members.length; i++) {
+            const member = members[i] as Record<string, unknown>;
+            if (typeof member.role === "string") {
+              let role = member.role;
+              for (const { pattern, replacement } of roleReps) {
+                const p = new RegExp(pattern.source, pattern.flags);
+                if (p.test(role)) {
+                  const original = role;
+                  role = role.replace(pattern, replacement);
+                  fixes.push({
+                    componentRef: ref,
+                    field: `members[${i}].role`,
+                    original,
+                    replacement: role,
+                    rule: "role-swap",
+                  });
+                }
+              }
+              if (role !== member.role) member.role = role;
+            }
+          }
+        }
+      }
+      // Vocabulary replacements
+      if (vocabReps) applyReplacements(content, vocabReps, ref, "", fixes, "vocab-swap");
+      // content-stats type coercion
+      if (comp.componentId === "content-stats") {
+        const stats = content.stats;
+        if (Array.isArray(stats)) {
+          for (let i = 0; i < stats.length; i++) {
+            const stat = stats[i] as Record<string, unknown>;
+            if (typeof stat.value === "string") {
+              const numVal = parseFloat(stat.value);
+              if (!isNaN(numVal)) {
+                fixes.push({
+                  componentRef: ref,
+                  field: `stats[${i}].value`,
+                  original: stat.value,
+                  replacement: String(numVal),
+                  rule: "type-coerce",
+                });
+                stat.value = numVal;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return { spec: fixed, fixes, subType };
+}
+
+/* ────────────────────────────────────────────────────────────
  * Industry-specific content for deterministic fallback
  * ──────────────────────────────────────────────────────────── */
 
@@ -2447,13 +2688,26 @@ export const generateSiteSpec = action({
           validationResult.warnings.map((w) => w.message)
         );
       }
+
+      const fixResult = fixSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (fixResult.fixes.length > 0) {
+        console.log(
+          `[Auto-Fix] Applied ${fixResult.fixes.length} fixes:`,
+          fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
+        );
+      }
+      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
           sessionId: args.sessionId,
           method: "deterministic",
           intakeData: intakeSnapshot,
-          specSnapshot: spec,
-          validationResult,
+          specSnapshot: finalSpec,
+          validationResult: { ...validationResult, autoFixes: fixResult.fixes },
           processingTimeMs: Date.now() - startTime,
           createdAt: Date.now(),
         });
@@ -2461,7 +2715,7 @@ export const generateSiteSpec = action({
         console.error("Pipeline log save failed:", logErr);
       }
 
-      return spec;
+      return finalSpec;
     }
 
     try {
@@ -2767,6 +3021,19 @@ No markdown fencing. No explanation. Just the JSON.`;
           validationResult.warnings.map((w) => w.message)
         );
       }
+
+      const fixResult = fixSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (fixResult.fixes.length > 0) {
+        console.log(
+          `[Auto-Fix] Applied ${fixResult.fixes.length} fixes:`,
+          fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
+        );
+      }
+      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
           sessionId: args.sessionId,
@@ -2774,8 +3041,8 @@ No markdown fencing. No explanation. Just the JSON.`;
           intakeData: intakeSnapshot,
           promptSent: `[SYSTEM]\n${systemPrompt}\n\n[USER]\n${userPrompt}`,
           rawAiResponse,
-          specSnapshot: spec,
-          validationResult,
+          specSnapshot: finalSpec,
+          validationResult: { ...validationResult, autoFixes: fixResult.fixes },
           processingTimeMs: Date.now() - startTime,
           createdAt: Date.now(),
         });
@@ -2783,7 +3050,7 @@ No markdown fencing. No explanation. Just the JSON.`;
         console.error("Pipeline log save failed:", logErr);
       }
 
-      return spec;
+      return finalSpec;
     } catch (error) {
       console.error("Failed to generate AI spec, falling back to deterministic:", error);
       const spec = generateDeterministicSpec({ ...args, ...characterArgs });
@@ -2813,13 +3080,26 @@ No markdown fencing. No explanation. Just the JSON.`;
           validationResult.warnings.map((w) => w.message)
         );
       }
+
+      const fixResult = fixSpecContent(spec, {
+        description: args.description,
+        siteType: args.siteType,
+      });
+      if (fixResult.fixes.length > 0) {
+        console.log(
+          `[Auto-Fix] Applied ${fixResult.fixes.length} fixes:`,
+          fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
+        );
+      }
+      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
           sessionId: args.sessionId,
           method: "deterministic",
           intakeData: intakeSnapshot,
-          specSnapshot: spec,
-          validationResult,
+          specSnapshot: finalSpec,
+          validationResult: { ...validationResult, autoFixes: fixResult.fixes },
           processingTimeMs: Date.now() - startTime,
           createdAt: Date.now(),
         });
@@ -2827,7 +3107,7 @@ No markdown fencing. No explanation. Just the JSON.`;
         console.error("Pipeline log save failed:", logErr);
       }
 
-      return spec;
+      return finalSpec;
     }
   },
 });

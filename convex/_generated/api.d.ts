@@ -10,6 +10,7 @@
 
 import type * as ai_generateQuestions from "../ai/generateQuestions.js";
 import type * as ai_generateSiteSpec from "../ai/generateSiteSpec.js";
+import type * as feedback from "../feedback.js";
 import type * as intakeResponses from "../intakeResponses.js";
 import type * as pipelineLogs from "../pipelineLogs.js";
 import type * as siteSpecs from "../siteSpecs.js";
@@ -23,6 +24,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "ai/generateQuestions": typeof ai_generateQuestions;
   "ai/generateSiteSpec": typeof ai_generateSiteSpec;
+  feedback: typeof feedback;
   intakeResponses: typeof intakeResponses;
   pipelineLogs: typeof pipelineLogs;
   siteSpecs: typeof siteSpecs;
