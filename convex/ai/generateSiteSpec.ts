@@ -572,7 +572,7 @@ function fixSpecContent(
           for (let i = 0; i < stats.length; i++) {
             const stat = stats[i] as Record<string, unknown>;
             if (typeof stat.value === "string") {
-              const numVal = parseFloat(stat.value);
+              const numVal = parseFloat(stat.value.replace(/,/g, ""));
               if (!isNaN(numVal)) {
                 fixes.push({
                   componentRef: ref,
@@ -2869,11 +2869,11 @@ CONTENT SECTIONS:
 - "content-features" — variant: "icon-cards"
   Content: { subheadline, headline, features: { icon, title, description }[] }
 - "content-split" — variant: "alternating"
-  Content: { headline, rows: { headline, body, image: { src, alt } }[] }
+  Content: { sections: { headline, body, image: { src, alt }, ctaText?, ctaLink? }[] }
 - "content-text" — variant: "centered"
   Content: { id?, eyebrow, headline, body (HTML string) }
 - "content-stats" — variants: "inline", "cards", "animated-counter"
-  Content: { headline?, subheadline?, stats: { value: string, label: string, prefix?, suffix? }[] }
+  Content: { headline?, subheadline?, stats: { value: number, label: string, prefix?, suffix? }[] }
 - "content-accordion" — variants: "single-open", "multi-open", "bordered"
   Content: { headline?, subheadline?, items: { question: string, answer: string (HTML) }[] }
 - "content-timeline" — variants: "vertical", "alternating"

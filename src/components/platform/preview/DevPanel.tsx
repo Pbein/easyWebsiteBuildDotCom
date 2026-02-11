@@ -808,9 +808,17 @@ export function DevPanel({
   return (
     <div className="shrink-0 border-t border-[rgba(255,255,255,0.06)] bg-[#0a0b0f]">
       {/* Header bar */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setCollapsed((prev) => !prev)}
-        className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.02)]"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setCollapsed((prev) => !prev);
+          }
+        }}
+        className="flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.02)]"
       >
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold tracking-widest text-[#6b6d80] uppercase">
@@ -854,7 +862,7 @@ export function DevPanel({
             <ChevronDown className="h-4 w-4 text-[#6b6d80]" />
           )}
         </div>
-      </button>
+      </div>
 
       {/* Test case naming dialog */}
       {saveState === "naming" && (

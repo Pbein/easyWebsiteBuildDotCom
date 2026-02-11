@@ -36,10 +36,17 @@ export function ContentSplit({
   spacing = "lg",
   sections,
   imageStyle = "rounded",
-}: ContentSplitProps) {
+  ...rest
+}: ContentSplitProps & Record<string, unknown>) {
+  // Defensive: AI may send "rows" instead of "sections"
+  const resolvedSections =
+    sections ?? (rest as { rows?: ContentSplitProps["sections"] }).rows ?? [];
+
   const themeStyle = theme ? (tokensToCSSProperties(theme) as React.CSSProperties) : undefined;
 
   const paddingY = SPACING_MAP[spacing];
+
+  if (resolvedSections.length === 0) return null;
 
   return (
     <section
@@ -60,7 +67,7 @@ export function ContentSplit({
           gap: "clamp(var(--space-component), 4vw, var(--space-section))",
         }}
       >
-        {sections.map((section, i) => (
+        {resolvedSections.map((section, i) => (
           <SplitRow
             key={i}
             index={i}
