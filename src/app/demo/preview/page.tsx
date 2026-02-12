@@ -622,19 +622,119 @@ function PreviewLayout({
   }, []);
 
   const previewRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeReadyRef = useRef(false);
+  const pendingMessagesRef = useRef<unknown[]>([]);
+  const screenshotResolveRef = useRef<{
+    resolve: (result: ScreenshotResult) => void;
+    reject: (err: Error) => void;
+  } | null>(null);
+
+  const postToIframe = useCallback((message: unknown): void => {
+    if (iframeReadyRef.current && iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(message, window.location.origin);
+    } else {
+      pendingMessagesRef.current.push(message);
+    }
+  }, []);
+
+  // Listen for messages from iframe
+  useEffect(() => {
+    function handleMessage(event: MessageEvent): void {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || typeof data.type !== "string" || !data.type.startsWith("ewb:")) return;
+
+      switch (data.type) {
+        case "ewb:render-ready": {
+          iframeReadyRef.current = true;
+          // Flush pending messages
+          const pending = pendingMessagesRef.current.splice(0);
+          for (const msg of pending) {
+            iframeRef.current?.contentWindow?.postMessage(msg, window.location.origin);
+          }
+          break;
+        }
+        case "ewb:screenshot-result": {
+          if (screenshotResolveRef.current) {
+            screenshotResolveRef.current.resolve(data.result as ScreenshotResult);
+            screenshotResolveRef.current = null;
+          }
+          break;
+        }
+        case "ewb:screenshot-error": {
+          if (screenshotResolveRef.current) {
+            screenshotResolveRef.current.reject(new Error(data.error as string));
+            screenshotResolveRef.current = null;
+          }
+          break;
+        }
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Sync activeTheme to iframe whenever it changes
+  useEffect(() => {
+    if (!isMobile) {
+      postToIframe({ type: "ewb:set-theme", theme: activeTheme });
+    }
+  }, [activeTheme, isMobile, postToIframe]);
+
+  // Sync activePage to iframe whenever it changes
+  useEffect(() => {
+    if (!isMobile) {
+      postToIframe({ type: "ewb:set-page", activePage });
+    }
+  }, [activePage, isMobile, postToIframe]);
+
+  // Reset iframe ready state when sessionId changes
+  useEffect(() => {
+    iframeReadyRef.current = false;
+    pendingMessagesRef.current = [];
+  }, [sessionId]);
 
   const handleScreenshot = useCallback(async (): Promise<void> => {
-    if (!previewRef.current || isCapturing) return;
+    if (isCapturing) return;
+
+    // Mobile path: direct DOM capture
+    if (isMobile) {
+      if (!previewRef.current) return;
+      setIsCapturing(true);
+      try {
+        const result = await capturePreviewScreenshot(previewRef.current);
+        setLastScreenshot(result);
+      } catch (err) {
+        console.error("Screenshot capture failed:", err);
+      } finally {
+        setIsCapturing(false);
+      }
+      return;
+    }
+
+    // Desktop path: capture via iframe postMessage
     setIsCapturing(true);
+    const requestId = `screenshot-${Date.now()}`;
     try {
-      const result = await capturePreviewScreenshot(previewRef.current);
+      const result = await Promise.race([
+        new Promise<ScreenshotResult>((resolve, reject) => {
+          screenshotResolveRef.current = { resolve, reject };
+          postToIframe({ type: "ewb:request-screenshot", requestId });
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Screenshot timeout (10s)")), 10000)
+        ),
+      ]);
       setLastScreenshot(result);
     } catch (err) {
       console.error("Screenshot capture failed:", err);
+      screenshotResolveRef.current = null;
     } finally {
       setIsCapturing(false);
     }
-  }, [isCapturing, setIsCapturing, setLastScreenshot]);
+  }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe]);
 
   const handleStartOver = useCallback((): void => {
     resetStore();
@@ -789,7 +889,7 @@ function PreviewLayout({
           </button>
         )}
 
-        {/* Main preview area */}
+        {/* Main preview area — iframe for real responsive breakpoints */}
         <div className="flex flex-1 justify-center overflow-auto p-4">
           <div
             className="shadow-2xl transition-[width] duration-300"
@@ -798,17 +898,13 @@ function PreviewLayout({
               maxWidth: "100%",
             }}
           >
-            <div
-              ref={previewRef}
-              className="h-full overflow-auto rounded-lg border border-[rgba(255,255,255,0.06)]"
-            >
-              <AssemblyRenderer
-                spec={spec}
-                activePage={activePage}
-                previewMode
-                themeOverride={activeTheme}
-              />
-            </div>
+            <iframe
+              ref={iframeRef}
+              src={`/demo/preview/render?session=${encodeURIComponent(sessionId ?? "")}`}
+              className="h-full w-full rounded-lg border border-[rgba(255,255,255,0.06)]"
+              style={{ minHeight: "100vh" }}
+              title={`${spec.businessName} Preview`}
+            />
           </div>
         </div>
       </div>

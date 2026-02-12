@@ -8,7 +8,9 @@ const HIDDEN_ROUTES = ["/preview", "/demo/preview"];
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }): React.ReactElement {
   const pathname = usePathname();
-  const hideChrome = HIDDEN_ROUTES.includes(pathname);
+  const hideChrome = HIDDEN_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
 
   return (
     <>
