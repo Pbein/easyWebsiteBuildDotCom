@@ -36,7 +36,11 @@
       "Bash(npx eslint:*)",
       "Bash(npx vitest run)",
       "Bash(git status:*)",
-      "Bash(npx playwright install chromium)"
+      "Bash(npx playwright install chromium)",
+      "WebFetch(domain:www.convex.dev)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:docs.convex.dev)",
+      "WebFetch(domain:ai.google.dev)"
     ]
   }
 }
