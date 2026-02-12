@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -390,6 +390,11 @@ export default function DemoPage(): React.ReactElement {
   const setDescription = useIntakeStore((s) => s.setDescription);
 
   const totalSteps = 9;
+
+  // Reset scroll position on step change — prevents landing at bottom on mobile
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [step]);
 
   /** Bridge local state → Zustand store at step 4→5 boundary */
   const bridgeToStore = useCallback((): void => {

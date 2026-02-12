@@ -7,6 +7,7 @@ import { Heart, Meh, ThumbsDown, X, Send } from "lucide-react";
 
 interface FeedbackBannerProps {
   sessionId: string;
+  isMobile?: boolean;
 }
 
 type Rating = "love" | "okay" | "not-right";
@@ -52,7 +53,10 @@ const DIMENSION_CHIPS: { id: string; label: string }[] = [
 
 const DELAY_MS = 3000;
 
-export function FeedbackBanner({ sessionId }: FeedbackBannerProps): React.ReactElement | null {
+export function FeedbackBanner({
+  sessionId,
+  isMobile = false,
+}: FeedbackBannerProps): React.ReactElement | null {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
@@ -113,7 +117,11 @@ export function FeedbackBanner({ sessionId }: FeedbackBannerProps): React.ReactE
   // Just-submitted confirmation
   if (justSubmitted) {
     return (
-      <div className="animate-in fade-in slide-in-from-bottom-4 fixed right-6 bottom-6 z-50 duration-300">
+      <div
+        className={`animate-in fade-in slide-in-from-bottom-4 fixed z-50 duration-300 ${
+          isMobile ? "right-4 bottom-20 left-4" : "right-6 bottom-6"
+        }`}
+      >
         <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#12131a] px-5 py-3.5 shadow-2xl">
           <p className="text-sm font-medium text-emerald-400">Thanks for your feedback!</p>
         </div>
@@ -124,8 +132,16 @@ export function FeedbackBanner({ sessionId }: FeedbackBannerProps): React.ReactE
   const showFollowUp = selectedRating === "not-right" || selectedRating === "okay";
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 fixed right-6 bottom-6 z-50 duration-300">
-      <div className="w-80 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#12131a] shadow-2xl">
+    <div
+      className={`animate-in fade-in slide-in-from-bottom-4 fixed z-50 duration-300 ${
+        isMobile ? "right-4 bottom-20 left-4" : "right-6 bottom-6"
+      }`}
+    >
+      <div
+        className={`rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#12131a] shadow-2xl ${
+          isMobile ? "w-full" : "w-80"
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)] px-4 py-3">
           <p className="text-xs font-semibold tracking-wide text-[#9496a8] uppercase">

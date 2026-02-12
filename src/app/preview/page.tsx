@@ -7,6 +7,7 @@ import { LUXURY_DARK, THEME_PRESETS } from "@/lib/theme/presets";
 import { generateThemeFromVector } from "@/lib/theme/generate-theme";
 import type { PersonalityVector } from "@/lib/theme/theme.types";
 import type { ThemeTokens } from "@/lib/theme/theme.types";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 
 import { NavSticky } from "@/components/library/navigation/nav-sticky";
 import { HeroCentered } from "@/components/library/hero/hero-centered";
@@ -419,6 +420,7 @@ function ThemeSelector({
   isCustom,
   isMinimized,
   onToggleMinimize,
+  isMobile,
 }: {
   activePreset: string;
   onSelectPreset: (id: string) => void;
@@ -428,13 +430,98 @@ function ThemeSelector({
   isCustom: boolean;
   isMinimized: boolean;
   onToggleMinimize: () => void;
+  isMobile: boolean;
 }) {
+  /* ── Shared: Preset button ─────────────────────────── */
+  const presetButton = (preset: (typeof THEME_PRESETS)[number], compact: boolean) => (
+    <button
+      key={preset.id}
+      type="button"
+      onClick={() => onSelectPreset(preset.id)}
+      className={
+        compact
+          ? "shrink-0 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-all"
+          : "rounded-lg px-4 py-2.5 text-left text-sm transition-all"
+      }
+      style={{
+        backgroundColor:
+          activePreset === preset.id && !isCustom ? "rgba(255,255,255,0.12)" : "transparent",
+        border:
+          activePreset === preset.id && !isCustom
+            ? "1px solid rgba(255,255,255,0.2)"
+            : "1px solid transparent",
+        cursor: "pointer",
+        color: activePreset === preset.id && !isCustom ? "#fff" : "#aaa",
+      }}
+    >
+      {compact ? (
+        preset.name
+      ) : (
+        <>
+          <div className="font-medium">{preset.name}</div>
+          <div className="mt-0.5 text-xs" style={{ color: "#777", lineHeight: 1.4 }}>
+            {preset.description.slice(0, 80)}...
+          </div>
+        </>
+      )}
+    </button>
+  );
+
+  /* ── Shared: Custom vector sliders ─────────────────── */
+  const customVectorSection = (
+    <>
+      <button
+        type="button"
+        onClick={onUseCustom}
+        className="rounded-lg px-4 py-2 text-left text-sm transition-all"
+        style={{
+          backgroundColor: isCustom ? "rgba(255,255,255,0.12)" : "transparent",
+          border: isCustom ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent",
+          cursor: "pointer",
+          color: isCustom ? "#fff" : "#aaa",
+          fontWeight: 500,
+        }}
+      >
+        Custom Vector
+      </button>
+
+      {isCustom && (
+        <div className="flex flex-col gap-3">
+          {AXIS_LABELS.map((label, i) => (
+            <div key={i} className="flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: "#888" }}>
+                  {label}
+                </span>
+                <span className="font-mono text-xs" style={{ color: "#666" }}>
+                  {customVector[i].toFixed(2)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={customVector[i] * 100}
+                onChange={(e) => onChangeVector(i, parseInt(e.target.value) / 100)}
+                className="w-full accent-blue-500"
+                style={{ height: "4px" }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  /* ── Minimized state ───────────────────────────────── */
   if (isMinimized) {
     return (
       <button
         type="button"
         onClick={onToggleMinimize}
-        className="fixed top-0 right-0 z-[100] m-4 flex items-center gap-2 rounded-xl border px-4 py-2.5 shadow-2xl backdrop-blur-xl transition-all hover:scale-105"
+        className={`fixed z-[100] flex items-center gap-2 rounded-xl border px-4 py-2.5 shadow-2xl backdrop-blur-xl transition-all hover:scale-105 ${
+          isMobile ? "right-4 bottom-4" : "top-0 right-0 m-4"
+        }`}
         style={{
           backgroundColor: "rgba(15, 15, 20, 0.92)",
           borderColor: "rgba(255,255,255,0.15)",
@@ -461,6 +548,81 @@ function ThemeSelector({
     );
   }
 
+  /* ── Mobile: Bottom sheet ──────────────────────────── */
+  if (isMobile) {
+    return (
+      <>
+        {/* Backdrop — tap to close */}
+        <div className="fixed inset-0 z-[99] bg-black/40" onClick={onToggleMinimize} />
+        {/* Bottom sheet */}
+        <div
+          className="fixed right-0 bottom-0 left-0 z-[100] flex flex-col overflow-hidden rounded-t-2xl border-t shadow-2xl backdrop-blur-xl"
+          style={{
+            backgroundColor: "rgba(15, 15, 20, 0.96)",
+            borderColor: "rgba(255,255,255,0.1)",
+            maxHeight: "60vh",
+            fontFamily: "'Outfit', sans-serif",
+            color: "#e0e0e0",
+          }}
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center py-3">
+            <div className="h-1 w-10 rounded-full bg-white/20" />
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 pb-3">
+            <h3
+              className="text-sm font-semibold tracking-widest uppercase"
+              style={{ color: "#999", fontSize: "11px", letterSpacing: "0.12em" }}
+            >
+              Theme Preview
+            </h3>
+            <button
+              type="button"
+              onClick={onToggleMinimize}
+              className="flex h-7 w-7 items-center justify-center rounded-md transition-colors"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.06)",
+                color: "#777",
+                cursor: "pointer",
+                border: "none",
+              }}
+              title="Close panel"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto px-5 pb-6">
+            {/* Horizontal scrolling presets */}
+            <div className="-mx-5 mb-3 flex gap-2 overflow-x-auto px-5 pb-2">
+              {THEME_PRESETS.map((preset) => presetButton(preset, true))}
+            </div>
+
+            {/* Divider */}
+            <div className="my-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+
+            {/* Custom vector */}
+            {customVectorSection}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Desktop: Side panel (unchanged) ───────────────── */
   return (
     <div
       className="fixed top-0 right-0 z-[100] m-4 flex flex-col gap-4 rounded-xl border p-5 shadow-2xl backdrop-blur-xl"
@@ -508,75 +670,14 @@ function ThemeSelector({
 
       {/* Preset buttons */}
       <div className="flex flex-col gap-2">
-        {THEME_PRESETS.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            onClick={() => onSelectPreset(preset.id)}
-            className="rounded-lg px-4 py-2.5 text-left text-sm transition-all"
-            style={{
-              backgroundColor:
-                activePreset === preset.id && !isCustom ? "rgba(255,255,255,0.12)" : "transparent",
-              border:
-                activePreset === preset.id && !isCustom
-                  ? "1px solid rgba(255,255,255,0.2)"
-                  : "1px solid transparent",
-              cursor: "pointer",
-              color: activePreset === preset.id && !isCustom ? "#fff" : "#aaa",
-            }}
-          >
-            <div className="font-medium">{preset.name}</div>
-            <div className="mt-0.5 text-xs" style={{ color: "#777", lineHeight: 1.4 }}>
-              {preset.description.slice(0, 80)}...
-            </div>
-          </button>
-        ))}
+        {THEME_PRESETS.map((preset) => presetButton(preset, false))}
       </div>
 
       {/* Divider */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
 
-      {/* Custom vector sliders */}
-      <button
-        type="button"
-        onClick={onUseCustom}
-        className="rounded-lg px-4 py-2 text-left text-sm transition-all"
-        style={{
-          backgroundColor: isCustom ? "rgba(255,255,255,0.12)" : "transparent",
-          border: isCustom ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent",
-          cursor: "pointer",
-          color: isCustom ? "#fff" : "#aaa",
-          fontWeight: 500,
-        }}
-      >
-        Custom Vector
-      </button>
-
-      {isCustom && (
-        <div className="flex flex-col gap-3">
-          {AXIS_LABELS.map((label, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: "#888" }}>
-                  {label}
-                </span>
-                <span className="font-mono text-xs" style={{ color: "#666" }}>
-                  {customVector[i].toFixed(2)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={customVector[i] * 100}
-                onChange={(e) => onChangeVector(i, parseInt(e.target.value) / 100)}
-                className="w-full accent-blue-500"
-                style={{ height: "4px" }}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Custom vector */}
+      {customVectorSection}
     </div>
   );
 }
@@ -586,6 +687,7 @@ function ThemeSelector({
  * ──────────────────────────────────────────────────────────── */
 
 export default function PreviewPage() {
+  const isMobile = useIsMobile();
   const [activePreset, setActivePreset] = useState(LUXURY_DARK.id);
   const [isCustom, setIsCustom] = useState(false);
   const [customVector, setCustomVector] = useState<PersonalityVector>([
@@ -623,7 +725,9 @@ export default function PreviewPage() {
       {/* Exit button */}
       <Link
         href="/"
-        className="fixed top-0 left-0 z-[100] m-4 flex items-center gap-2 rounded-xl border px-4 py-2.5 shadow-2xl backdrop-blur-xl transition-all hover:scale-105"
+        className={`fixed top-0 left-0 z-[100] flex items-center gap-2 rounded-xl border shadow-2xl backdrop-blur-xl transition-all hover:scale-105 ${
+          isMobile ? "m-2 px-3 py-2" : "m-4 px-4 py-2.5"
+        }`}
         style={{
           backgroundColor: "rgba(15, 15, 20, 0.92)",
           borderColor: "rgba(255,255,255,0.15)",
@@ -657,6 +761,7 @@ export default function PreviewPage() {
         isCustom={isCustom}
         isMinimized={isMinimized}
         onToggleMinimize={() => setIsMinimized((prev) => !prev)}
+        isMobile={isMobile}
       />
 
       {/* Themed site preview */}

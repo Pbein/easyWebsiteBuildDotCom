@@ -17,7 +17,26 @@ import { PreviewSidebar } from "@/components/platform/preview/PreviewSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
 import { FeedbackBanner } from "@/components/platform/preview/FeedbackBanner";
-import { Loader2 } from "lucide-react";
+import { useIsMobile } from "@/lib/hooks/use-is-mobile";
+import { useIntakeStore } from "@/lib/stores/intake-store";
+import { useRouter } from "next/navigation";
+import {
+  Loader2,
+  Eye,
+  Info,
+  Palette,
+  MoreHorizontal,
+  Camera,
+  Download,
+  RotateCcw,
+  Shuffle,
+  Layers,
+  Heart,
+  Mic,
+  Ban,
+  X,
+  FileText,
+} from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
   desktop: "100%",
@@ -191,6 +210,342 @@ function PreviewContent(): React.ReactElement {
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+ * Mobile-specific components
+ * ──────────────────────────────────────────────────────────── */
+
+type MobileTab = "preview" | "info" | "theme" | "actions";
+
+const MOBILE_TABS: { id: MobileTab; icon: typeof Eye; label: string }[] = [
+  { id: "preview", icon: Eye, label: "Preview" },
+  { id: "info", icon: Info, label: "Info" },
+  { id: "theme", icon: Palette, label: "Theme" },
+  { id: "actions", icon: MoreHorizontal, label: "Actions" },
+];
+
+const PERSONALITY_LABELS = [
+  { label: "Density", left: "Minimal", right: "Rich" },
+  { label: "Tone", left: "Playful", right: "Serious" },
+  { label: "Temp", left: "Warm", right: "Cool" },
+  { label: "Weight", left: "Light", right: "Bold" },
+  { label: "Era", left: "Classic", right: "Modern" },
+  { label: "Energy", left: "Calm", right: "Dynamic" },
+];
+
+function MobileToolbar({
+  businessName,
+  onScreenshot,
+  isCapturing,
+}: {
+  businessName: string;
+  onScreenshot: () => void;
+  isCapturing: boolean;
+}): React.ReactElement {
+  return (
+    <div className="flex h-10 shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.06)] bg-[#0d0e14] px-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <span
+          className="truncate text-sm font-semibold text-white"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          {businessName}
+        </span>
+        <span className="shrink-0 rounded-full bg-[#3ecfb4]/10 px-2 py-0.5 text-[10px] font-medium text-[#3ecfb4]">
+          Preview
+        </span>
+      </div>
+      <button
+        onClick={onScreenshot}
+        disabled={isCapturing}
+        className="p-1.5 text-[#9496a8] transition-colors hover:text-white disabled:opacity-50"
+        title="Screenshot"
+      >
+        <Camera className={`h-4 w-4 ${isCapturing ? "animate-pulse" : ""}`} />
+      </button>
+    </div>
+  );
+}
+
+function MobileTabBar({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: MobileTab;
+  onTabChange: (tab: MobileTab) => void;
+}): React.ReactElement {
+  return (
+    <div className="flex h-14 shrink-0 items-center justify-around border-t border-[rgba(255,255,255,0.06)] bg-[#0d0e14]">
+      {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+        <button
+          key={id}
+          onClick={() => onTabChange(activeTab === id && id !== "preview" ? "preview" : id)}
+          className={`flex flex-col items-center gap-0.5 px-4 py-1 text-[10px] font-medium transition-colors ${
+            activeTab === id ? "text-[#e8a849]" : "text-[#6b6d80] active:text-white"
+          }`}
+        >
+          <Icon className="h-5 w-5" />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function MobileBottomSheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="absolute inset-0 z-10 bg-black/30" onClick={onClose} />
+      {/* Sheet */}
+      <div className="absolute right-0 bottom-0 left-0 z-20 flex max-h-[65vh] flex-col overflow-hidden rounded-t-2xl border-t border-[rgba(255,255,255,0.08)] bg-[#12131a] shadow-2xl">
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-white/15" />
+        </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pb-3">
+          <h3
+            className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 text-[#6b6d80] transition-colors hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-5 pb-6">{children}</div>
+      </div>
+    </>
+  );
+}
+
+function MobileSidebarContent({
+  spec,
+  activePage,
+  onPageChange,
+  theme,
+}: {
+  spec: SiteIntentDocument;
+  activePage: string;
+  onPageChange: (slug: string) => void;
+  theme: ThemeTokens;
+}): React.ReactElement {
+  const activePageSpec = spec.pages.find((p) => p.slug === activePage) ?? spec.pages[0];
+
+  return (
+    <div className="space-y-5">
+      {/* Business info */}
+      <div>
+        {spec.tagline && <p className="text-xs leading-relaxed text-[#9496a8]">{spec.tagline}</p>}
+        <div className="mt-2 flex gap-2">
+          <span className="rounded-full bg-[#e8a849]/10 px-2 py-0.5 text-[10px] font-medium text-[#e8a849]">
+            {spec.siteType}
+          </span>
+          <span className="rounded-full bg-[#3ecfb4]/10 px-2 py-0.5 text-[10px] font-medium text-[#3ecfb4]">
+            {spec.conversionGoal}
+          </span>
+        </div>
+      </div>
+
+      {/* Pages */}
+      {spec.pages.length > 1 && (
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <FileText className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+              Pages
+            </span>
+          </div>
+          <div className="flex gap-1.5">
+            {spec.pages.map((page) => (
+              <button
+                key={page.slug}
+                onClick={() => onPageChange(page.slug)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                  activePage === page.slug
+                    ? "bg-[#e8a849]/10 text-[#e8a849]"
+                    : "text-[#c0c1cc] hover:bg-[rgba(255,255,255,0.04)]"
+                }`}
+              >
+                {page.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Theme colors */}
+      <div>
+        <div className="mb-2 flex items-center gap-2">
+          <Palette className="h-3.5 w-3.5 text-[#9496a8]" />
+          <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+            Theme
+          </span>
+        </div>
+        <div className="flex gap-2">
+          {[
+            { label: "Primary", color: theme.colorPrimary },
+            { label: "Secondary", color: theme.colorSecondary },
+            { label: "Accent", color: theme.colorAccent },
+            { label: "Background", color: theme.colorBackground },
+            { label: "Text", color: theme.colorText },
+          ].map((swatch) => (
+            <div key={swatch.label} className="text-center">
+              <div
+                className="mb-1 h-8 w-8 rounded-lg border border-[rgba(255,255,255,0.1)]"
+                style={{ backgroundColor: swatch.color }}
+              />
+              <span className="text-[9px] text-[#9496a8]">{swatch.label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 space-y-1 text-[10px] text-[#9496a8]">
+          <p>Heading: {theme.fontHeading.split(",")[0].replace(/'/g, "")}</p>
+          <p>Body: {theme.fontBody.split(",")[0].replace(/'/g, "")}</p>
+        </div>
+      </div>
+
+      {/* Components */}
+      <div>
+        <div className="mb-2 flex items-center gap-2">
+          <Layers className="h-3.5 w-3.5 text-[#9496a8]" />
+          <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+            Components ({activePageSpec?.components.length ?? 0})
+          </span>
+        </div>
+        <div className="space-y-1">
+          {activePageSpec?.components
+            .sort((a, b) => a.order - b.order)
+            .map((comp, i) => (
+              <div
+                key={`${comp.componentId}-${i}`}
+                className="flex items-center justify-between rounded-md py-1 text-xs"
+              >
+                <span className="font-mono text-[#c0c1cc]">{comp.componentId}</span>
+                <span className="text-[#9496a8]">{comp.variant}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Personality */}
+      <div>
+        <span className="mb-2 block text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+          Personality
+        </span>
+        <div className="space-y-2">
+          {PERSONALITY_LABELS.map((axis, i) => (
+            <div key={axis.label}>
+              <div className="mb-0.5 flex justify-between text-[10px] text-[#9496a8]">
+                <span>{axis.left}</span>
+                <span className="font-semibold text-[#c0c1cc]">{axis.label}</span>
+                <span>{axis.right}</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#e8a849] to-[#3ecfb4]"
+                  style={{ width: `${(spec.personalityVector[i] ?? 0.5) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Emotional Goals */}
+      {spec.emotionalGoals && spec.emotionalGoals.length > 0 && (
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Heart className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+              Emotional Goals
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {spec.emotionalGoals.map((goal) => (
+              <span
+                key={goal}
+                className="rounded-full bg-[#e8a849]/10 px-2.5 py-1 text-[10px] font-medium text-[#e8a849] capitalize"
+              >
+                {goal}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Voice & Character */}
+      {(spec.voiceProfile || spec.brandArchetype) && (
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Mic className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+              Voice & Character
+            </span>
+          </div>
+          <div className="space-y-2">
+            {spec.voiceProfile && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[#9496a8]">Voice:</span>
+                <span className="rounded-full bg-[#3ecfb4]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#3ecfb4] capitalize">
+                  {spec.voiceProfile}
+                </span>
+              </div>
+            )}
+            {spec.brandArchetype && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[#9496a8]">Archetype:</span>
+                <span className="rounded-full bg-[#c084fc]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#c084fc] capitalize">
+                  {spec.brandArchetype}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Anti-References */}
+      {spec.antiReferences && spec.antiReferences.length > 0 && (
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Ban className="h-3.5 w-3.5 text-[#9496a8]" />
+            <span className="text-xs font-semibold tracking-wider text-[#9496a8] uppercase">
+              Avoid
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {spec.antiReferences.map((ref) => (
+              <span
+                key={ref}
+                className="rounded-full bg-red-500/8 px-2.5 py-1 text-[10px] font-medium text-red-400/70 capitalize"
+              >
+                NOT: {ref}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+ * Main Preview Layout
+ * ──────────────────────────────────────────────────────────── */
+
 function PreviewLayout({
   spec,
   viewport,
@@ -228,6 +583,9 @@ function PreviewLayout({
   devPanelOpen: boolean;
   sessionId: string | null;
 }): React.ReactElement {
+  const isMobile = useIsMobile();
+  const router = useRouter();
+  const resetStore = useIntakeStore((s) => s.reset);
   const pv = spec.personalityVector as PersonalityVector;
 
   const themeVariants = useMemo(() => {
@@ -251,6 +609,7 @@ function PreviewLayout({
   }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
 
   const [vlmOverrides, setVlmOverrides] = useState<Partial<ThemeTokens> | null>(null);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
 
   const activeTheme = useMemo(() => {
     const base = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
@@ -277,6 +636,113 @@ function PreviewLayout({
     }
   }, [isCapturing, setIsCapturing, setLastScreenshot]);
 
+  const handleStartOver = useCallback((): void => {
+    resetStore();
+    router.push("/demo");
+  }, [resetStore, router]);
+
+  /* ── Mobile layout ─────────────────────────────────── */
+  if (isMobile) {
+    return (
+      <div className="flex h-screen flex-col bg-[#0a0b0f]">
+        {/* Slim toolbar */}
+        <MobileToolbar
+          businessName={spec.businessName}
+          onScreenshot={() => void handleScreenshot()}
+          isCapturing={isCapturing}
+        />
+
+        {/* Full-bleed preview + bottom sheets */}
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          {/* Preview area — full bleed, no padding */}
+          <div className="flex-1 overflow-auto">
+            <div ref={previewRef}>
+              <AssemblyRenderer
+                spec={spec}
+                activePage={activePage}
+                previewMode
+                themeOverride={activeTheme}
+              />
+            </div>
+          </div>
+
+          {/* Info sheet */}
+          {mobileTab === "info" && (
+            <MobileBottomSheet title="Site Details" onClose={() => setMobileTab("preview")}>
+              <MobileSidebarContent
+                spec={spec}
+                activePage={activePage}
+                onPageChange={setActivePage}
+                theme={activeTheme}
+              />
+            </MobileBottomSheet>
+          )}
+
+          {/* Theme sheet */}
+          {mobileTab === "theme" && (
+            <MobileBottomSheet title="Theme Variant" onClose={() => setMobileTab("preview")}>
+              <div className="flex items-center justify-center gap-4 py-4">
+                <Shuffle className="h-4 w-4 text-[#6b6d80]" />
+                {(["A", "B"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setActiveVariant(v)}
+                    className={`rounded-lg px-8 py-3 text-sm font-semibold transition-colors ${
+                      activeVariant === v
+                        ? "bg-[rgba(232,168,73,0.15)] text-[#e8a849]"
+                        : "bg-[rgba(255,255,255,0.04)] text-[#9496a8]"
+                    }`}
+                  >
+                    Variant {v}
+                  </button>
+                ))}
+              </div>
+            </MobileBottomSheet>
+          )}
+
+          {/* Actions sheet */}
+          {mobileTab === "actions" && (
+            <MobileBottomSheet title="Actions" onClose={() => setMobileTab("preview")}>
+              <div className="flex flex-col gap-1 py-2">
+                <button
+                  onClick={() => void handleScreenshot()}
+                  disabled={isCapturing}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                >
+                  <Camera className="h-5 w-5 text-[#3ecfb4]" />
+                  {isCapturing ? "Capturing..." : "Take Screenshot"}
+                </button>
+                <button
+                  onClick={() => void handleExport(spec)}
+                  disabled={isExporting}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                >
+                  <Download className="h-5 w-5 text-[#3ecfb4]" />
+                  {isExporting ? "Exporting..." : "Export as ZIP"}
+                </button>
+                <div className="my-1 border-t border-[rgba(255,255,255,0.06)]" />
+                <button
+                  onClick={handleStartOver}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#9496a8] transition-colors active:bg-[rgba(255,255,255,0.04)]"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                  Start Over
+                </button>
+              </div>
+            </MobileBottomSheet>
+          )}
+        </div>
+
+        {/* Tab bar */}
+        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} />
+
+        {/* Feedback Banner — positioned above tab bar */}
+        {sessionId && <FeedbackBanner sessionId={sessionId} isMobile />}
+      </div>
+    );
+  }
+
+  /* ── Desktop layout (unchanged) ────────────────────── */
   return (
     <div className="flex h-screen flex-col bg-[#0a0b0f]">
       {/* Toolbar */}
