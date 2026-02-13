@@ -46,7 +46,16 @@
       "Bash(if exist \".next\\\\lock\" del /f \".next\\\\lock\")",
       "Bash(curl:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(git restore:*)",
+      "Bash(npx @posthog/wizard@latest mcp add:*)",
+      "Bash(if exist \"%USERPROFILE%\\\\.claude.json\" type \"%USERPROFILE%\\\\.claude.json\")",
+      "WebFetch(domain:posthog.com)",
+      "WebFetch(domain:playbooks.com)",
+      "WebFetch(domain:glama.ai)",
+      "WebFetch(domain:apidog.com)",
+      "Bash(claude mcp add-json \"posthog\" \"{\"\"command\"\":\"\"npx\"\",\"\"args\"\":[\"\"-y\"\",\"\"mcp-remote@latest\"\",\"\"https://mcp.posthog.com/mcp\"\",\"\"--header\"\",\"\"Authorization:Bearer phx_Jkm7eqobwSGWb8OB7zUPCK4l1RLy3uZjRNdkHwLc5mGcU4x\"\"]}\")",
+      "Bash(claude mcp:*)"
     ]
   }
 }
