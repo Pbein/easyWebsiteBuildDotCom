@@ -4,12 +4,29 @@ import { action } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
+import type { GenericActionCtx } from "convex/server";
+import type { DataModel } from "../_generated/dataModel";
+import {
+  searchStockPhotos,
+  buildSearchKeywords,
+  buildTeamPhotoKeywords,
+  buildGalleryKeywords,
+  generateCacheKey,
+  type StockPhoto,
+  type SearchOptions,
+} from "./imageSearch";
 
 interface ComponentPlacement {
   componentId: string;
   variant: string;
   order: number;
   content: Record<string, unknown>;
+  visualConfig?: {
+    pattern?: string;
+    dividerBottom?: string;
+    parallaxEnabled?: boolean;
+    scrollRevealIntensity?: string;
+  };
 }
 
 interface PageSpec {
@@ -1433,6 +1450,54 @@ function generateDeterministicSpec(args: {
   const components: ComponentPlacement[] = [];
   let order = 0;
 
+  // ── Visual vocabulary (inlined — Convex cannot import from src/) ──────
+  // Maps sub-type/siteType to CSS pattern and section divider defaults.
+  const VISUAL_DEFAULTS: Record<string, { pattern: string; divider: string; opacity: number }> = {
+    restaurant: { pattern: "herringbone", divider: "curve", opacity: 0.06 },
+    bakery: { pattern: "polka-dots", divider: "curve", opacity: 0.07 },
+    spa: { pattern: "waves", divider: "wave", opacity: 0.04 },
+    photography: { pattern: "none", divider: "none", opacity: 0 },
+    business: { pattern: "dots", divider: "angle", opacity: 0.04 },
+    tech: { pattern: "circuit-dots", divider: "angle", opacity: 0.05 },
+    startup: { pattern: "circuit-dots", divider: "angle", opacity: 0.05 },
+    fitness: { pattern: "diagonal-stripes", divider: "angle", opacity: 0.08 },
+    gym: { pattern: "diagonal-stripes", divider: "angle", opacity: 0.1 },
+    portfolio: { pattern: "none", divider: "none", opacity: 0 },
+    creative: { pattern: "concentric-circles", divider: "zigzag", opacity: 0.06 },
+    ecommerce: { pattern: "dots", divider: "none", opacity: 0.03 },
+    educational: { pattern: "grid", divider: "curve", opacity: 0.03 },
+    nonprofit: { pattern: "topography", divider: "wave", opacity: 0.04 },
+    event: { pattern: "diagonal-stripes", divider: "zigzag", opacity: 0.06 },
+    landing: { pattern: "dots", divider: "angle", opacity: 0.04 },
+    personal: { pattern: "none", divider: "none", opacity: 0 },
+    booking: { pattern: "dots", divider: "curve", opacity: 0.04 },
+  };
+  const visualDefaults = VISUAL_DEFAULTS[subType] ||
+    VISUAL_DEFAULTS[siteType] || { pattern: "none", divider: "none", opacity: 0 };
+
+  // Personality-driven adjustments: minimal personalities reduce decoration
+  const effectivePattern = personality[0] < 0.3 ? "none" : visualDefaults.pattern;
+  const effectiveDivider = personality[0] < 0.2 ? "none" : visualDefaults.divider;
+
+  // Helper to build visualConfig for content sections
+  const makeVisualConfig = (
+    opts: { pattern?: boolean; divider?: boolean } = {}
+  ): Record<string, unknown> | undefined => {
+    const vc: Record<string, unknown> = {};
+    let hasConfig = false;
+
+    if (opts.pattern !== false && effectivePattern !== "none") {
+      vc.pattern = effectivePattern;
+      hasConfig = true;
+    }
+    if (opts.divider !== false && effectiveDivider !== "none") {
+      vc.dividerBottom = effectiveDivider;
+      hasConfig = true;
+    }
+
+    return hasConfig ? vc : undefined;
+  };
+
   // Voice-keyed CTA text with sub-type awareness
   const ctaText = getVoiceKeyedCtaText(goal, voiceTone, antiRefs, subType);
 
@@ -1475,10 +1540,7 @@ function generateDeterministicSpec(args: {
         subheadline: description.slice(0, 200),
         ctaPrimary: { text: ctaText, href: "#contact" },
         ctaSecondary: { text: "Learn More", href: "#about" },
-        image: {
-          src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-          alt: businessName,
-        },
+        // Image omitted — component renders themed gradient fallback
       },
     });
   }
@@ -1516,7 +1578,29 @@ function generateDeterministicSpec(args: {
       headline: getServicesHeadline(subType, siteType),
       features: industry.features,
     },
+    visualConfig: makeVisualConfig({ pattern: true, divider: true }),
   });
+
+  // Content-split section for rich sites (images optional — CSS gradient fallback)
+  if (
+    personality[0] > 0.4 &&
+    subType !== "photography" &&
+    ["business", "booking", "ecommerce", "portfolio"].includes(siteType)
+  ) {
+    const splitContent = getContentSplitForSubType(subType, siteType, businessName);
+    if (splitContent.length > 0) {
+      components.push({
+        componentId: "content-split",
+        variant: "alternating",
+        order: order++,
+        content: {
+          sections: splitContent,
+          imageStyle: isLuxury ? "sharp" : "rounded",
+        },
+        visualConfig: makeVisualConfig({ pattern: false, divider: true }),
+      });
+    }
+  }
 
   // Stats section for business, booking, ecommerce, educational, nonprofit
   if (["business", "booking", "ecommerce", "educational", "nonprofit"].includes(siteType)) {
@@ -1619,31 +1703,8 @@ function generateDeterministicSpec(args: {
     });
   }
 
-  // Gallery for visual businesses (photography, restaurant)
-  if (subType === "photography") {
-    // Serious/polished photographers get lightbox; creative/casual get masonry
-    const galleryVariant = personality[1] > 0.6 ? "lightbox" : "masonry";
-    components.push({
-      componentId: "media-gallery",
-      variant: galleryVariant,
-      order: order++,
-      content: {
-        headline: "Selected Work",
-        subheadline: "A glimpse into our recent sessions",
-        images: [
-          { src: "", alt: "Portrait session in natural light", category: "Portraits" },
-          { src: "", alt: "Wedding ceremony candid moment", category: "Weddings" },
-          { src: "", alt: "Corporate headshot with studio lighting", category: "Commercial" },
-          { src: "", alt: "Family laughing together outdoors", category: "Families" },
-          { src: "", alt: "Editorial fashion photograph", category: "Editorial" },
-          { src: "", alt: "Couple during golden hour engagement shoot", category: "Weddings" },
-        ],
-        columns: 3,
-        showCaptions: true,
-        enableFilter: true,
-      },
-    });
-  }
+  // Gallery for visual businesses — added dynamically by maybeAddGalleryComponent()
+  // after spec generation. Stock photos injected by enrichSpecWithImages().
 
   // Social proof — sub-type-aware eyebrow
   const testimonialEyebrows: Record<string, string> = {
@@ -1665,6 +1726,7 @@ function generateDeterministicSpec(args: {
             : "What Our Clients Say",
       testimonials: industry.testimonials,
     },
+    visualConfig: makeVisualConfig({ pattern: false, divider: true }),
   });
 
   // FAQ accordion for booking, ecommerce, educational, event
@@ -1677,6 +1739,108 @@ function generateDeterministicSpec(args: {
         headline: "Frequently Asked Questions",
         subheadline: "Everything you need to know",
         items: getFaqForSiteType(subType, siteType, businessName),
+      },
+    });
+  }
+
+  // Content steps — how-it-works for booking/business/ecommerce
+  if (["booking", "business", "ecommerce"].includes(siteType)) {
+    components.push({
+      componentId: "content-steps",
+      variant: "numbered",
+      order: order++,
+      content: {
+        headline: "How It Works",
+        subheadline: `Getting started with ${businessName} is simple`,
+        steps: [
+          {
+            title: "Get in Touch",
+            description: "Reach out to us with your needs and we'll schedule a consultation.",
+          },
+          {
+            title: "We Create a Plan",
+            description: "Our team develops a tailored approach just for you.",
+          },
+          {
+            title: "See Results",
+            description: "Watch your vision come to life with our expert execution.",
+          },
+        ],
+      },
+      visualConfig: makeVisualConfig({ divider: false }),
+    });
+  }
+
+  // Pricing table — for SaaS/ecommerce/booking
+  if (["ecommerce", "booking"].includes(siteType) && !["restaurant", "spa"].includes(subType)) {
+    components.push({
+      componentId: "pricing-table",
+      variant: "featured",
+      order: order++,
+      content: {
+        headline: "Our Plans",
+        subheadline: "Choose the plan that fits your needs",
+        plans: [
+          {
+            name: "Starter",
+            price: "$29",
+            period: "/month",
+            features: [
+              { text: "Basic features", included: true },
+              { text: "Email support", included: true },
+              { text: "Priority support", included: false },
+              { text: "Custom integrations", included: false },
+            ],
+            cta: { text: "Get Started", href: "#contact" },
+          },
+          {
+            name: "Professional",
+            price: "$79",
+            period: "/month",
+            featured: true,
+            features: [
+              { text: "All basic features", included: true },
+              { text: "Email support", included: true },
+              { text: "Priority support", included: true },
+              { text: "Custom integrations", included: false },
+            ],
+            cta: { text: "Get Started", href: "#contact" },
+          },
+          {
+            name: "Enterprise",
+            price: "$199",
+            period: "/month",
+            features: [
+              { text: "All basic features", included: true },
+              { text: "Email support", included: true },
+              { text: "Priority support", included: true },
+              { text: "Custom integrations", included: true },
+            ],
+            cta: { text: "Contact Us", href: "#contact" },
+          },
+        ],
+      },
+    });
+  }
+
+  // Content map — for businesses with physical locations
+  if (
+    ["booking", "business"].includes(siteType) &&
+    ["restaurant", "spa", "gym", "fitness"].includes(subType)
+  ) {
+    components.push({
+      componentId: "content-map",
+      variant: "split-with-info",
+      order: order++,
+      content: {
+        headline: "Visit Us",
+        contactInfo: {
+          address: "123 Main Street, Suite 100",
+          phone: "(555) 123-4567",
+          email: `hello@${businessName.toLowerCase().replace(/\s+/g, "")}.com`,
+          hours: ["Mon-Fri: 9am - 6pm", "Sat: 10am - 4pm", "Sun: Closed"],
+        },
+        cta: { text: "Get Directions", href: "#" },
       },
     });
   }
@@ -2113,6 +2277,56 @@ function getContactFormSubheadline(subType: string, businessName: string): strin
     map[subType] ||
     `Ready to get started? Drop us a message and we'll get back to you within 24 hours.`
   );
+}
+
+function getContentSplitForSubType(
+  subType: string,
+  siteType: string,
+  businessName: string
+): Array<{ headline: string; body: string }> {
+  const splitMap: Record<string, Array<{ headline: string; body: string }>> = {
+    restaurant: [
+      {
+        headline: "A Tradition of Craft",
+        body: `At ${businessName}, every dish tells a story. Our chefs draw on generations of culinary tradition to create plates that honor the ingredients and delight the senses.`,
+      },
+      {
+        headline: "The Perfect Setting",
+        body: "Our dining room balances warmth and sophistication — designed to set the stage for memorable meals, celebrations, and quiet evenings alike.",
+      },
+    ],
+    spa: [
+      {
+        headline: "Your Wellness Journey",
+        body: `${businessName} offers a sanctuary where expert therapists craft personalized treatment plans to restore balance, relieve tension, and renew your energy.`,
+      },
+      {
+        headline: "The Space",
+        body: "Every detail of our environment — from ambient lighting to curated aromatherapy — has been designed to deepen your sense of calm from the moment you arrive.",
+      },
+    ],
+    business: [
+      {
+        headline: "Our Approach",
+        body: `${businessName} combines deep industry expertise with a commitment to understanding your unique challenges. We don't offer one-size-fits-all — we build solutions around you.`,
+      },
+      {
+        headline: "Results That Matter",
+        body: "Our track record speaks through the measurable outcomes we deliver: increased efficiency, stronger market position, and sustainable growth for our clients.",
+      },
+    ],
+    ecommerce: [
+      {
+        headline: "Crafted with Care",
+        body: `Every product at ${businessName} is selected for quality, durability, and design. We believe the things you own should bring you genuine satisfaction.`,
+      },
+      {
+        headline: "Seamless Experience",
+        body: "From browsing to unboxing, we've refined every step. Fast shipping, easy returns, and a team that actually cares about getting it right.",
+      },
+    ],
+  };
+  return splitMap[subType] || splitMap[siteType] || [];
 }
 
 function getStatsForSiteType(
@@ -2617,6 +2831,499 @@ function getFaqForSiteType(
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Stock photo enrichment — injects real images into generated specs
+ * ──────────────────────────────────────────────────────────── */
+
+/** Visual business types that benefit from media-gallery */
+const VISUAL_BUSINESS_TYPES = new Set([
+  "photography",
+  "restaurant",
+  "bakery",
+  "spa",
+  "fitness",
+  "gym",
+  "creative",
+  "portfolio",
+]);
+
+interface EnrichmentContext {
+  siteType: string;
+  subType: string;
+  businessName: string;
+  description: string;
+  emotionalGoals?: string[];
+  primaryColor?: string; // hex for color filtering
+}
+
+/**
+ * Cached stock photo search — checks Convex imageCache before hitting APIs.
+ */
+async function cachedSearch(
+  ctx: GenericActionCtx<DataModel>,
+  options: SearchOptions,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<StockPhoto[]> {
+  const cacheKey = generateCacheKey(options);
+
+  // Check cache
+  try {
+    const cached = await ctx.runQuery(internal.imageCache.getCachedResults, {
+      queryHash: cacheKey,
+    });
+    if (cached) {
+      return cached as StockPhoto[];
+    }
+  } catch {
+    // Cache miss or error — proceed to API
+  }
+
+  // Fetch from APIs
+  const results = await searchStockPhotos(options, env);
+
+  // Save to cache (non-blocking — don't await)
+  if (results.length > 0) {
+    try {
+      await ctx.runMutation(internal.imageCache.saveCachedResults, {
+        queryHash: cacheKey,
+        provider: results[0].attribution?.source || "unknown",
+        query: options.query,
+        orientation: options.orientation,
+        results,
+      });
+    } catch {
+      // Cache save failure is non-critical
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Enrich a generated spec with stock photos from Unsplash/Pexels/Pixabay.
+ * Walks the component tree, builds context-aware search keywords,
+ * fetches images, and injects them into component content.
+ *
+ * Gracefully returns the original spec if no API keys are configured
+ * or all searches fail (CSS placeholders remain as fallback).
+ */
+async function enrichSpecWithImages(
+  ctx: GenericActionCtx<DataModel>,
+  spec: SiteIntentDocument,
+  enrichCtx: EnrichmentContext
+): Promise<SiteIntentDocument> {
+  const env = {
+    unsplash: process.env.UNSPLASH_ACCESS_KEY,
+    pexels: process.env.PEXELS_API_KEY,
+    pixabay: process.env.PIXABAY_API_KEY,
+  };
+
+  // No API keys configured — return spec as-is (CSS fallbacks work)
+  if (!env.unsplash && !env.pexels && !env.pixabay) {
+    return spec;
+  }
+
+  const enrichedPages = await Promise.all(
+    spec.pages.map(async (page) => {
+      const enrichedComponents = await enrichComponents(ctx, page.components, enrichCtx, env);
+
+      // Remove gallery components that ended up with no images
+      const filteredComponents = enrichedComponents.filter((comp) => {
+        if (comp.componentId === "media-gallery") {
+          const images = (comp.content as Record<string, unknown>).images;
+          return Array.isArray(images) && images.length > 0;
+        }
+        return true;
+      });
+
+      return { ...page, components: filteredComponents };
+    })
+  );
+
+  return { ...spec, pages: enrichedPages };
+}
+
+async function enrichComponents(
+  ctx: GenericActionCtx<DataModel>,
+  components: ComponentPlacement[],
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement[]> {
+  // Batch all image searches in parallel for performance
+  const enrichmentPromises = components.map(async (comp) => {
+    switch (comp.componentId) {
+      case "hero-split":
+        return enrichHeroSplit(ctx, comp, enrichCtx, env);
+
+      case "hero-centered":
+        if (comp.variant === "with-bg-image") {
+          return enrichHeroCentered(ctx, comp, enrichCtx, env);
+        }
+        return comp;
+
+      case "content-split":
+        return enrichContentSplit(ctx, comp, enrichCtx, env);
+
+      case "team-grid":
+        return enrichTeamGrid(ctx, comp, enrichCtx, env);
+
+      case "media-gallery":
+        return enrichMediaGallery(ctx, comp, enrichCtx, env);
+
+      default:
+        return comp;
+    }
+  });
+
+  return Promise.all(enrichmentPromises);
+}
+
+async function enrichHeroSplit(
+  ctx: GenericActionCtx<DataModel>,
+  comp: ComponentPlacement,
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement> {
+  const content = comp.content as Record<string, unknown>;
+
+  // Already has an image — skip
+  if (content.image && (content.image as Record<string, unknown>).src) {
+    return comp;
+  }
+
+  const keywords = buildSearchKeywords({
+    componentType: "hero-split",
+    businessType: enrichCtx.siteType,
+    subType: enrichCtx.subType,
+    businessName: enrichCtx.businessName,
+    description: enrichCtx.description,
+    emotionalGoals: enrichCtx.emotionalGoals,
+    sectionContext: content.headline as string,
+  });
+
+  const photos = await cachedSearch(
+    ctx,
+    { query: keywords, count: 1, orientation: "landscape", color: enrichCtx.primaryColor },
+    env
+  );
+
+  if (photos.length > 0) {
+    return {
+      ...comp,
+      content: {
+        ...content,
+        image: {
+          src: photos[0].src,
+          alt: photos[0].alt,
+          width: photos[0].width,
+          height: photos[0].height,
+          blurDataURL: photos[0].blurDataURL,
+          attribution: photos[0].attribution,
+        },
+      },
+    };
+  }
+
+  return comp;
+}
+
+async function enrichHeroCentered(
+  ctx: GenericActionCtx<DataModel>,
+  comp: ComponentPlacement,
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement> {
+  const content = comp.content as Record<string, unknown>;
+
+  if (content.backgroundImage) return comp;
+
+  const keywords = buildSearchKeywords({
+    componentType: "hero-centered",
+    businessType: enrichCtx.siteType,
+    subType: enrichCtx.subType,
+    businessName: enrichCtx.businessName,
+    description: enrichCtx.description,
+    emotionalGoals: enrichCtx.emotionalGoals,
+    sectionContext: content.headline as string,
+  });
+
+  const photos = await cachedSearch(
+    ctx,
+    { query: keywords, count: 1, orientation: "landscape", color: enrichCtx.primaryColor },
+    env
+  );
+
+  if (photos.length > 0) {
+    return {
+      ...comp,
+      content: {
+        ...content,
+        backgroundImage: {
+          src: photos[0].src,
+          alt: photos[0].alt,
+          width: photos[0].width,
+          height: photos[0].height,
+          blurDataURL: photos[0].blurDataURL,
+          attribution: photos[0].attribution,
+        },
+      },
+    };
+  }
+
+  return comp;
+}
+
+async function enrichContentSplit(
+  ctx: GenericActionCtx<DataModel>,
+  comp: ComponentPlacement,
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement> {
+  const content = comp.content as Record<string, unknown>;
+  const sections = content.sections as Array<Record<string, unknown>> | undefined;
+
+  if (!sections || sections.length === 0) return comp;
+
+  const enrichedSections = await Promise.all(
+    sections.map(async (section) => {
+      // Already has an image — skip
+      if (section.image && (section.image as Record<string, unknown>).src) {
+        return section;
+      }
+
+      const keywords = buildSearchKeywords({
+        componentType: "content-split",
+        businessType: enrichCtx.siteType,
+        subType: enrichCtx.subType,
+        businessName: enrichCtx.businessName,
+        description: enrichCtx.description,
+        emotionalGoals: enrichCtx.emotionalGoals,
+        sectionContext: section.headline as string,
+      });
+
+      const photos = await cachedSearch(
+        ctx,
+        { query: keywords, count: 1, orientation: "landscape", color: enrichCtx.primaryColor },
+        env
+      );
+
+      if (photos.length > 0) {
+        return {
+          ...section,
+          image: {
+            src: photos[0].src,
+            alt: photos[0].alt,
+            width: photos[0].width,
+            height: photos[0].height,
+            blurDataURL: photos[0].blurDataURL,
+            attribution: photos[0].attribution,
+          },
+        };
+      }
+
+      return section;
+    })
+  );
+
+  return {
+    ...comp,
+    content: { ...content, sections: enrichedSections },
+  };
+}
+
+async function enrichTeamGrid(
+  ctx: GenericActionCtx<DataModel>,
+  comp: ComponentPlacement,
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement> {
+  const content = comp.content as Record<string, unknown>;
+  const members = content.members as Array<Record<string, unknown>> | undefined;
+
+  if (!members || members.length === 0) return comp;
+
+  const enrichedMembers = await Promise.all(
+    members.map(async (member) => {
+      // Already has an image — skip
+      if (member.image && (member.image as Record<string, unknown>).src) {
+        return member;
+      }
+
+      const keywords = buildTeamPhotoKeywords(
+        (member.role as string) || "professional",
+        enrichCtx.subType
+      );
+
+      const photos = await cachedSearch(
+        ctx,
+        { query: keywords, count: 1, orientation: "portrait" },
+        env
+      );
+
+      if (photos.length > 0) {
+        return {
+          ...member,
+          image: {
+            src: photos[0].src,
+            alt: `${member.name} - ${member.role}`,
+            width: photos[0].width,
+            height: photos[0].height,
+            blurDataURL: photos[0].blurDataURL,
+            attribution: photos[0].attribution,
+          },
+        };
+      }
+
+      return member;
+    })
+  );
+
+  return {
+    ...comp,
+    content: { ...content, members: enrichedMembers },
+  };
+}
+
+async function enrichMediaGallery(
+  ctx: GenericActionCtx<DataModel>,
+  comp: ComponentPlacement,
+  enrichCtx: EnrichmentContext,
+  env: { unsplash?: string; pexels?: string; pixabay?: string }
+): Promise<ComponentPlacement> {
+  const content = comp.content as Record<string, unknown>;
+  const existingImages = content.images as Array<Record<string, unknown>> | undefined;
+
+  // Already has images — skip
+  if (existingImages && existingImages.length > 0) {
+    const hasSrc = existingImages.some((img) => img.src);
+    if (hasSrc) return comp;
+  }
+
+  const queries = buildGalleryKeywords(enrichCtx.subType, enrichCtx.description);
+
+  // Search multiple queries for variety
+  const allPhotos: StockPhoto[] = [];
+  for (const query of queries) {
+    const photos = await cachedSearch(
+      ctx,
+      { query, count: 3, orientation: "landscape", color: enrichCtx.primaryColor },
+      env
+    );
+    allPhotos.push(...photos);
+  }
+
+  if (allPhotos.length === 0) return comp;
+
+  // Dedupe by src
+  const seen = new Set<string>();
+  const uniquePhotos = allPhotos.filter((p) => {
+    if (seen.has(p.src)) return false;
+    seen.add(p.src);
+    return true;
+  });
+
+  const galleryImages = uniquePhotos.slice(0, 9).map((photo, i) => ({
+    src: photo.src,
+    alt: photo.alt,
+    caption: photo.alt,
+    category: i < 3 ? "Featured" : i < 6 ? "Portfolio" : "Recent",
+  }));
+
+  return {
+    ...comp,
+    content: {
+      ...content,
+      images: galleryImages,
+      columns: 3,
+      showCaptions: true,
+      enableFilter: galleryImages.length > 4,
+    },
+  };
+}
+
+/**
+ * For visual businesses without a media-gallery component, inject one
+ * after the last content section (before CTA/form/footer).
+ */
+function maybeAddGalleryComponent(spec: SiteIntentDocument, subType: string): SiteIntentDocument {
+  if (!VISUAL_BUSINESS_TYPES.has(subType)) return spec;
+
+  // Check if gallery already exists
+  for (const page of spec.pages) {
+    if (page.components.some((c) => c.componentId === "media-gallery")) {
+      return spec; // Already has gallery
+    }
+  }
+
+  // Add a gallery placeholder — enrichment will fill it with images
+  const enrichedPages = spec.pages.map((page) => {
+    const ctaIndex = page.components.findIndex(
+      (c) =>
+        c.componentId === "cta-banner" ||
+        c.componentId === "form-contact" ||
+        c.componentId === "footer-standard"
+    );
+
+    if (ctaIndex === -1) return page;
+
+    const galleryOrder = page.components[ctaIndex].order;
+    const galleryComponent: ComponentPlacement = {
+      componentId: "media-gallery",
+      variant: "masonry",
+      order: galleryOrder,
+      content: {
+        headline: getGalleryHeadline(subType),
+        subheadline: getGallerySubheadline(subType),
+        images: [], // Will be filled by enrichment
+        columns: 3,
+        showCaptions: true,
+        enableFilter: true,
+      },
+    };
+
+    // Shift orders of subsequent components
+    const updatedComponents = page.components.map((c) => {
+      if (c.order >= galleryOrder) {
+        return { ...c, order: c.order + 1 };
+      }
+      return c;
+    });
+
+    updatedComponents.splice(ctaIndex, 0, galleryComponent);
+    return { ...page, components: updatedComponents };
+  });
+
+  return { ...spec, pages: enrichedPages };
+}
+
+function getGalleryHeadline(subType: string): string {
+  const headlines: Record<string, string> = {
+    photography: "Our Portfolio",
+    restaurant: "From Our Kitchen",
+    bakery: "Our Creations",
+    spa: "The Experience",
+    fitness: "Our Facility",
+    gym: "Our Space",
+    creative: "Selected Work",
+    portfolio: "Featured Projects",
+  };
+  return headlines[subType] || "Gallery";
+}
+
+function getGallerySubheadline(subType: string): string {
+  const subheadlines: Record<string, string> = {
+    photography: "A glimpse into our recent work",
+    restaurant: "Every dish tells a story",
+    bakery: "Crafted with care, baked with passion",
+    spa: "Step into tranquility",
+    fitness: "Where transformation happens",
+    gym: "Built for performance",
+    creative: "Creativity in action",
+    portfolio: "Work that speaks for itself",
+  };
+  return subheadlines[subType] || "A visual showcase";
+}
+
+/* ────────────────────────────────────────────────────────────
  * Main action
  * ──────────────────────────────────────────────────────────── */
 
@@ -2699,7 +3406,28 @@ export const generateSiteSpec = action({
           fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
         );
       }
-      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+      let finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
+      // Enrich with stock photos
+      const detSubType = inferBusinessSubType(args.siteType, args.description);
+      const withGallery = maybeAddGalleryComponent(finalSpec, detSubType);
+      finalSpec = await enrichSpecWithImages(ctx, withGallery, {
+        siteType: args.siteType,
+        subType: detSubType,
+        businessName: args.businessName,
+        description: args.description,
+        emotionalGoals: args.emotionalGoals,
+      });
+
+      // Update saved spec with enriched pages (images)
+      try {
+        await ctx.runMutation(internal.siteSpecs.updateSiteSpecPages, {
+          sessionId: args.sessionId,
+          pages: finalSpec.pages,
+        });
+      } catch {
+        // Non-critical — spec already saved without images
+      }
 
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
@@ -2863,13 +3591,15 @@ HERO SECTIONS (pick ONE per page):
 - "hero-centered" — variants: "with-bg-image", "gradient-bg"
   Content: { headline, subheadline, ctaPrimary: { text, href }, ctaSecondary: { text, href } }
 - "hero-split" — variants: "image-right", "image-left"
-  Content: { headline, subheadline, ctaPrimary: { text, href }, ctaSecondary: { text, href }, image: { src, alt } }
+  Content: { headline, subheadline, ctaPrimary: { text, href }, ctaSecondary: { text, href }, image?: { src, alt } }
+  NOTE: image is OPTIONAL — omit it entirely and a themed gradient placeholder renders automatically.
 
 CONTENT SECTIONS:
 - "content-features" — variant: "icon-cards"
   Content: { subheadline, headline, features: { icon, title, description }[] }
 - "content-split" — variant: "alternating"
-  Content: { sections: { headline, body, image: { src, alt }, ctaText?, ctaLink? }[] }
+  Content: { sections: { headline, body, image?: { src, alt }, ctaText?, ctaLink? }[] }
+  NOTE: image is OPTIONAL per section — omit for themed gradient placeholder.
 - "content-text" — variant: "centered"
   Content: { id?, eyebrow, headline, body (HTML string) }
 - "content-stats" — variants: "inline", "cards", "animated-counter"
@@ -2884,6 +3614,8 @@ CONTENT SECTIONS:
 COMMERCE & SERVICES:
 - "commerce-services" — variants: "card-grid", "list", "tiered"
   Content: { headline?, subheadline?, services: { name, description, price?, duration?, icon?: string, featured?: boolean, ctaText?, ctaLink? }[] }
+- "pricing-table" — variants: "simple", "featured", "comparison"
+  Content: { headline?, subheadline?, plans: { name, description?, price, period?, features: { text, included }[], featured?, cta?: { text, href } }[] }
 
 TEAM:
 - "team-grid" — variants: "cards", "minimal", "hover-reveal"
@@ -2898,6 +3630,26 @@ SOCIAL PROOF:
 MEDIA:
 - "media-gallery" — variants: "grid", "masonry", "lightbox"
   Content: { headline?, subheadline?, images: { src, alt, caption?, category? }[], columns?: 2|3|4, showCaptions?: boolean, enableFilter?: boolean }
+
+PROCESS & STEPS:
+- "content-steps" — variants: "numbered", "icon-cards", "horizontal"
+  Content: { headline?, subheadline?, steps: { title, description, icon?: string }[] }
+
+COMPARISON:
+- "content-comparison" — variants: "table", "side-by-side", "checkmark-matrix"
+  Content: { headline?, subheadline?, columns: { name, highlighted? }[], rows: { feature, values: (string | boolean)[] }[] }
+
+HERO (additional):
+- "hero-video" — variants: "background-video", "embedded", "split-video"
+  Content: { headline, subheadline?, cta?: { text, href }, videoUrl?, posterImage?: { src, alt }, overlayOpacity?: number }
+
+BLOG:
+- "blog-preview" — variants: "card-grid", "featured-row", "list"
+  Content: { headline?, subheadline?, posts: { title, excerpt, date, author?, category?, image?: { src, alt }, href?, readTime? }[], showDate?, showAuthor?, showCategory? }
+
+MAP & LOCATION:
+- "content-map" — variants: "full-width", "split-with-info", "embedded"
+  Content: { headline?, subheadline?, contactInfo?: { address?, phone?, email?, hours?: string[] }, cta?: { text, href }, mapEmbedUrl? }
 
 CTA & FORMS:
 - "cta-banner" — variants: "full-width", "contained"
@@ -2914,6 +3666,12 @@ COMPONENT SELECTION GUIDELINES:
 - Use "content-timeline" for businesses with a compelling history or process steps
 - Use "media-gallery" for visual businesses (photography, real estate, restaurants, design)
 - Use "proof-beforeafter" for transformative services (beauty, renovation, fitness, design)
+- Use "pricing-table" for SaaS, subscription services, or tiered pricing structures (prefer over commerce-services when pricing comparison matters)
+- Use "content-steps" for how-it-works flows, process explanations, or onboarding steps
+- Use "content-comparison" for feature comparisons, plan comparisons, or vs-style content
+- Use "hero-video" for businesses with video content (agencies, studios, event venues)
+- Use "blog-preview" for businesses with active blogs or news sections
+- Use "content-map" for businesses with physical locations (restaurants, spas, retail)
 - A typical site uses 8-12 components. Don't force every component — pick what fits the business.
 
 For Lucide icons in content-features & commerce-services, use PascalCase: Target, Zap, Shield, Star, Users, Heart, TrendingUp, Eye, Package, Truck, RotateCcw, ShieldCheck, Palette, Lightbulb, Award, HeadphonesIcon, Globe, Clock, CheckCircle, Sparkles, BookOpen, GraduationCap, MessageCircle, Mail, Phone, MapPin, Scissors, Calendar, CreditCard, Briefcase, Camera
@@ -2929,6 +3687,13 @@ CRITICAL content rules:
 - Body text: 2-3 sentences, professional, no lorem ipsum.
 - socialLinks[].url should be "#" (placeholder).
 
+IMAGE RULES:
+- Do NOT include image URLs — a separate stock photo pipeline enriches images automatically after generation.
+- Omit image fields entirely (hero-split, content-split, team-grid).
+- The stock photo system will inject relevant, industry-specific images into hero-split, content-split, team-grid, and media-gallery.
+- You MAY include "media-gallery" for visual businesses (photography, restaurants, creative studios, fitness, spas). Include headline and subheadline but set images to an empty array [].
+- Do NOT include "proof-beforeafter" (requires specific image pairs not available from stock).
+
 Return ONLY a JSON object with this structure:
 {
   "businessName": string,
@@ -2943,12 +3708,16 @@ Return ONLY a JSON object with this structure:
           "componentId": string,
           "variant": string,
           "order": number (starting at 0),
-          "content": { ...component-specific props }
+          "content": { ...component-specific props },
+          "visualConfig"?: { "pattern"?: string, "dividerBottom"?: "wave"|"angle"|"curve"|"zigzag"|"none" }
         }
       ]
     }
   ]
 }
+
+For visualConfig.pattern, use one of: "herringbone", "waves", "dots", "grid", "diagonal-stripes", "zigzag", "polka-dots", "circuit-dots", "cross-hatch", "pinstripe", "seigaiha", "topography", "diamonds", "concentric-circles", "none".
+Choose patterns that match the business industry and personality. Use "none" for clean/minimal sites.
 
 No markdown fencing. No explanation. Just the JSON.`;
 
@@ -3032,7 +3801,27 @@ No markdown fencing. No explanation. Just the JSON.`;
           fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
         );
       }
-      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+      let finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
+      // Enrich with stock photos
+      const withGallery = maybeAddGalleryComponent(finalSpec, aiSubType);
+      finalSpec = await enrichSpecWithImages(ctx, withGallery, {
+        siteType: args.siteType,
+        subType: aiSubType,
+        businessName: args.businessName,
+        description: args.description,
+        emotionalGoals: args.emotionalGoals,
+      });
+
+      // Update saved spec with enriched pages (images)
+      try {
+        await ctx.runMutation(internal.siteSpecs.updateSiteSpecPages, {
+          sessionId: args.sessionId,
+          pages: finalSpec.pages,
+        });
+      } catch {
+        // Non-critical — spec already saved without images
+      }
 
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {
@@ -3091,7 +3880,28 @@ No markdown fencing. No explanation. Just the JSON.`;
           fixResult.fixes.map((f) => `${f.rule}: ${f.original} → ${f.replacement}`)
         );
       }
-      const finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+      let finalSpec = fixResult.fixes.length > 0 ? fixResult.spec : spec;
+
+      // Enrich with stock photos
+      const fbSubType = inferBusinessSubType(args.siteType, args.description);
+      const withGallery = maybeAddGalleryComponent(finalSpec, fbSubType);
+      finalSpec = await enrichSpecWithImages(ctx, withGallery, {
+        siteType: args.siteType,
+        subType: fbSubType,
+        businessName: args.businessName,
+        description: args.description,
+        emotionalGoals: args.emotionalGoals,
+      });
+
+      // Update saved spec with enriched pages (images)
+      try {
+        await ctx.runMutation(internal.siteSpecs.updateSiteSpecPages, {
+          sessionId: args.sessionId,
+          pages: finalSpec.pages,
+        });
+      } catch {
+        // Non-critical — spec already saved without images
+      }
 
       try {
         await ctx.runMutation(internal.pipelineLogs.savePipelineLogInternal, {

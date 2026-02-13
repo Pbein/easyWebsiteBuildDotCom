@@ -22,24 +22,24 @@ Please set up the project and build the initial 3-page website:
    - TypeScript (strict mode)
    - Tailwind CSS v4
    - ESLint
-   
+
 2. Set up Convex:
    - Install convex
    - Initialize with `npx convex init`
    - Create initial schema in convex/schema.ts with tables for: projects, intakeResponses, intentPaths, components, themes, assets, recipes, users
-   
+
 3. Install dependencies:
    - @anthropic-ai/sdk (Claude integration)
    - framer-motion (animations)
    - lucide-react (icons)
-   
+
 4. Set up the project structure as defined in CLAUDE.md
 
 ## Pages to Build
 
 ### Page 1: Homepage (/)
 
-Build a stunning, premium landing page for easywebsitebuild.com. This is a website builder product — it needs to look BETTER than what it builds. 
+Build a stunning, premium landing page for easywebsitebuild.com. This is a website builder product — it needs to look BETTER than what it builds.
 
 Design direction: Premium SaaS aesthetic. Think Vercel meets Linear. NOT generic AI-builder vibes.
 

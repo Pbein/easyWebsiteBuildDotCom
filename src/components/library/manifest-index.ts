@@ -25,6 +25,12 @@ import contentLogosManifest from "./content/content-logos/content-logos.manifest
 import teamGridManifest from "./team/team-grid/team-grid.manifest.json";
 import commerceServicesManifest from "./commerce/commerce-services/commerce-services.manifest.json";
 import mediaGalleryManifest from "./media/media-gallery/media-gallery.manifest.json";
+import pricingTableManifest from "./commerce/pricing-table/pricing-table.manifest.json";
+import contentStepsManifest from "./content/content-steps/content-steps.manifest.json";
+import contentComparisonManifest from "./content/content-comparison/content-comparison.manifest.json";
+import heroVideoManifest from "./hero/hero-video/hero-video.manifest.json";
+import blogPreviewManifest from "./content/blog-preview/blog-preview.manifest.json";
+import contentMapManifest from "./content/content-map/content-map.manifest.json";
 
 export interface ComponentManifest {
   id: string;
@@ -61,6 +67,12 @@ export const COMPONENT_MANIFESTS: ComponentManifest[] = [
   teamGridManifest,
   commerceServicesManifest,
   mediaGalleryManifest,
+  pricingTableManifest,
+  contentStepsManifest,
+  contentComparisonManifest,
+  heroVideoManifest,
+  blogPreviewManifest,
+  contentMapManifest,
 ] as ComponentManifest[];
 
 /** Look up a component manifest by its ID. */

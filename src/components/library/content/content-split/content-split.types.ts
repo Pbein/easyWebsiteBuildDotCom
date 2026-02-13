@@ -5,8 +5,8 @@ export interface ContentSplitSection {
   headline: string;
   /** Body text. */
   body: string;
-  /** Section image. */
-  image: ImageSource;
+  /** Section image (optional — renders themed gradient placeholder when absent). */
+  image?: ImageSource;
   /** Optional CTA link text. */
   ctaText?: string;
   /** Optional CTA link URL. */

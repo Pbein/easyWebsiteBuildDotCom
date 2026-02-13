@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import posthog from "posthog-js";
 import {
   ArrowLeft,
   ArrowRight,
@@ -383,6 +384,7 @@ export default function DemoPage(): React.ReactElement {
   });
   const [personalityStep, setPersonalityStep] = useState(0);
   const [placeholderIndex] = useState(() => Math.floor(Math.random() * placeholders.length));
+  const hasTrackedIntakeStart = useRef(false);
 
   const setSiteType = useIntakeStore((s) => s.setSiteType);
   const setGoal = useIntakeStore((s) => s.setGoal);
@@ -394,6 +396,20 @@ export default function DemoPage(): React.ReactElement {
   // Reset scroll position on step change — prevents landing at bottom on mobile
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [step]);
+
+  // Track step completion events
+  useEffect(() => {
+    if (step > 1) {
+      const previousStep = step - 1;
+      posthog.capture("intake_step_completed", {
+        step_number: previousStep,
+        step_name: stepLabels[previousStep] || `Step ${previousStep}`,
+        site_type: state.siteType,
+        goal: state.goal,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   /** Bridge local state → Zustand store at step 4→5 boundary */
@@ -552,6 +568,13 @@ export default function DemoPage(): React.ReactElement {
                 selected={state.siteType}
                 onSelect={(id) => {
                   setState((s) => ({ ...s, siteType: id, goal: null }));
+                  // Track intake_started on first site type selection
+                  if (!hasTrackedIntakeStart.current) {
+                    hasTrackedIntakeStart.current = true;
+                    posthog.capture("intake_started", {
+                      site_type: id,
+                    });
+                  }
                 }}
               />
             )}

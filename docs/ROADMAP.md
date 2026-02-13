@@ -192,7 +192,7 @@
 
 ---
 
-## Output Quality Overhaul (Cross-cutting — In Progress)
+## Output Quality Overhaul (Cross-cutting) ✅ 91% COMPLETE (30/33 shipped, 3 deferred)
 
 **Goal**: Fix content fidelity, visual character accuracy, and developer tooling across the assembly pipeline. Tracked in [EPICS_AND_STORIES.md](./EPICS_AND_STORIES.md).
 
@@ -237,21 +237,59 @@ The design feedback loop closes the generate → evaluate → adjust → re-rend
 
 ---
 
-## Phase 5: Multi-Page Generation & Core Quality (Next — Weeks 1-4)
+## Phase 5A: CSS Visual Foundation ✅ COMPLETE
 
-**Goal**: Transform single-page output into multi-page websites with real images and polished export.
+**Goal**: Make every generated site look intentionally designed with CSS-only visuals — patterns, dividers, decorative elements, and scroll effects — eliminating broken/empty images.
+
+### Deliverables
+
+- [x] **New `src/lib/visuals/` directory** with 9 modules for CSS-driven visual design
+- [x] **14 CSS patterns** (pinstripe, herringbone, waves, dots, grid, zigzag, seigaiha, topography, etc.) mapped to 25+ business sub-types via `industry-patterns.ts`
+- [x] **4 section divider components** (wave, angle, curve, zigzag) as SVG, absolutely positioned at section edges
+- [x] **5 decorative accent elements** (blob, dot-grid, geometric-frame, diamond, circle)
+- [x] **ImagePlaceholder component** with 3 variants (gradient, pattern, shimmer) — no more broken/empty images
+- [x] **Visual vocabulary system** — each business type gets a coherent visual language (divider style, accent shape, image overlay, parallax, scroll reveal intensity) with archetype and personality overrides
+- [x] **`hero-split` and `content-split` images made optional** — CSS gradient fallback renders when no image provided
+- [x] **Section component extended** with `dividerTop`, `dividerBottom`, `pattern`, `patternSize`, `patternPosition`, `patternOpacity` props
+- [x] **`VisualConfig` type** added to `ComponentPlacement` — patterns and dividers flow through the spec
+- [x] **AssemblyRenderer** resolves `visualConfig` into Section props (pattern CSS, dividers) using theme colors
+- [x] **Parallax hook** (`useParallax`) using `useSyncExternalStore` + framer-motion `useScroll` — respects `prefers-reduced-motion`, disables on mobile
+- [x] **Deterministic fallback updated** — removed hardcoded Unsplash URL, added visual config per component, added `content-split` sections, skips `media-gallery`/`proof-beforeafter` (require real images)
+- [x] **AI prompt updated** — images optional, `visualConfig` field documented, image-heavy components excluded until stock photos available
+
+---
+
+## Recent UI Enhancements (Feb 2026)
+
+Polishing improvements shipped alongside Phase 5A:
+
+- [x] **Iframe-based viewport switcher** — Preview renders in isolated iframe at `/demo/preview/render`, parent-iframe communication via `ewb:` prefixed PostMessage protocol (set-theme, set-page, request-screenshot), true responsive preview without page reload
+- [x] **Animated wireframe assembly loading** — Step 9 loading screen shows animated wireframe blocks assembling into place sequentially (replaces cycling progress bar)
+- [x] **Mobile UX overhaul** — Bottom sheet modals for sidebar (max 65vh), scroll position reset on tab change, tab-based mobile interface, `useIsMobile()` hook with debounced detection (`src/lib/hooks/use-is-mobile.ts`)
+
+---
+
+## Phase 5B-D: Stock Photos, AI Images, Advanced Scroll (Next)
+
+**Goal**: Layer real images and advanced scroll effects on top of the CSS visual foundation.
 
 > See [STRATEGIC_ROADMAP.md](./STRATEGIC_ROADMAP.md) for full prioritization rationale, competitive analysis, and the website-to-web-application spectrum strategy.
 
 ### Deliverables
 
+- [ ] **Stock photo API integration** (Phase 5B) — Multi-provider search (Unsplash/Pexels/Pixabay), keyword builder, image caching, color-filtered search
+- [ ] **AI image generation** (Phase 5C) — convex-nano-banana (Gemini), priority queue, reactive loading, experimental headshots
+- [ ] **Advanced scroll effects** (Phase 5D) — CSS scroll-timeline, depth scrolling, scale transforms
+
+## Phase 5E: Multi-Page Generation & Core Quality (Weeks 1-4)
+
+**Goal**: Transform single-page output into multi-page websites with polished export.
+
+### Deliverables
+
 - [ ] **Multi-page generation & routing** — AI spec already outputs `pages[]` array; generate separate page routes (`/about`, `/services`, `/contact`), shared nav/footer, per-page component composition
-- [ ] **Descriptive image placeholders** — Replace gray placeholder divs with styled cards describing what image should go there (e.g., "Upload: A warm photo of your barbershop interior")
-- [ ] **Stock photo API integration** — Unsplash/Pexels free API; AI includes image search keywords per component; fetch and display real stock photos
 - [ ] **Next.js project export upgrade** — Proper App Router project with component files, routing, and `npm run dev` support (replacing static HTML/CSS export)
 - [ ] **WCAG contrast enforcement** — Prevent theme generation from producing inaccessible color combinations (yellow text on white, low-contrast CTA buttons) using chroma.contrast() validation at theme generation layer
-- [ ] **Section dividers & visual patterns** — SVG section separators, subtle background patterns/textures, decorative elements to break visual monotony between sections
-- [ ] **AI image generation** — Generate custom imagery (DALL-E / Stable Diffusion) matching brand character, emotional goals, and industry for hero sections and feature illustrations
 
 ---
 

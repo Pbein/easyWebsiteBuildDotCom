@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowRight,
   Blocks,
@@ -30,6 +29,7 @@ import {
   StaggerItem,
 } from "@/components/platform/AnimatedSection";
 import { MotionFade } from "@/components/platform/MotionFade";
+import { TrackedLink } from "@/components/platform/TrackedLink";
 
 /* ------------------------------------------------------------------ */
 /*  Hero Section                                                       */
@@ -94,19 +94,27 @@ function HeroSection(): React.ReactElement {
           delay={0.7}
           className="flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
-          <Link
+          <TrackedLink
             href="/preview"
+            eventName="homepage_cta_clicked"
+            eventProperties={{
+              cta_type: "secondary",
+              cta_text: "Sample Site Preview",
+              location: "hero",
+            }}
             className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-accent)] px-8 py-3.5 text-base font-medium text-[var(--color-accent)] transition-colors duration-300 hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-glow)] hover:text-[var(--color-accent-light)]"
           >
             Sample Site Preview
-          </Link>
-          <Link
+          </TrackedLink>
+          <TrackedLink
             href="/demo"
+            eventName="homepage_cta_clicked"
+            eventProperties={{ cta_type: "primary", cta_text: "Try the Demo", location: "hero" }}
             className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-8 py-3.5 text-base font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
           >
             Try the Demo
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          </TrackedLink>
         </MotionFade>
 
         {/* Stats */}
@@ -516,13 +524,19 @@ function CTASection(): React.ReactElement {
           Experience the future of website creation. Answer a few questions and watch as AI
           assembles your perfect site in real time.
         </p>
-        <Link
+        <TrackedLink
           href="/demo"
+          eventName="homepage_cta_clicked"
+          eventProperties={{
+            cta_type: "primary",
+            cta_text: "Start Building — It's Free",
+            location: "footer_cta",
+          }}
           className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-10 py-4 text-lg font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.03] hover:shadow-[var(--shadow-glow)]"
         >
           Start Building — It&apos;s Free
           <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-        </Link>
+        </TrackedLink>
       </AnimatedSection>
     </section>
   );

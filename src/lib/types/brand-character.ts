@@ -115,37 +115,142 @@ export const EMOTIONAL_OUTCOMES: EmotionalOutcome[] = [
   },
 ];
 
-export interface VoiceComparison {
-  id: string;
-  context: string;
-  warm: string;
-  polished: string;
-  direct: string;
+/* ── Voice Tone Cards (Step 6 redesign) ────────────────── */
+
+export interface VoiceToneCard {
+  id: VoiceTone;
+  label: string;
+  tagline: string;
+  description: string;
+  icon: string;
+  accent: string;
 }
 
-export const VOICE_COMPARISONS: VoiceComparison[] = [
+export const VOICE_TONE_CARDS: VoiceToneCard[] = [
   {
-    id: "headline",
-    context: "Welcome headline",
-    warm: "Hey there! We're so glad you found us.",
-    polished: "Elevating your experience at every touchpoint.",
-    direct: "Better results. Less hassle. Let's go.",
+    id: "warm",
+    label: "Warm & Friendly",
+    tagline: "Like talking to a friend",
+    description: "Conversational, friendly, uses contractions and inclusive language",
+    icon: "Heart",
+    accent: "#ef4444",
   },
   {
-    id: "cta",
-    context: "Call-to-action button",
-    warm: "Let's chat about your project",
-    polished: "Reserve your consultation",
-    direct: "Book now",
+    id: "polished",
+    label: "Polished & Refined",
+    tagline: "Elegant and intentional",
+    description: "Refined, elegant, every word chosen with care and precision",
+    icon: "Gem",
+    accent: "#8b5cf6",
   },
   {
-    id: "quality",
-    context: "Quality description",
-    warm: "We pour our heart into every detail because you deserve nothing less.",
-    polished: "Meticulous craftsmanship meets refined sensibility in every deliverable.",
-    direct: "No shortcuts. No filler. Just work that performs.",
+    id: "direct",
+    label: "Direct & Clear",
+    tagline: "No fluff, just results",
+    description: "Short, punchy, action-oriented — gets straight to the point",
+    icon: "Zap",
+    accent: "#f97316",
   },
 ];
+
+/* ── Narrative Prompt Definitions (Step 6) ─────────────── */
+
+export interface NarrativePromptDef {
+  key: string;
+  promptTemplate: string;
+  icon: string;
+  accent: string;
+}
+
+export const NARRATIVE_PROMPT_DEFS: NarrativePromptDef[] = [
+  {
+    key: "come_because",
+    promptTemplate: "People come to {businessName} because...",
+    icon: "Users",
+    accent: "#3b82f6",
+  },
+  {
+    key: "frustrated_with",
+    promptTemplate: "Before finding us, people were frustrated with...",
+    icon: "Frown",
+    accent: "#f97316",
+  },
+  {
+    key: "after_feel",
+    promptTemplate: "After working with us, people feel...",
+    icon: "Smile",
+    accent: "#3ecfb4",
+  },
+];
+
+/** Industry-specific placeholder text for narrative prompts, keyed by siteType then prompt key. */
+export const NARRATIVE_PLACEHOLDERS: Record<string, Record<string, string>> = {
+  restaurant: {
+    come_because: "the food is honest, seasonal, and made with care",
+    frustrated_with: "generic chain restaurants that all taste the same",
+    after_feel: "like they just had a meal worth telling friends about",
+  },
+  booking: {
+    come_because: "we make the booking process effortless",
+    frustrated_with: "phone tag, no-shows, and confusing scheduling",
+    after_feel: "relieved that everything is handled professionally",
+  },
+  ecommerce: {
+    come_because: "our products are unique and hard to find elsewhere",
+    frustrated_with: "cheap knockoffs and impersonal shopping experiences",
+    after_feel: "excited to unbox something special",
+  },
+  portfolio: {
+    come_because: "our work speaks for itself and stands out",
+    frustrated_with: "cookie-cutter portfolios that all look the same",
+    after_feel: "confident they've found the right creative partner",
+  },
+  business: {
+    come_because: "we deliver results, not just promises",
+    frustrated_with: "businesses that overpromise and underdeliver",
+    after_feel: "like they made the right choice",
+  },
+  blog: {
+    come_because: "the writing is honest, original, and useful",
+    frustrated_with: "clickbait articles with no real substance",
+    after_feel: "inspired and better informed",
+  },
+  nonprofit: {
+    come_because: "our mission resonates and our impact is real",
+    frustrated_with: "organizations that talk big but show little progress",
+    after_feel: "empowered to make a difference",
+  },
+  educational: {
+    come_because: "we make complex topics accessible and engaging",
+    frustrated_with: "dry, outdated courses that waste their time",
+    after_feel: "confident in their new skills",
+  },
+  event: {
+    come_because: "our events are memorable and well-organized",
+    frustrated_with: "boring events with poor planning",
+    after_feel: "energized and glad they showed up",
+  },
+  personal: {
+    come_because: "there's a genuine story behind the site",
+    frustrated_with: "generic personal pages that say nothing real",
+    after_feel: "like they know the person behind the screen",
+  },
+  community: {
+    come_because: "they feel a genuine sense of belonging here",
+    frustrated_with: "communities that feel cliquey or unwelcoming",
+    after_feel: "connected and part of something meaningful",
+  },
+  landing: {
+    come_because: "the value proposition is crystal clear",
+    frustrated_with: "landing pages that bury the point in jargon",
+    after_feel: "ready to take the next step",
+  },
+  directory: {
+    come_because: "they can find what they need quickly",
+    frustrated_with: "outdated directories with broken links",
+    after_feel: "grateful for a resource that actually works",
+  },
+};
 
 export interface BrandArchetypeData {
   id: BrandArchetype;

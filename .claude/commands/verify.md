@@ -42,6 +42,17 @@ npm run lint
 - Presets produce valid output through `generateTheme`
 - ThemeProvider applies CSS custom properties correctly
 
+### 5b. Visual System Integrity (if visual system was modified)
+
+- CSS patterns render correctly (`generatePattern()` returns valid CSS background values)
+- Section dividers (wave/angle/curve/zigzag) render as SVGs without overflow
+- `ImagePlaceholder` variants (gradient/pattern/shimmer) render properly
+- `VisualConfig` on `ComponentPlacement` flows through AssemblyRenderer to Section props
+- `hero-split` and `content-split` render CSS fallback when image is missing
+- Visual vocabulary defaults cover all registered business types
+- Industry pattern mappings in Convex `VISUAL_DEFAULTS` mirror `src/lib/visuals/industry-patterns.ts`
+- Parallax hook respects `prefers-reduced-motion` and disables below 768px
+
 ### 6. Security
 
 - No API keys or secrets in source code
@@ -74,6 +85,7 @@ npm run lint
 
 ### Component Library: [PASS/FAIL/N/A]
 - Theme token compliance: [All correct/Issues found]
+- Visual system: [Patterns/Dividers/Placeholders OK/Issues found]
 - Manifest validity: [All valid/Issues found]
 - Barrel exports: [Up to date/Missing]
 

@@ -165,6 +165,16 @@ export default defineSchema({
     lastRunAt: v.optional(v.float64()),
   }).index("by_name", ["name"]),
 
+  imageCache: defineTable({
+    queryHash: v.string(),
+    provider: v.string(),
+    query: v.string(),
+    orientation: v.optional(v.string()),
+    results: v.any(), // StockPhoto[]
+    cachedAt: v.float64(),
+    expiresAt: v.float64(), // 24hr TTL
+  }).index("by_query", ["queryHash"]),
+
   users: defineTable({
     email: v.optional(v.string()),
     name: v.optional(v.string()),

@@ -14,24 +14,24 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 
 ### Limitation Inventory
 
-| #   | Limitation                                                                                                                    | Impact                                                                                                                | Difficulty to Fix                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                          | High — clients expect About, Services, Contact pages at minimum                                                       | Medium                              |
-| 2   | **No real images** — every image is a placeholder div                                                                         | High — sites look obviously fake/incomplete                                                                           | Medium (API integration)            |
-| 3   | **No post-generation editing** — one-shot generation, take it or leave it                                                     | High — clients always want changes                                                                                    | High (refinement chat system)       |
-| 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured | ~~High~~                                                                                                              | ~~Medium~~                          |
-| 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                         | Medium — works for simple sites, limiting for anything more                                                           | Medium                              |
-| 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                               | Medium — common expectation                                                                                           | Low                                 |
-| 7   | **No booking functionality** — booking sites have no actual booking flow                                                      | High for booking-type clients                                                                                         | Medium-High                         |
-| 8   | **No e-commerce** — no cart, no checkout, no product management                                                               | High for e-commerce clients                                                                                           | High (but solvable via integration) |
-| 9   | **No CMS/blog** — content sites have no way to add posts                                                                      | Medium — common expectation                                                                                           | Medium                              |
-| 10  | **No third-party integrations** — Stripe, Calendly, Mailchimp, analytics = zero                                               | Medium-High                                                                                                           | Varies per integration              |
-| 11  | **No deployment** — users get a ZIP, must self-host                                                                           | Medium — friction for non-technical users                                                                             | Medium (Vercel API)                 |
-| 12  | **No user accounts** — can't save projects, return later, manage multiple sites                                               | Medium — essential for a real product                                                                                 | Medium                              |
-| 13  | **Component variety still limited** — 18 components covers basics but not all site types                                      | Medium — diminishing returns per component                                                                            | Low per component                   |
-| 14  | **No mobile app preview** — viewport toggle simulates but isn't a real device test                                            | Low — nice to have                                                                                                    | Low                                 |
-| 15  | **No WCAG contrast enforcement** — Theme generation can produce inaccessible color combinations (yellow CTA + white text)     | Medium — accessibility & readability                                                                                  | Low (chroma.contrast() check)       |
-| 16  | **No design evaluation feedback** — No automated way to assess if generated site matches intent                               | ~~Medium~~ ✅ **RESOLVED** — VLM Design Feedback Loop (T3-E1) evaluates screenshots against intent with Claude Vision | ~~High~~                            |
+| #   | Limitation                                                                                                                                                                                               | Impact                                                                                                                | Difficulty to Fix                   |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                                                                                                     | High — clients expect About, Services, Contact pages at minimum                                                       | Medium                              |
+| 2   | **~~No real images~~** — ⚠️ PARTIALLY RESOLVED: CSS visual foundation (Phase 5A) provides gradient placeholders, patterns, and dividers. Stock photo integration (Phase 5B) still needed for real images | Medium — sites look intentionally designed but still lack real photography                                            | Medium (API integration)            |
+| 3   | **No post-generation editing** — one-shot generation, take it or leave it                                                                                                                                | High — clients always want changes                                                                                    | High (refinement chat system)       |
+| 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured                                                                            | ~~High~~                                                                                                              | ~~Medium~~                          |
+| 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                                                                                                    | Medium — works for simple sites, limiting for anything more                                                           | Medium                              |
+| 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                                                                                                          | Medium — common expectation                                                                                           | Low                                 |
+| 7   | **No booking functionality** — booking sites have no actual booking flow                                                                                                                                 | High for booking-type clients                                                                                         | Medium-High                         |
+| 8   | **No e-commerce** — no cart, no checkout, no product management                                                                                                                                          | High for e-commerce clients                                                                                           | High (but solvable via integration) |
+| 9   | **No CMS/blog** — content sites have no way to add posts                                                                                                                                                 | Medium — common expectation                                                                                           | Medium                              |
+| 10  | **No third-party integrations** — Stripe, Calendly, Mailchimp, analytics = zero                                                                                                                          | Medium-High                                                                                                           | Varies per integration              |
+| 11  | **No deployment** — users get a ZIP, must self-host                                                                                                                                                      | Medium — friction for non-technical users                                                                             | Medium (Vercel API)                 |
+| 12  | **No user accounts** — can't save projects, return later, manage multiple sites                                                                                                                          | Medium — essential for a real product                                                                                 | Medium                              |
+| 13  | **Component variety still limited** — 18 components covers basics but not all site types                                                                                                                 | Medium — diminishing returns per component                                                                            | Low per component                   |
+| 14  | **No mobile app preview** — viewport toggle simulates but isn't a real device test                                                                                                                       | Low — nice to have                                                                                                    | Low                                 |
+| 15  | **No WCAG contrast enforcement** — Theme generation can produce inaccessible color combinations (yellow CTA + white text)                                                                                | Medium — accessibility & readability                                                                                  | Low (chroma.contrast() check)       |
+| 16  | **No design evaluation feedback** — No automated way to assess if generated site matches intent                                                                                                          | ~~Medium~~ ✅ **RESOLVED** — VLM Design Feedback Loop (T3-E1) evaluates screenshots against intent with Claude Vision | ~~High~~                            |
 
 ### What Competitors Do
 
@@ -94,9 +94,10 @@ We do NOT build e-commerce, booking, payments, or CMS from scratch. We build bea
 
 **Tier 1: Static Sites (NOW — perfecting this)**
 
+- ✅ CSS visual foundation (patterns, dividers, decorative elements, parallax) — Phase 5A COMPLETE
+- ✅ Character capture for brand-specific output — Phase 4C COMPLETE
 - Multi-page marketing sites with proper routing
-- Real image handling (stock API or user upload)
-- Character capture for brand-specific output
+- Real image handling (stock API → AI generation → user upload)
 - Refinement chat for post-generation editing
 - Next.js project export
 
@@ -359,20 +360,23 @@ Full in-site shopping experience. Add to cart, view cart, checkout — all on th
 ## Recommended Development Sequence
 
 ```
-NOW (Finishing 4A/4B):
-  ✅ Quality fixes
-  ✅ Component expansion (18 components)
-  ✅ Basic export
+DONE (Phases 4A-4D + 5A):
+  ✅ Quality fixes (4A)
+  ✅ Component expansion — 18 components (4B)
+  ✅ Basic export (4B)
+  ✅ Character capture (4C)
+  ✅ Mobile responsiveness (4D)
+  ✅ CSS visual foundation — patterns, dividers, placeholders, parallax (5A)
 
 NEXT (Weeks 1-4):
+  🔴 Stock photo API integration (5B)
   🔴 Multi-page generation & routing
-  ✅ Character capture (4C) — DONE
-  🔴 Descriptive image placeholders
+  🔴 AI image generation (5C)
 
 THEN (Weeks 5-8):
   🔴 Refinement chat (MVP)
-  🔴 Stock photo API integration
   🟡 Next.js project export upgrade
+  🟡 WCAG contrast enforcement
 
 AFTER (Weeks 9-16):
   🟡 Working contact forms
@@ -412,18 +416,21 @@ The biggest gap between "generated" and "crafted" websites is visual character �
 
 ### Visual Character Roadmap
 
-| Priority  | Feature                   | Approach                                                              | Phase |
-| --------- | ------------------------- | --------------------------------------------------------------------- | ----- |
-| 🔴 High   | Stock photo integration   | Unsplash/Pexels API with AI-generated search keywords per component   | 5     |
-| 🔴 High   | Descriptive placeholders  | Styled cards with "Upload: warm photo of your shop interior" guidance | 5     |
-| 🔴 High   | WCAG contrast enforcement | chroma.contrast() validation in theme generation                      | 5     |
-| 🟡 Medium | Section dividers          | SVG wave/angle/curve separators, personality-driven selection         | 5-6   |
-| 🟡 Medium | Background patterns       | Subtle grain, dot grids, line patterns as CSS/SVG textures            | 5-6   |
-| 🟡 Medium | AI image generation       | DALL-E/Stable Diffusion for hero imagery and illustrations            | 6     |
-| 🟢 Low    | Custom icon sets          | Industry-specific icon libraries matching brand character             | 7     |
-| 🟢 Low    | Animated backgrounds      | Gradient mesh animations, particle effects, parallax layers           | 7     |
-| 🔵 Future | User image upload         | Drag-and-drop image replacement in preview with Convex File Storage   | 6-7   |
-| 🔵 Future | Brand asset extraction    | Upload logo → extract colors, fonts, style signals automatically      | 8+    |
+| Priority  | Feature                   | Approach                                                             | Phase |
+| --------- | ------------------------- | -------------------------------------------------------------------- | ----- |
+| ✅ Done   | Section dividers          | SVG wave/angle/curve/zigzag separators, personality-driven selection | 5A ✅ |
+| ✅ Done   | Background patterns       | 14 CSS patterns mapped to 25+ business sub-types, theme-colored      | 5A ✅ |
+| ✅ Done   | Image placeholders        | ImagePlaceholder component (gradient/pattern/shimmer variants)       | 5A ✅ |
+| ✅ Done   | Visual vocabulary system  | Per-business visual language (divider, accent, overlay, parallax)    | 5A ✅ |
+| ✅ Done   | Parallax scroll effects   | useParallax hook (framer-motion), reduced-motion + mobile aware      | 5A ✅ |
+| 🔴 High   | Stock photo integration   | Unsplash/Pexels/Pixabay API with keyword builder + color filtering   | 5B    |
+| 🔴 High   | WCAG contrast enforcement | chroma.contrast() validation in theme generation                     | 5E    |
+| 🟡 Medium | AI image generation       | convex-nano-banana (Gemini) for custom imagery                       | 5C    |
+| 🟡 Medium | Advanced scroll effects   | CSS scroll-timeline, depth scrolling, scale transforms               | 5D    |
+| 🟢 Low    | Custom icon sets          | Industry-specific icon libraries matching brand character            | 7     |
+| 🟢 Low    | Animated backgrounds      | Gradient mesh animations, particle effects                           | 7     |
+| 🔵 Future | User image upload         | Drag-and-drop image replacement in preview with Convex File Storage  | 6-7   |
+| 🔵 Future | Brand asset extraction    | Upload logo → extract colors, fonts, style signals automatically     | 8+    |
 
 ### How VLM Feedback Improves Future Designs
 

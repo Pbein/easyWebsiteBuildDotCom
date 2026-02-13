@@ -62,10 +62,11 @@ Intake Flow (9 steps)     →  AI + Deterministic Engine  →  Assembled Website
 
 ### Core Team
 
-| Agent                   | Role                                | Primary Domain                             |
-| ----------------------- | ----------------------------------- | ------------------------------------------ |
-| **Karen** (PMO/QA Lead) | Reality checker, final quality gate | All — reviews everyone's work              |
-| **Test Engineer**       | TDD methodology, test coverage      | Component, theme, assembly, Convex testing |
+| Agent                   | Role                                | Primary Domain                               |
+| ----------------------- | ----------------------------------- | -------------------------------------------- |
+| **Karen** (PMO/QA Lead) | Reality checker, final quality gate | All — reviews everyone's work                |
+| **Test Engineer**       | TDD methodology, test coverage      | Component, theme, assembly, Convex testing   |
+| **JourneyBrain**        | Business advisor, product strategy  | User journey, conversion, pricing, analytics |
 
 ### Collaboration Protocol
 
@@ -190,10 +191,17 @@ Blocked by dependency  → Document what's needed, move to next task
 
 ## Current Phase
 
+**Phase 5A: CSS Visual Foundation** — COMPLETE
 **Output Quality Overhaul** — 91% complete (30/33 stories shipped, 3 deferred)
-**Completed tiers**: Tier 1 (Content Fidelity), Tier 2 (Visual Character), Tier 3 (Feedback Loop), Tier 4 (Intake Upgrades), Tier 5 (Anti-References), Tier 6 (Dev Tooling)
+
+**Recently completed:**
+
+- Phase 5A: CSS Visual Foundation — 14 CSS patterns, 4 section dividers, 5 decorative elements, ImagePlaceholder, visual vocabulary, parallax hook, image-optional components
+- Output Quality Overhaul: All 6 tiers shipped (Tier 1-6), 3 deferred (mood boards)
+- UI enhancements: iframe-based viewport switcher, animated wireframe loading, mobile UX overhaul
+
 **Deferred**: T4-E1 (Mood Board — premium feature candidate), T4-E2 (Visual Reference URL — depends on T4-E1)
-**Next**: Phase 5 — Multi-page generation, real images, Next.js export upgrade
+**Next**: Phase 5B — Stock photo integration (Unsplash/Pexels/Pixabay), then Phase 5C (AI images), 5D (advanced scroll), 5E (multi-page generation)
 
 See `docs/ROADMAP.md` for full phase details.
 

@@ -1,0 +1,95 @@
+{
+  "id": "blog-preview",
+  "category": "content",
+  "name": "Blog Preview",
+  "description": "Preview grid of recent blog posts or articles with images, excerpts, and metadata. Ideal for homepages, landing pages, or content-heavy sites that want to showcase recent writing.",
+  "siteTypes": ["blog", "business", "personal", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "posts",
+      "type": "BlogPost[]",
+      "description": "Array of blog post items with title, excerpt, date, and optional image/author/category"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Section subheadline" },
+    {
+      "name": "variant",
+      "type": "string",
+      "description": "Visual variant: card-grid | featured-row | list"
+    },
+    { "name": "showDate", "type": "boolean", "description": "Show post date (default true)" },
+    { "name": "showAuthor", "type": "boolean", "description": "Show post author" },
+    { "name": "showCategory", "type": "boolean", "description": "Show post category badge" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "card-grid",
+      "name": "Card Grid",
+      "description": "Responsive grid of blog post cards with image, metadata, and excerpt"
+    },
+    {
+      "id": "featured-row",
+      "name": "Featured Row",
+      "description": "First post featured full-width, remaining posts in a row below"
+    },
+    {
+      "id": "list",
+      "name": "List",
+      "description": "Compact horizontal list layout with image on left and content on right"
+    }
+  ],
+  "tags": ["blog", "articles", "news", "posts", "preview"]
+}

@@ -11,7 +11,6 @@ vi.mock("@/lib/assembly/font-loader", () => ({
   loadGoogleFonts: vi.fn(),
 }));
 
- 
 vi.mock("framer-motion", () => {
   const el = (Tag: string) => {
     const C = ({ children, ...props }: { children?: ReactNode; [k: string]: unknown }) => {
@@ -79,7 +78,6 @@ vi.mock("framer-motion", () => {
     }),
   };
 });
- 
 
 /* ────────────────────────────────────────────────────────────
  * Fixtures

@@ -88,7 +88,9 @@ easywebsitebuild/
 │   │   ├── layout.tsx           # Root layout (ConvexClientProvider → ConditionalLayout)
 │   │   ├── demo/
 │   │   │   ├── page.tsx         # Demo — 9-step intake flow experience
-│   │   │   └── preview/page.tsx # Demo preview — assembled site with viewport controls + export
+│   │   │   └── preview/
+│   │   │       ├── page.tsx     # Demo preview — assembled site with viewport controls + export
+│   │   │       └── render/page.tsx # Isolated iframe renderer for true responsive preview
 │   │   ├── docs/page.tsx        # Documentation — (temporarily redirects to /, will be admin-only with Clerk)
 │   │   ├── api/screenshot/route.ts # Playwright server-side screenshot API
 │   │   ├── dev/
@@ -131,15 +133,17 @@ easywebsitebuild/
 │   │       └── layout/          # section (universal wrapper)
 │   └── lib/
 │       ├── assembly/            # Assembly engine
-│       │   ├── spec.types.ts    # SiteIntentDocument, PageSpec, ComponentPlacement
+│       │   ├── spec.types.ts    # SiteIntentDocument, PageSpec, ComponentPlacement, VisualConfig
 │       │   ├── component-registry.ts  # componentId → React component mapping (18 components)
 │       │   ├── font-loader.ts   # Runtime Google Fonts loader with deduplication
-│       │   ├── AssemblyRenderer.tsx    # Spec → live site renderer (+ emotional overrides)
+│       │   ├── AssemblyRenderer.tsx    # Spec → live site renderer (+ emotional overrides + visual config)
 │       │   └── index.ts         # Barrel export
 │       ├── export/              # Export pipeline
 │       │   ├── generate-project.ts    # SiteIntentDocument → static HTML/CSS files
 │       │   ├── create-zip.ts          # JSZip bundling + browser download
 │       │   └── index.ts               # Barrel export
+│       ├── hooks/
+│       │   └── use-is-mobile.ts # Mobile detection hook with debounced resize listener
 │       ├── stores/
 │       │   └── intake-store.ts  # Zustand store with localStorage persistence (9-step flow)
 │       ├── theme/               # Theme system
@@ -150,6 +154,16 @@ easywebsitebuild/
 │       │   ├── presets.ts       # 7 presets
 │       │   ├── ThemeProvider.tsx # React context + CSS variable injection
 │       │   └── index.ts         # Barrel export
+│       ├── visuals/              # CSS visual system (Phase 5A)
+│       │   ├── css-patterns.ts   # 14 CSS-only background patterns
+│       │   ├── industry-patterns.ts # 25+ business type → pattern mapping
+│       │   ├── visual-vocabulary.ts # Full visual language per business type
+│       │   ├── section-dividers.tsx  # Wave, angle, curve, zigzag SVG dividers
+│       │   ├── decorative-elements.tsx # Blob, dots, geometric, diamond, circle accents
+│       │   ├── image-placeholder.tsx # Gradient/pattern/shimmer placeholder variants
+│       │   ├── gradient-utils.ts # Mesh gradient + noise overlay generation
+│       │   ├── use-parallax.ts   # Parallax scroll hook (framer-motion + useSyncExternalStore)
+│       │   └── index.ts          # Barrel export
 │       ├── screenshot/           # Screenshot capture
 │       │   ├── types.ts          # ScreenshotResult type
 │       │   ├── capture-client.ts # html2canvas DOM-to-base64
@@ -301,14 +315,36 @@ easywebsitebuild/
 - 376+ tests across 24+ test files
 - Tracked in `docs/EPICS_AND_STORIES.md`
 
-### Next: Phase 5 — Multi-Page Generation & Core Quality
+### Phase 5A: CSS Visual Foundation — COMPLETE
+
+- **New `src/lib/visuals/` directory** with 9 modules for CSS-driven visual design
+- **14 CSS patterns** (pinstripe, herringbone, waves, dots, grid, zigzag, seigaiha, topography, etc.) mapped to 25+ business sub-types
+- **4 section divider components** (wave, angle, curve, zigzag) as SVG, absolutely positioned at section edges
+- **5 decorative accent elements** (blob, dot-grid, geometric-frame, diamond, circle)
+- **ImagePlaceholder component** with 3 variants (gradient, pattern, shimmer) — no more broken/empty images
+- **Visual vocabulary system**: Each business type gets a coherent visual language (divider style, accent shape, image overlay, parallax, scroll reveal intensity) with archetype and personality overrides
+- **`hero-split` and `content-split` images made optional** — CSS gradient fallback renders when no image provided
+- **Section component extended** with `dividerTop`, `dividerBottom`, `pattern`, `patternSize`, `patternPosition`, `patternOpacity` props
+- **`VisualConfig` type** added to `ComponentPlacement` — patterns and dividers flow through the spec
+- **AssemblyRenderer** resolves `visualConfig` into Section props (pattern CSS, dividers) using theme colors
+- **Parallax hook** (`useParallax`) using `useSyncExternalStore` + framer-motion `useScroll` — respects `prefers-reduced-motion`, disables on mobile
+- **Deterministic fallback updated**: Removed hardcoded Unsplash URL, added visual config per component, added `content-split` sections, skips `media-gallery`/`proof-beforeafter` (require real images)
+- **AI prompt updated**: Images optional, `visualConfig` field documented, image-heavy components excluded until stock photos available
+
+### Recent UI Enhancements (shipped alongside Phase 5A)
+
+- **Iframe-based viewport switcher** — Preview renders in isolated iframe at `/demo/preview/render`, parent-iframe `ewb:` PostMessage protocol (set-theme, set-page, request-screenshot), true responsive breakpoints
+- **Animated wireframe assembly loading** — Step 9 loading screen shows animated wireframe blocks assembling into place (replaces cycling progress bar)
+- **Mobile UX overhaul** — Bottom sheet modals for sidebar (max 65vh), scroll position reset on tab change, tab-based mobile interface, `useIsMobile()` hook with debounced detection (`src/lib/hooks/use-is-mobile.ts`)
+
+### Next: Phase 5B-D — Stock Photos, AI Images, Advanced Scroll
 
 > Priorities informed by [docs/STRATEGIC_ROADMAP.md](docs/STRATEGIC_ROADMAP.md) — honest assessment, impact × feasibility ranking, integration-first strategy.
 
-- **Multi-page generation & routing** (highest impact — every real site needs multiple pages)
-- **Real image handling** (descriptive placeholders → stock photo API → user upload)
-- **Next.js project export upgrade** (proper App Router project, not static HTML/CSS)
-- Then: Refinement chat MVP, Vercel deployment, user accounts
+- **Phase 5B: Stock photo integration** — Multi-provider search (Unsplash/Pexels/Pixabay), keyword builder, image caching, color-filtered search
+- **Phase 5C: AI image generation** — convex-nano-banana (Gemini), priority queue, reactive loading, experimental headshots
+- **Phase 5D: Advanced scroll effects** — CSS scroll-timeline, depth scrolling, scale transforms
+- Then: Multi-page generation & routing, refinement chat MVP, Vercel deployment, user accounts
 - Later: Integrations (booking, commerce, blog/CMS) via third-party services — we build the UI, they handle functionality
 - Visual editor deferred to Phase 9 (high effort, lower immediate impact)
 
@@ -317,11 +353,11 @@ easywebsitebuild/
 | Component            | Variants                          | Key Notes                         |
 | -------------------- | --------------------------------- | --------------------------------- |
 | `nav-sticky`         | transparent, solid                | Responsive mobile menu            |
-| `section`            | 6 bg variants, 5 spacing presets  | Universal layout wrapper          |
+| `section`            | 6 bg variants, 5 spacing presets  | + dividers, patterns, overlays    |
 | `hero-centered`      | with-bg-image, gradient-bg        | Gradient overlay                  |
-| `hero-split`         | image-right, image-left           | Decorative accent element         |
+| `hero-split`         | image-right, image-left           | Image optional (CSS fallback)     |
 | `content-features`   | icon-cards                        | Lucide icon lookup                |
-| `content-split`      | alternating                       | Rows flip image side              |
+| `content-split`      | alternating                       | Image optional (CSS fallback)     |
 | `content-text`       | centered                          | HTML body support                 |
 | `content-stats`      | inline, cards, animated-counter   | `value` is number type            |
 | `content-accordion`  | single-open, multi-open, bordered | Keyboard accessible               |
@@ -359,6 +395,9 @@ easywebsitebuild/
 - **Mobile-first responsive**: All spacing/padding uses `mobile md:desktop` pattern (e.g., `mb-8 md:mb-16`, `p-5 md:p-8`)
 - **Font clamping**: Large display text uses `clamp()` to prevent overflow on narrow viewports
 - **Responsive behavior**: Components with viewport-dependent layout (carousel perPage, masonry columns) use `useState` + `resize` listener
+- **Image optional pattern**: `hero-split` and `content-split` images are optional — render `ImagePlaceholder` (gradient/pattern/shimmer) when absent
+- **Section visual extensions**: Section accepts `dividerTop`, `dividerBottom`, `pattern`, `patternOpacity` props for CSS-driven visual richness
+- **Visual vocabulary**: Each business type has a coherent visual language (pattern, divider, accent shape, parallax, scroll reveal) resolved by `getVisualVocabulary()`
 
 ## Important Patterns
 
@@ -380,20 +419,31 @@ easywebsitebuild/
 - **vlmOverrides state**: In preview page, merged into activeTheme via useMemo, triggers instant re-render without spec regeneration
 - **Screenshot capture**: html2canvas dynamic import, fonts.ready + 300ms settle, 4000px height cap, scale=1
 - **Convex vlmEvaluations table**: sessionId index, stores dimensions/summary/themeAdjustments per evaluation
+- **Visual config flow**: `VisualConfig` on `ComponentPlacement` → `buildSectionVisualProps()` in AssemblyRenderer → Section props (pattern CSS, dividers)
+- **CSS patterns**: `generatePattern(patternId, color)` → CSS background value; `getPatternSize()`/`getPatternPosition()` for gradient patterns
+- **Industry visual defaults**: Convex `VISUAL_DEFAULTS` inlined in `generateSiteSpec.ts` (Convex cannot import from `src/`); mirrors `src/lib/visuals/industry-patterns.ts`
+- **Section dividers**: `SectionDivider` renders wave/angle/curve/zigzag SVGs at top/bottom edges; colors from theme tokens
+- **ImagePlaceholder**: 3 variants (gradient, pattern, shimmer); used by `hero-split` and `content-split` when image is absent
+- **Parallax hook**: `useParallax()` uses `useSyncExternalStore` for viewport detection (not setState in effect); disables below 768px and for `prefers-reduced-motion`
+- **Visual vocabulary resolution**: `getVisualVocabulary()` → `applyArchetypeOverrides()` → `applyPersonalityOverrides()` for full visual language per site
+- **Iframe preview**: `/demo/preview/render` renders the site in isolation; parent communicates via `postMessage` with `ewb:` prefix (set-theme, set-page, request-screenshot)
+- **Mobile detection**: `useIsMobile()` hook in `src/lib/hooks/use-is-mobile.ts` with debounced resize listener; drives bottom sheet vs sidebar layout
 
 ## Content Field Naming (Critical for Spec Generation)
 
 When generating component content, field names MUST match type interfaces exactly:
 
-| Component           | Field                         | Type                    |
-| ------------------- | ----------------------------- | ----------------------- |
-| `commerce-services` | `name` (not `title`)          | `ServiceItem`           |
-| `team-grid`         | `image` (not `avatar`)        | `TeamMember`            |
-| `content-timeline`  | `date` (not `year`)           | `TimelineItem`          |
-| `proof-beforeafter` | `comparisons` (not `items`)   | `ProofBeforeAfterProps` |
-| `content-stats`     | `value` (number, not string)  | `StatItem`              |
-| `content-split`     | `sections` (not `rows`)       | `ContentSplitProps`     |
-| `content-logos`     | `headline` (no `subheadline`) | `ContentLogosProps`     |
+| Component           | Field                          | Type                    |
+| ------------------- | ------------------------------ | ----------------------- |
+| `commerce-services` | `name` (not `title`)           | `ServiceItem`           |
+| `team-grid`         | `image` (not `avatar`)         | `TeamMember`            |
+| `content-timeline`  | `date` (not `year`)            | `TimelineItem`          |
+| `proof-beforeafter` | `comparisons` (not `items`)    | `ProofBeforeAfterProps` |
+| `content-stats`     | `value` (number, not string)   | `StatItem`              |
+| `content-split`     | `sections` (not `rows`)        | `ContentSplitProps`     |
+| `content-split`     | `image` (OPTIONAL per section) | `ContentSplitSection`   |
+| `hero-split`        | `image` (OPTIONAL)             | `HeroSplitProps`        |
+| `content-logos`     | `headline` (no `subheadline`)  | `ContentLogosProps`     |
 
 ## Key Files to Reference
 
@@ -401,7 +451,7 @@ Before starting work, always read:
 
 1. This file (CLAUDE.md)
 2. `docs/ARCHITECTURE.md` — for system design context
-3. `docs/ROADMAP.md` — for current priorities (Phase 5: multi-page generation is next)
+3. `docs/ROADMAP.md` — for current priorities (Phase 5B: stock photo integration is next)
 4. `docs/EPICS_AND_STORIES.md` — for Output Quality Overhaul tracking (30/33 shipped)
 5. Relevant doc files for the specific area you're working on
 

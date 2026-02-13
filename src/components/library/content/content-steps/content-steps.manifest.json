@@ -1,0 +1,91 @@
+{
+  "id": "content-steps",
+  "category": "content",
+  "name": "Process Steps",
+  "description": "Display a numbered or icon-driven step-by-step process. Ideal for how-it-works sections, onboarding flows, or service processes.",
+  "siteTypes": ["business", "booking", "portfolio", "personal", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "steps",
+      "type": "StepItem[]",
+      "description": "Array of step items with title, description, optional icon"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Section subheadline" },
+    { "name": "variant", "type": "string", "description": "numbered | icon-cards | horizontal" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-primary-dark",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-xs",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "radius-full",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-base",
+    "transition-fast",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "numbered",
+      "name": "Numbered",
+      "description": "Vertical numbered steps with connecting line"
+    },
+    {
+      "id": "icon-cards",
+      "name": "Icon Cards",
+      "description": "Cards with Lucide icons in a responsive grid"
+    },
+    {
+      "id": "horizontal",
+      "name": "Horizontal",
+      "description": "Horizontal flow with arrow connectors between steps"
+    }
+  ],
+  "tags": ["steps", "process", "how-it-works", "flow"]
+}

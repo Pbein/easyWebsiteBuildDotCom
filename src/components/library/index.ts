@@ -63,9 +63,33 @@ export type { TeamGridProps, TeamMember } from "./team/team-grid";
 export { CommerceServices } from "./commerce/commerce-services";
 export type { CommerceServicesProps, ServiceItem } from "./commerce/commerce-services";
 
+export { PricingTable } from "./commerce/pricing-table";
+export type { PricingTableProps, PricingPlan, PricingFeature } from "./commerce/pricing-table";
+
 /* ── Media ─────────────────────────────────────────────────── */
 export { MediaGallery } from "./media/media-gallery";
 export type { MediaGalleryProps, GalleryImage } from "./media/media-gallery";
+
+/* ── Content (Wave 1) ─────────────────────────────────────── */
+export { ContentSteps } from "./content/content-steps";
+export type { ContentStepsProps, StepItem } from "./content/content-steps";
+
+export { ContentComparison } from "./content/content-comparison";
+export type {
+  ContentComparisonProps,
+  ComparisonColumn,
+  ComparisonRow,
+} from "./content/content-comparison";
+
+export { BlogPreview } from "./content/blog-preview";
+export type { BlogPreviewProps, BlogPost } from "./content/blog-preview";
+
+export { ContentMap } from "./content/content-map";
+export type { ContentMapProps, ContactInfo } from "./content/content-map";
+
+/* ── Hero (Wave 1) ────────────────────────────────────────── */
+export { HeroVideo } from "./hero/hero-video";
+export type { HeroVideoProps } from "./hero/hero-video";
 
 /* ── Base Types ────────────────────────────────────────────── */
 export type { BaseComponentProps, ImageSource, LinkItem, CTAButton } from "./base.types";

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const VIEWPORT_SIZES: Record<string, { width: number; height: number }> = {
   desktop: { width: 1280, height: 900 },
@@ -54,13 +55,25 @@ export async function POST(request: Request): Promise<Response> {
     const buffer = await page.screenshot({ fullPage: true, type: "png" });
     const base64 = buffer.toString("base64");
 
-    return NextResponse.json({
-      base64,
-      width: size.width,
-      height: (await page.evaluate(() => document.body.scrollHeight)) as number,
+    const height = (await page.evaluate(() => document.body.scrollHeight)) as number;
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: "server",
+      event: "server_screenshot_captured",
+      properties: { viewport, width: size.width, height },
     });
+
+    return NextResponse.json({ base64, width: size.width, height });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Screenshot capture failed";
+    // Track error in PostHog
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: "server",
+      event: "server_screenshot_error",
+      properties: { error_message: message },
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   } finally {
     if (browser) {

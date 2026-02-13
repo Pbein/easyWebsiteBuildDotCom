@@ -1,0 +1,102 @@
+{
+  "id": "hero-video",
+  "category": "hero",
+  "name": "Video Hero",
+  "description": "Hero section with video as the focal point. Supports full-screen background video, embedded video alongside text, or a split layout with video on one side.",
+  "siteTypes": ["business", "portfolio", "ecommerce", "booking"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.3, 1.0]
+  },
+  "requiredProps": [
+    { "name": "headline", "type": "string", "description": "Primary headline text" }
+  ],
+  "optionalProps": [
+    { "name": "subheadline", "type": "string", "description": "Supporting subheadline" },
+    { "name": "cta", "type": "CTAButton", "description": "Primary CTA button" },
+    { "name": "secondaryCta", "type": "CTAButton", "description": "Secondary CTA button" },
+    { "name": "videoUrl", "type": "string", "description": "Video source URL" },
+    { "name": "posterImage", "type": "ImageSource", "description": "Poster/fallback image" },
+    { "name": "overlayOpacity", "type": "number", "description": "Dark overlay opacity (0-1)" },
+    {
+      "name": "variant",
+      "type": "string",
+      "description": "Visual variant: background-video, embedded, or split-video"
+    }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-primary-dark",
+    "color-secondary",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-text-on-dark",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-3xl",
+    "text-4xl",
+    "text-5xl",
+    "text-6xl",
+    "text-7xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "tracking-wide",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "radius-full",
+    "shadow-md",
+    "shadow-lg",
+    "shadow-xl",
+    "transition-fast",
+    "transition-base",
+    "transition-slow",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "background-video",
+      "name": "Background Video",
+      "description": "Full-width video behind centered text with dark overlay"
+    },
+    {
+      "id": "embedded",
+      "name": "Embedded",
+      "description": "Split layout with text left and video embed right"
+    },
+    {
+      "id": "split-video",
+      "name": "Split Video",
+      "description": "Half-width video with text on the opposite side"
+    }
+  ],
+  "tags": ["hero", "video", "cinematic", "media"]
+}

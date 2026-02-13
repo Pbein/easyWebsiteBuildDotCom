@@ -1,6 +1,7 @@
 "use client";
 
 import { Monitor, Tablet, Smartphone, Download, Shuffle, Camera } from "lucide-react";
+import posthog from "posthog-js";
 
 interface PreviewToolbarProps {
   businessName: string;
@@ -55,7 +56,15 @@ export function PreviewToolbar({
         {viewportOptions.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
-            onClick={() => onViewportChange(id)}
+            onClick={() => {
+              if (viewport !== id) {
+                posthog.capture("viewport_switched", {
+                  from_viewport: viewport,
+                  to_viewport: id,
+                });
+              }
+              onViewportChange(id);
+            }}
             className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
               viewport === id
                 ? "bg-[rgba(255,255,255,0.08)] text-white"

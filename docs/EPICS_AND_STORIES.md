@@ -8,8 +8,9 @@
 
 ## Progress Tracker
 
-> **Last updated:** 2026-02-10
+> **Last updated:** 2026-02-12
 > **Stories shipped:** 30/33 (91%) — 0 active remaining, 3 deferred
+> **Note:** Phase 5A (CSS Visual Foundation) shipped separately — see ROADMAP.md for details
 
 | Story    | Title                                       | Status     | Commit    |
 | -------- | ------------------------------------------- | ---------- | --------- |

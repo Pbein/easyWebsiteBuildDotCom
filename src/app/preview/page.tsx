@@ -25,6 +25,11 @@ import { FooterStandard } from "@/components/library/footer/footer-standard";
 import { TeamGrid } from "@/components/library/team/team-grid";
 import { CommerceServices } from "@/components/library/commerce/commerce-services";
 import { MediaGallery } from "@/components/library/media/media-gallery";
+import { PricingTable } from "@/components/library/commerce/pricing-table";
+import { ContentSteps } from "@/components/library/content/content-steps";
+import { ContentComparison } from "@/components/library/content/content-comparison";
+import { BlogPreview } from "@/components/library/content/blog-preview";
+import { ContentMap } from "@/components/library/content/content-map";
 
 /* ────────────────────────────────────────────────────────────
  * Placeholder content for the fictional business "Meridian"
@@ -397,6 +402,131 @@ const FAQ_ITEMS = [
       "<p>Our stack varies by project needs, but we're strong advocates for Next.js, React, TypeScript, and modern JAMstack architectures. For content management, we work with Sanity, Contentful, and custom solutions. We always choose the right tool for the job.</p>",
   },
 ];
+
+const PRICING_PLANS = [
+  {
+    name: "Starter",
+    description: "Perfect for small projects",
+    price: "$2,500",
+    period: "per project",
+    features: [
+      { text: "Brand strategy session", included: true },
+      { text: "Logo & identity design", included: true },
+      { text: "Responsive website (5 pages)", included: true },
+      { text: "SEO optimization", included: false },
+      { text: "Ongoing support", included: false },
+    ],
+    cta: { text: "Get Started", href: "#contact" },
+  },
+  {
+    name: "Professional",
+    description: "Our most popular package",
+    price: "$8,500",
+    period: "per project",
+    featured: true,
+    features: [
+      { text: "Brand strategy session", included: true },
+      { text: "Logo & identity design", included: true },
+      { text: "Responsive website (12 pages)", included: true },
+      { text: "SEO optimization", included: true },
+      { text: "Ongoing support (3 months)", included: true },
+    ],
+    cta: { text: "Get Started", href: "#contact" },
+  },
+  {
+    name: "Enterprise",
+    description: "Full-service partnership",
+    price: "$25K+",
+    period: "custom scope",
+    features: [
+      { text: "Brand strategy session", included: true },
+      { text: "Logo & identity design", included: true },
+      { text: "Responsive website (unlimited)", included: true },
+      { text: "SEO optimization", included: true },
+      { text: "Ongoing support (12 months)", included: true },
+    ],
+    cta: { text: "Contact Sales", href: "#contact" },
+  },
+];
+
+const PROCESS_STEPS = [
+  {
+    title: "Discovery & Strategy",
+    description:
+      "We dive deep into your brand, audience, and goals to build a strategic foundation for everything that follows.",
+    icon: "Compass",
+  },
+  {
+    title: "Design & Prototype",
+    description:
+      "Our design team crafts pixel-perfect mockups and interactive prototypes for your review and feedback.",
+    icon: "Palette",
+  },
+  {
+    title: "Develop & Test",
+    description:
+      "We build your site with clean, performant code and rigorously test across devices and browsers.",
+    icon: "Code",
+  },
+  {
+    title: "Launch & Grow",
+    description:
+      "We deploy your site, configure analytics, and provide ongoing support to ensure long-term success.",
+    icon: "TrendingUp",
+  },
+];
+
+const COMPARISON_COLUMNS = [
+  { name: "Meridian", highlighted: true },
+  { name: "Freelancer" },
+  { name: "DIY Builder" },
+];
+
+const COMPARISON_ROWS = [
+  { feature: "Custom design", values: [true, true, false] },
+  { feature: "Strategic planning", values: [true, false, false] },
+  { feature: "Performance optimization", values: [true, "Sometimes", false] },
+  { feature: "SEO expertise", values: [true, "Basic", "Template"] },
+  { feature: "Ongoing support", values: ["12 months", "Varies", "Community"] },
+  { feature: "Brand consistency", values: [true, "Varies", false] },
+];
+
+const BLOG_POSTS = [
+  {
+    title: "The Future of Web Design in 2026",
+    excerpt:
+      "Explore the emerging trends shaping how brands build their digital presence, from AI-assisted design to immersive scroll experiences.",
+    date: "Feb 10, 2026",
+    author: "Elena Vasquez",
+    category: "Design",
+    readTime: "5 min",
+  },
+  {
+    title: "Why Brand Strategy Comes Before Design",
+    excerpt:
+      "Most agencies start with visuals. We start with strategy. Here's why getting the foundation right saves time, money, and headaches.",
+    date: "Feb 3, 2026",
+    author: "Priya Sharma",
+    category: "Strategy",
+    readTime: "7 min",
+  },
+  {
+    title: "Performance Budgets: A Practical Guide",
+    excerpt:
+      "How we keep every Meridian project fast, accessible, and user-friendly — even as features grow in complexity.",
+    date: "Jan 28, 2026",
+    author: "Marcus Chen",
+    category: "Engineering",
+    readTime: "4 min",
+  },
+];
+
+const CONTACT_INFO = {
+  address: "742 Evergreen Terrace, Suite 200, Portland, OR 97209",
+  phone: "(503) 555-0142",
+  email: "hello@meridianstudio.com",
+  hours: ["Mon – Fri: 9:00am – 6:00pm", "Sat: 10:00am – 2:00pm", "Sun: Closed"],
+};
 
 /* ────────────────────────────────────────────────────────────
  * Theme selector panel
@@ -815,6 +945,31 @@ export default function PreviewPage() {
             variant="card-grid"
           />
 
+          {/* Process Steps */}
+          <ContentSteps
+            headline="Our Process"
+            subheadline="A proven four-step approach to exceptional digital experiences"
+            steps={PROCESS_STEPS}
+            variant="numbered"
+          />
+
+          {/* Pricing */}
+          <PricingTable
+            headline="Investment Plans"
+            subheadline="Transparent pricing for every stage of growth"
+            plans={PRICING_PLANS}
+            variant="featured"
+          />
+
+          {/* Comparison */}
+          <ContentComparison
+            headline="Why Choose Meridian?"
+            subheadline="See how we stack up against the alternatives"
+            columns={COMPARISON_COLUMNS}
+            rows={COMPARISON_ROWS}
+            variant="checkmark-matrix"
+          />
+
           {/* Split content */}
           <ContentSplit id="work" sections={SPLIT_SECTIONS} imageStyle="rounded" />
 
@@ -872,6 +1027,26 @@ export default function PreviewPage() {
             subheadline="Everything you need to know about working with Meridian"
             items={FAQ_ITEMS}
             variant="bordered"
+          />
+
+          {/* Blog Preview */}
+          <BlogPreview
+            headline="From the Blog"
+            subheadline="Insights, strategies, and stories from the Meridian team"
+            posts={BLOG_POSTS}
+            variant="card-grid"
+            showDate
+            showAuthor
+            showCategory
+          />
+
+          {/* Location / Map */}
+          <ContentMap
+            headline="Visit Our Studio"
+            subheadline="We'd love to meet you in person"
+            contactInfo={CONTACT_INFO}
+            cta={{ text: "Get Directions", href: "#" }}
+            variant="split-with-info"
           />
 
           {/* CTA Banner */}

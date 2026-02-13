@@ -40,7 +40,13 @@
       "WebFetch(domain:www.convex.dev)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:docs.convex.dev)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(npx vitest run:*)",
+      "Bash(npx convex:*)",
+      "Bash(if exist \".next\\\\lock\" del /f \".next\\\\lock\")",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)"
     ]
   }
 }

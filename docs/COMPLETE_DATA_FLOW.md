@@ -26,11 +26,21 @@ The system operates as a 6-phase pipeline. Each phase feeds the next.
 ✅ Dev Tooling (DevPanel with 6 tabs, named test cases, side-by-side comparison)
 ✅ User Satisfaction Capture (feedback banner + pipeline session logging)
 
-### What's Missing (Phase 5+)
+### What's Added in Phase 5A (CSS Visual Foundation) ✅
 
+✅ CSS visual system (`src/lib/visuals/`) — 14 patterns, 4 dividers, visual vocabulary, ImagePlaceholder, parallax hook
+✅ `VisualConfig` on `ComponentPlacement` — patterns and dividers flow through the spec pipeline
+✅ `hero-split` and `content-split` images optional — CSS gradient fallbacks
+✅ Section component extended with divider/pattern props
+✅ AssemblyRenderer resolves `visualConfig` into Section props using theme colors
+
+### What's Missing (Phase 5B+)
+
+🔲 Stock photo integration (Unsplash/Pexels/Pixabay — Phase 5B)
+🔲 AI image generation (convex-nano-banana — Phase 5C)
+🔲 Advanced scroll effects (CSS scroll-timeline, depth scrolling — Phase 5D)
 🔲 Refinement Loop (conversational chat for post-generation adjustments)
 🔲 Visual Mood Board system (reaction-based image/reference selection) — deferred
-🔲 Image strategy system (stock selection, AI generation, placeholder guidance)
 🔲 Multi-page management (add/remove/reorder pages post-generation)
 🔲 Component-level editing (swap, configure, reorder sections)
 🔲 Deploy pipeline (Vercel API, custom domains, hosting)
@@ -218,17 +228,25 @@ interface PageSpec {
   components: ComponentPlacement[];
 }
 
+interface VisualConfig {
+  pattern?: string; // CSS background value
+  dividerBottom?: "wave" | "angle" | "curve" | "zigzag" | "none";
+  parallaxEnabled?: boolean;
+  scrollRevealIntensity?: "none" | "subtle" | "moderate" | "dramatic";
+}
+
 interface ComponentPlacement {
   componentId: string;
   variant: string;
   order: number;
   content: Record<string, any>; // Component-specific content
+  visualConfig?: VisualConfig; // CSS patterns, dividers, scroll effects (Phase 5A)
 }
 ```
 
 ---
 
-## Phase 4: Assembly ✅ BUILT (enhanced with emotional overrides + VLM feedback loop)
+## Phase 4: Assembly ✅ BUILT (enhanced with emotional overrides + VLM feedback loop + CSS visual system)
 
 Purpose: Render the spec as a live, interactive website preview.
 
@@ -241,7 +259,7 @@ Purpose: Render the spec as a live, interactive website preview.
          │   ├── generateThemeFromVector(personalityVector)
          │   │         │
          │   │         ▼
-         │   │   applyEmotionalOverrides(theme, emotionalGoals, antiReferences) ← NEW
+         │   │   applyEmotionalOverrides(theme, emotionalGoals, antiReferences)
          │   │         │
          │   │         ▼
          │   │   Final ThemeTokens (87 CSS Custom Properties)
@@ -254,12 +272,17 @@ Purpose: Render the spec as a live, interactive website preview.
          │   │   Handles unknown IDs gracefully (skip + warn)
          │   │
          │   ├── Sort components by order
-         │   ├── Wrap content components in <Section> (alternating backgrounds)
+         │   ├── Resolve visualConfig → Section props (Phase 5A)
+         │   │   ├── generatePattern(patternId, themeColor) → CSS background
+         │   │   ├── dividerBottom → SectionDivider SVG component
+         │   │   └── patternOpacity, patternSize, patternPosition
+         │   ├── Wrap content components in <Section> (alternating backgrounds + visual config)
+         │   ├── Render ImagePlaceholder for missing images (hero-split, content-split)
          │   ├── Skip Section wrapper for nav-sticky + footer-standard
          │   │
          │   └── <ThemeProvider tokens={finalTheme}>
          │         <NavSticky ... />
-         │         <Section><HeroCentered ... /></Section>
+         │         <Section dividerBottom="wave" pattern={css}><HeroCentered ... /></Section>
          │         <Section background="surface"><ContentFeatures ... /></Section>
          │         ...
          │         <FooterStandard ... />
@@ -433,16 +456,21 @@ Future:
 
 ## Data Storage Summary
 
-| Store              | Technology                     | What It Holds                                  | Persistence                               |
-| ------------------ | ------------------------------ | ---------------------------------------------- | ----------------------------------------- |
-| Intake State       | Zustand + localStorage         | Steps 1-7 responses, session ID, AI Q&A        | Browser session (cleared on "Start Over") |
-| Site Specs         | Convex (siteSpecs table)       | Generated SiteIntentDocuments                  | Permanent (keyed by sessionId)            |
-| Intake Responses   | Convex (intakeResponses)       | Individual step responses                      | Permanent (keyed by sessionId)            |
-| Refinement History | Convex (future)                | Chat messages + spec patches                   | Permanent (keyed by specId)               |
-| Knowledge Base     | Convex (future)                | Intent paths, proven recipes, content patterns | Permanent, evolving                       |
-| Component Library  | Code (src/components/library/) | 18 React components + manifests                | Bundled in app                            |
-| Theme System       | Code (src/lib/theme/)          | Generation function, 7 presets, 87 tokens      | Bundled in app                            |
-| Asset Library      | Convex File Storage (future)   | Images, icons, generated assets                | Permanent                                 |
+| Store              | Technology                     | What It Holds                                    | Persistence                               |
+| ------------------ | ------------------------------ | ------------------------------------------------ | ----------------------------------------- |
+| Intake State       | Zustand + localStorage         | Steps 1-7 responses, session ID, AI Q&A          | Browser session (cleared on "Start Over") |
+| Site Specs         | Convex (siteSpecs table)       | Generated SiteIntentDocuments                    | Permanent (keyed by sessionId)            |
+| Intake Responses   | Convex (intakeResponses)       | Individual step responses                        | Permanent (keyed by sessionId)            |
+| Refinement History | Convex (future)                | Chat messages + spec patches                     | Permanent (keyed by specId)               |
+| Knowledge Base     | Convex (future)                | Intent paths, proven recipes, content patterns   | Permanent, evolving                       |
+| Component Library  | Code (src/components/library/) | 18 React components + manifests                  | Bundled in app                            |
+| Theme System       | Code (src/lib/theme/)          | Generation function, 7 presets, 87 tokens        | Bundled in app                            |
+| Visual System      | Code (src/lib/visuals/)        | 14 CSS patterns, 4 dividers, visual vocabulary   | Bundled in app                            |
+| VLM Evaluations    | Convex (vlmEvaluations)        | 5-dimension scores, theme adjustments            | Permanent (keyed by sessionId)            |
+| Pipeline Logs      | Convex (pipelineLogs)          | Full generation trace (prompt, response, timing) | Permanent (keyed by sessionId)            |
+| Feedback           | Convex (feedback)              | Satisfaction ratings with dimension breakdowns   | Permanent (keyed by sessionId)            |
+| Test Cases         | Convex (testCases)             | Named intake snapshots for regression testing    | Permanent                                 |
+| Asset Library      | Convex File Storage (future)   | Images, icons, generated assets                  | Permanent                                 |
 
 ---
 
@@ -450,22 +478,27 @@ Future:
 
 ### 1. Image Strategy System
 
-Currently: All images are placeholders ("/placeholder.jpg").
-Needed: A system that provides appropriate imagery for the generated site.
+**Phase 5A (DONE):** CSS visual foundation provides intentional image substitutes:
 
-Options:
+- `ImagePlaceholder` component renders gradient/pattern/shimmer variants where images would go
+- `hero-split` and `content-split` images made optional — CSS gradient fallback
+- `media-gallery` and `proof-beforeafter` skipped in deterministic fallback (require real images)
+- No broken/empty image tags in generated sites
 
-- **Stock photo API integration** (Unsplash, Pexels) — search by industry + mood keywords
-- **AI image generation** (DALL-E, Midjourney API) — generate custom imagery matching the brand
-- **User upload** — let users provide their own photos during or after generation
-- **Placeholder with guidance** — show descriptive placeholder cards that tell the user exactly what photo to put there ("Upload: a warm, well-lit photo of your shop interior")
+**Phase 5B (NEXT):** Stock photo API integration:
 
-The image strategy should be informed by:
+- Multi-provider search (Unsplash/Pexels/Pixabay) with keyword builder
+- Context-aware keyword enhancement using business type + emotional goals + component type
+- Image caching via Convex `imageCache` table (24hr TTL)
+- Color-filtered search using theme primary hue
 
-- Industry (barbershop → shop interior, tools, cuts in progress)
-- Emotional goals (luxury → close-up textures, calm → nature/soft light)
-- Anti-references (not clinical → avoid sterile white environments)
-- Brand archetype (artisan → process shots, rebel → raw/gritty)
+**Phase 5C (PLANNED):** AI image generation:
+
+- convex-nano-banana (Gemini) for custom imagery
+- Priority queue: hero first, below-fold last
+- Reactive loading in preview page (shimmer → real image swap)
+
+**Future:** User upload — Convex File Storage, drag-and-drop replacement in preview
 
 ### 2. Multi-Page Management
 
@@ -479,12 +512,17 @@ Needed:
 
 ### 3. Real Image Handling in Components
 
-Currently: Components accept ImageSource but render div placeholders.
-Needed:
+**Phase 5A (DONE):** Components handle missing images gracefully:
 
-- Next.js Image component integration for uploaded/fetched images
-- Fallback system (gradient placeholder → stock suggestion → user upload)
-- Image optimization (srcset, lazy loading, blur placeholder)
+- `hero-split` and `content-split` `image` field is optional — renders `ImagePlaceholder` when absent
+- `ImageSource` type extended with `attribution` field (photographer, source, URL) for stock photos
+- `ImageSource` type supports `blurDataURL` for blur-up loading
+
+**Phase 5B (NEXT):**
+
+- Next.js Image component integration for stock photos (already used, needs `remotePatterns` config)
+- `blurDataURL` populated from stock API thumbnails
+- Lazy loading for below-fold images, priority loading for hero
 
 ### 4. Form Submission Backend
 

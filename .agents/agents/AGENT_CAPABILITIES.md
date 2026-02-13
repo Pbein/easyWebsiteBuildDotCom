@@ -62,6 +62,36 @@
 
 ---
 
+### JourneyBrain — Business Advisor & Product Strategy
+
+**File**: `journey-brain.md`
+**Invoke**: Call directly
+**Data source**: `/business/USER_JOURNEY.md` (canonical journey map)
+
+**Strengths:**
+
+- End-to-end user journey mapping and gap identification
+- Conversion funnel analysis (drop-off risks, friction points)
+- Loading screen optimization (productive use of wait time)
+- Pricing strategy and billing trigger recommendations
+- Feature prioritization through revenue-impact lens (not tech-cool lens)
+- Analytics event naming and measurement plans
+- Character capture quality assessment (does a Mexican restaurant look like a Mexican restaurant?)
+
+**Use When:**
+
+- Planning a new feature and need to understand where it fits in the user journey
+- Optimizing conversion at any funnel step
+- Deciding what to build next (revenue-driven prioritization)
+- Designing loading/wait states
+- Adding analytics or measurement
+- Evaluating whether output quality matches user intent
+- Business model or pricing decisions
+
+**Output:** Journey understanding + gaps/risks + prioritized recommendations (each with step ID, friction, proposed change, implementation detail, measurement plan) + patch update to USER_JOURNEY.md.
+
+---
+
 ## When to Use Which Agent
 
 | Situation                               | Agent                                 | Why                            |
@@ -74,6 +104,11 @@
 | "Is the export valid HTML?"             | Test Engineer                         | Output validation              |
 | "Ready to deploy?"                      | Karen via `/deploy-ready` → `/verify` | Full pre-deployment check      |
 | "Phase complete?"                       | Karen                                 | Comprehensive reality check    |
+| "What should we build next?"            | JourneyBrain                          | Revenue-driven prioritization  |
+| "Where are users dropping off?"         | JourneyBrain                          | Funnel analysis                |
+| "How should the loading screen work?"   | JourneyBrain                          | Wait state optimization        |
+| "What should pricing look like?"        | JourneyBrain                          | Business model strategy        |
+| "Does the output match user intent?"    | JourneyBrain → Karen                  | Quality + journey alignment    |
 
 ---
 
@@ -119,18 +154,100 @@ Best for: Phase transitions, pre-deployment, quality audits.
 ## Key Project Systems Each Agent Covers
 
 ```
-                          Karen    Test Engineer
-Component Library (18)      ✅          ✅
-Theme System (87 tokens)    ✅          ✅
-Assembly Engine             ✅          ✅
-Intake Flow (9 steps)       ✅          ✅
-AI Integration              ✅          ✅
-Export Pipeline              ✅          ✅
-Build/Lint                   ✅          —
-Browser Verification         ✅          —
-Content Field Accuracy       ✅          ✅
-Design Quality               ✅          —
+                          Karen    Test Engineer    JourneyBrain
+Component Library (18)      ✅          ✅               —
+Theme System (87 tokens)    ✅          ✅               —
+CSS Visual System            ✅          ✅               —
+Assembly Engine             ✅          ✅               —
+Intake Flow (9 steps)       ✅          ✅               ✅
+AI Integration              ✅          ✅               —
+Export Pipeline              ✅          ✅               —
+Build/Lint                   ✅          —                —
+Browser Verification         ✅          —                —
+Content Field Accuracy       ✅          ✅               —
+Design Quality               ✅          —                —
+User Journey Mapping          —          —                ✅
+Conversion Optimization       —          —                ✅
+Business Strategy             —          —                ✅
+Analytics & Measurement       —          —                ✅
+Loading State Design          —          —                ✅
 ```
+
+**CSS Visual System** covers: 14 CSS patterns, 4 section dividers, 5 decorative elements, ImagePlaceholder (3 variants), visual vocabulary per business type (18+ types), archetype/personality overrides, VisualConfig flow through spec pipeline, pattern/divider rendering in Section component.
+
+---
+
+## Virtual Boardroom — 9 Strategic Personas
+
+The boardroom is a multi-agent debate system invoked via `/boardroom <question>`. Each persona reads domain-specific files, explores the codebase for evidence, and argues from competing incentives. See `BOARDROOM_TENSION_MAP.md` for the 15 adversarial tensions.
+
+### CEO — Strategic Vision Architect
+
+**File**: `boardroom-ceo.md` | **Color**: blue
+**Strengths**: Moat analysis, differentiation strategy, priority setting, long-term valuation thinking
+**Use When**: Assessing defensibility, resolving cross-functional disagreements, setting quarterly priorities
+
+### CMO — Growth Strategist
+
+**File**: `boardroom-cmo.md` | **Color**: green
+**Strengths**: SEO (platform + generated sites), brand positioning, CAC analysis, channel strategy, funnel top
+**Use When**: Planning growth, evaluating homepage messaging, assessing marketing channels
+
+### CRO — Conversion Architect
+
+**File**: `boardroom-cro.md` | **Color**: orange
+**Strengths**: Funnel friction analysis, drop-off identification, wow moment optimization, click-path counting
+**Use When**: Analyzing intake flow drop-off, optimizing preview reveal, evaluating step necessity
+
+### Product — Product Architect (Character Capture)
+
+**File**: `boardroom-product.md` | **Color**: purple
+**Strengths**: Character-to-output tracing, variant differentiation analysis, output quality assessment, component strategy
+**Use When**: Evaluating whether character data affects output, comparing AI vs deterministic quality, planning component library
+
+### Infra — Technical Infrastructure Strategist
+
+**File**: `boardroom-infra.md` | **Color**: gray
+**Strengths**: Per-session cost modeling, API token analysis, scalability assessment, bundle size, caching strategy
+**Use When**: Estimating AI costs, evaluating Convex table growth, optimizing prompts for cost, assessing performance
+
+### Monetization — Monetization Architect
+
+**File**: `boardroom-monetization.md` | **Color**: gold
+**Strengths**: Tier design, feature gating strategy, LTV analysis, pricing model evaluation, revenue projections
+**Use When**: Designing free/paid boundaries, evaluating subscription vs one-time pricing, planning upsell paths
+
+### Competitive — Competitive Intelligence Analyst
+
+**File**: `boardroom-competitive.md` | **Color**: crimson
+**Strengths**: Feature parity matrices, competitor tracking, market velocity, table-stakes gap identification
+**Use When**: Comparing against Wix/Framer/10Web, identifying critical missing features, assessing shipping velocity
+
+### Partnerships — Partnerships & Integrations Lead
+
+**File**: `boardroom-partnerships.md` | **Color**: cyan
+**Strengths**: Integration prioritization, build-vs-embed decisions, ecosystem stickiness scoring, upsell ladder design
+**Use When**: Evaluating which integrations to add, assessing third-party dependencies, planning the integration tier roadmap
+
+### UX Psych — UX Behavioral Psychologist
+
+**File**: `boardroom-ux-psych.md` | **Color**: magenta
+**Strengths**: IKEA effect, Zeigarnik effect, Peak-End rule, cognitive load analysis, emotional journey mapping
+**Use When**: Evaluating loading screens, debating step count, assessing trust signals, optimizing micro-celebrations
+
+---
+
+### Boardroom Routing
+
+| Strategic Question                | Key Personas                       | Why                              |
+| --------------------------------- | ---------------------------------- | -------------------------------- |
+| "What should we build next?"      | CEO + Competitive + Product        | Strategy + market + depth        |
+| "How do we increase conversions?" | CRO + UX Psych + CMO               | Funnel + psychology + traffic    |
+| "What should pricing look like?"  | Monetization + CRO + Competitive   | Revenue + conversion + market    |
+| "What are our AI costs at scale?" | Infra + Product + Monetization     | Costs + quality + revenue        |
+| "Which integrations matter?"      | Partnerships + Infra + Competitive | Ecosystem + complexity + parity  |
+| "Is our output good enough?"      | Product + Competitive + UX Psych   | Quality + market + perception    |
+| "Full strategic review"           | All 9 via `/boardroom`             | Comprehensive adversarial debate |
 
 ---
 

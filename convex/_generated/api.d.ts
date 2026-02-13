@@ -11,7 +11,9 @@
 import type * as ai_evaluateScreenshot from "../ai/evaluateScreenshot.js";
 import type * as ai_generateQuestions from "../ai/generateQuestions.js";
 import type * as ai_generateSiteSpec from "../ai/generateSiteSpec.js";
+import type * as ai_imageSearch from "../ai/imageSearch.js";
 import type * as feedback from "../feedback.js";
+import type * as imageCache from "../imageCache.js";
 import type * as intakeResponses from "../intakeResponses.js";
 import type * as pipelineLogs from "../pipelineLogs.js";
 import type * as siteSpecs from "../siteSpecs.js";
@@ -28,7 +30,9 @@ declare const fullApi: ApiFromModules<{
   "ai/evaluateScreenshot": typeof ai_evaluateScreenshot;
   "ai/generateQuestions": typeof ai_generateQuestions;
   "ai/generateSiteSpec": typeof ai_generateSiteSpec;
+  "ai/imageSearch": typeof ai_imageSearch;
   feedback: typeof feedback;
+  imageCache: typeof imageCache;
   intakeResponses: typeof intakeResponses;
   pipelineLogs: typeof pipelineLogs;
   siteSpecs: typeof siteSpecs;

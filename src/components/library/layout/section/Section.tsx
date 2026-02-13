@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { SectionDivider } from "@/lib/visuals/section-dividers";
 import type { SectionProps } from "./section.types";
 
 /** Map spacing preset to CSS padding using theme tokens. */
@@ -51,6 +52,12 @@ export function Section({
   narrow = false,
   borderTop = false,
   borderBottom = false,
+  dividerTop,
+  dividerBottom,
+  pattern,
+  patternSize,
+  patternPosition,
+  patternOpacity = 0.06,
   children,
 }: SectionProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -84,12 +91,39 @@ export function Section({
       }
     : {};
 
+  const patternOverlay = pattern ? (
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background: pattern,
+        backgroundSize: patternSize ?? "auto",
+        backgroundPosition: patternPosition ?? "0 0",
+        opacity: patternOpacity,
+      }}
+      aria-hidden="true"
+    />
+  ) : null;
+
   const content = contained ? <div style={containerStyle}>{children}</div> : children;
+
+  const innerContent = (
+    <>
+      {dividerTop ? <SectionDivider style={dividerTop} position="top" /> : null}
+      {patternOverlay}
+      {content}
+      {dividerBottom ? <SectionDivider style={dividerBottom} position="bottom" /> : null}
+    </>
+  );
 
   if (!animate) {
     return (
-      <section ref={ref} id={id} className={cn("relative", className)} style={sectionStyle}>
-        {content}
+      <section
+        ref={ref}
+        id={id}
+        className={cn("relative overflow-hidden", className)}
+        style={sectionStyle}
+      >
+        {innerContent}
       </section>
     );
   }
@@ -98,7 +132,7 @@ export function Section({
     <motion.section
       ref={ref}
       id={id}
-      className={cn("relative", className)}
+      className={cn("relative overflow-hidden", className)}
       style={sectionStyle}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -107,7 +141,7 @@ export function Section({
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      {content}
+      {innerContent}
     </motion.section>
   );
 }

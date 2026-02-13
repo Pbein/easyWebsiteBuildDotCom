@@ -26,6 +26,12 @@ export interface ImageSource {
   width?: number;
   height?: number;
   blurDataURL?: string;
+  /** Attribution info for stock photos (Unsplash requires credit). */
+  attribution?: {
+    photographer?: string;
+    source?: string;
+    url?: string;
+  };
 }
 
 /**

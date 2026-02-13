@@ -6,6 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { ImagePlaceholder } from "@/lib/visuals/image-placeholder";
 import type { ContentSplitProps } from "./content-split.types";
 
 const SPACING_MAP = {
@@ -98,7 +99,7 @@ function SplitRow({
   index: number;
   headline: string;
   body: string;
-  image: { src: string; alt: string };
+  image?: { src: string; alt: string; blurDataURL?: string };
   ctaText?: string;
   ctaLink?: string;
   imageRadius: string;
@@ -164,21 +165,30 @@ function SplitRow({
     </motion.div>
   );
 
+  const hasImage = image?.src;
+
   const imageContent = (
     <motion.div
-      className="relative aspect-[4/3] overflow-hidden"
+      className="relative overflow-hidden"
       style={{ borderRadius: imageRadius }}
       initial={animate ? { opacity: 0, x: imgOnRight ? 30 : -30 } : false}
       animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: imgOnRight ? 30 : -30 }}
       transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Image
-        src={image.src}
-        alt={image.alt}
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 100vw, 50vw"
-      />
+      {hasImage ? (
+        <div className="relative aspect-[4/3]">
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            {...(image.blurDataURL ? { placeholder: "blur", blurDataURL: image.blurDataURL } : {})}
+          />
+        </div>
+      ) : (
+        <ImagePlaceholder variant="gradient" aspectRatio="aspect-[4/3]" borderRadius="0px" />
+      )}
     </motion.div>
   );
 

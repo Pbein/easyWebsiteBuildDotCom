@@ -3,7 +3,7 @@
 > **Implementation Status (as of Feb 2026):**
 >
 > - Layer 1 (Intent Capture): **Fully implemented** — 9-step intake flow with AI-powered discovery questions (Claude Sonnet) and deterministic fallback. Zustand state management with localStorage persistence. Fingerprint-based staleness detection (`questionsInputKey`) + review mode UI for returning users. Brand character capture (emotional goals, voice tone, brand archetype, anti-references) in Steps 5-7.
-> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories (4 refactored to shared.tsx + variants/ pattern), assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README).
+> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories (4 refactored to shared.tsx + variants/ pattern), assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README). **Phase 5A** added CSS visual foundation: `VisualConfig` on `ComponentPlacement`, section dividers, CSS patterns, image placeholders, parallax scroll effects.
 > - Layer 3 (Theming): **Fully implemented** — 87 tokens, 7 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook, dynamic Google Font loading.
 > - Layer 4 (Knowledge Base): Schema tables created (`intentPaths`, `recipes`, `components`, `themes`, `assets`). Embedding/similarity matching system not yet built (Phase 5).
 > - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview pages). Homepage and Docs pages converted to Server Components (Pre-Phase 5).
@@ -129,12 +129,20 @@ interface PageSpec {
   components: ComponentPlacement[];
 }
 
+interface VisualConfig {
+  pattern?: string; // CSS background value for decorative pattern
+  dividerBottom?: "wave" | "angle" | "curve" | "zigzag" | "none";
+  parallaxEnabled?: boolean;
+  scrollRevealIntensity?: "none" | "subtle" | "moderate" | "dramatic";
+}
+
 interface ComponentPlacement {
   componentId: string;
   variant: string;
   order: number;
   config: Record<string, unknown>;
   content: Record<string, unknown>;
+  visualConfig?: VisualConfig; // CSS patterns, dividers, scroll effects (Phase 5A)
 }
 ```
 
@@ -186,12 +194,12 @@ interface ComponentManifest {
 
 - ✅ Header/Navigation — `nav-sticky` (transparent, solid variants; responsive mobile menu)
 - ✅ Footer — `footer-standard` (multi-column variant; social icons, copyright bar)
-- ✅ Section Wrapper — `section` (6 bg variants, 5 spacing presets, container constraints)
+- ✅ Section Wrapper — `section` (6 bg variants, 5 spacing presets, container constraints, divider/pattern props)
 
 **Hero Sections** (✅ = built):
 
 - ✅ Centered text hero — `hero-centered` (with-bg-image, gradient-bg variants)
-- ✅ Split hero — `hero-split` (image-right, image-left variants; decorative accent element)
+- ✅ Split hero — `hero-split` (image-right, image-left variants; image optional with CSS gradient fallback)
 - Video background hero
 - Parallax hero (layered depth with alpha-masked foreground)
 - Carousel/slider hero
@@ -203,7 +211,7 @@ interface ComponentManifest {
 
 - ✅ Text block — `content-text` (centered variant; eyebrow, headline, body with HTML support)
 - ✅ Feature grid — `content-features` (icon-cards variant; Lucide icon lookup, hover + stagger)
-- ✅ Split content — `content-split` (alternating variant; rows flip image side, scroll animation)
+- ✅ Split content — `content-split` (alternating variant; rows flip image side, image optional with CSS gradient fallback)
 - ✅ Stats/numbers — `content-stats` (inline, cards, animated-counter variants)
 - ✅ Timeline/process steps — `content-timeline` (vertical, alternating variants)
 - ✅ Logo cloud/trust badges — `content-logos` (grid, scroll, fade variants)
@@ -261,13 +269,14 @@ interface ComponentManifest {
 The assembly engine follows this process:
 
 1. **Read Site Intent Document** — Parse the structured spec
-2. **Resolve Theme** — Either load a proven theme or generate tokens from personality vector
+2. **Resolve Theme** — Either load a proven theme or generate tokens from personality vector; apply emotional overrides if character data present
 3. **Select Components** — For each page, match component IDs to library entries via `COMPONENT_REGISTRY`
 4. **Configure Variants** — Based on personality fit and content availability
-5. **Compose Layout** — Arrange components in order with section wrappers, alternating backgrounds
-6. **Populate Content** — Insert real or AI-generated content into component props
-7. **Render Preview** — Generate a live, interactive preview via `AssemblyRenderer`
-8. **Export** — On approval, generate a downloadable ZIP with static HTML/CSS via export pipeline
+5. **Resolve Visual Config** — For each component, resolve `visualConfig` into CSS patterns (via `generatePattern()`), section dividers, and parallax settings using theme colors
+6. **Compose Layout** — Arrange components in order with section wrappers, alternating backgrounds, dividers, and pattern overlays
+7. **Populate Content** — Insert real or AI-generated content into component props; render `ImagePlaceholder` for missing images
+8. **Render Preview** — Generate a live, interactive preview via `AssemblyRenderer`
+9. **Export** — On approval, generate a downloadable ZIP with static HTML/CSS via export pipeline
 
 ### Export Pipeline
 
@@ -536,8 +545,12 @@ interface ProvenRecipe {
 
 - **projects** — Client website projects (✅ schema defined)
 - **users** — Platform users (✅ schema defined)
-- **siteSpecs** — Generated Site Intent Documents (✅ fully implemented — `saveSiteSpec`, `saveSiteSpecInternal`, `getSiteSpec` with `by_session` index)
+- **siteSpecs** — Generated Site Intent Documents (✅ fully implemented — `saveSiteSpec`, `saveSiteSpecInternal`, `getSiteSpec` with `by_session` index; now includes `visualConfig` per component)
 - **intakeResponses** — Individual intake flow responses (✅ schema defined with `by_session` index)
+- **pipelineLogs** — Full generation pipeline traces (✅ fully implemented — prompt, AI response, timing, validation results)
+- **vlmEvaluations** — VLM design evaluation results (✅ fully implemented — 5-dimension scores, theme adjustments, by session)
+- **feedback** — User satisfaction ratings (✅ fully implemented — rating, dimension chips, free text)
+- **testCases** — Named test case snapshots (✅ fully implemented — intake snapshot, spec snapshot, run history)
 - **intentPaths** — The evolving decision tree (✅ schema defined with `by_step` index — lifecycle management not yet built)
 - **components** — Component library registry (✅ schema defined with `by_category` index)
 - **themes** — Theme presets and custom themes (✅ schema defined)
@@ -610,10 +623,14 @@ easywebsitebuild/
 ├── docs/                                  # Specification & documentation
 │   ├── ARCHITECTURE.md                    # This file
 │   ├── ASSEMBLY_ENGINE.md
+│   ├── BRAND_CHARACTER_SYSTEM.md          # Brand character design philosophy
+│   ├── COMPLETE_DATA_FLOW.md              # End-to-end system data flow
 │   ├── COMPONENT_SPEC.md
+│   ├── EPICS_AND_STORIES.md               # Output Quality Overhaul tracking
 │   ├── INTAKE_FLOW.md
 │   ├── KNOWLEDGE_BASE.md
 │   ├── ROADMAP.md
+│   ├── STRATEGIC_ROADMAP.md               # Strategic priorities + competitive analysis
 │   └── THEME_SYSTEM.md
 ├── src/
 │   ├── app/
@@ -622,8 +639,14 @@ easywebsitebuild/
 │   │   ├── globals.css                    # Global styles, CSS variables
 │   │   ├── demo/
 │   │   │   ├── page.tsx                   # Demo intake flow (9-step)
-│   │   │   └── preview/page.tsx           # Assembled site preview with viewport controls
-│   │   ├── docs/page.tsx                  # Documentation page (Server Component)
+│   │   │   └── preview/
+│   │   │       ├── page.tsx               # Assembled site preview with viewport controls
+│   │   │       └── render/page.tsx        # Iframe render target (PostMessage protocol)
+│   │   ├── docs/page.tsx                  # Documentation page (redirects to /, future Clerk admin)
+│   │   ├── api/screenshot/route.ts        # Playwright server-side screenshot API
+│   │   ├── dev/
+│   │   │   ├── test-cases/page.tsx        # Dev-only: named test case management
+│   │   │   └── compare/page.tsx           # Dev-only: side-by-side session comparison
 │   │   └── preview/page.tsx               # Live component library preview with theme switching
 │   ├── components/
 │   │   ├── platform/                      # Platform UI (the builder app itself)
@@ -635,6 +658,11 @@ easywebsitebuild/
 │   │   │   ├── ConvexClientProvider.tsx    # Convex React provider (wraps app)
 │   │   │   ├── docs/
 │   │   │   │   └── DocsShell.tsx          # Client component for docs interactive shell
+│   │   │   ├── preview/                   # Preview UI components
+│   │   │   │   ├── PreviewSidebar.tsx     # Spec metadata sidebar
+│   │   │   │   ├── PreviewToolbar.tsx     # Viewport controls toolbar
+│   │   │   │   ├── DevPanel.tsx           # Developer diagnostic panel (6 tabs)
+│   │   │   │   └── FeedbackBanner.tsx     # Quick satisfaction rating banner
 │   │   │   ├── intake/                    # Intake flow step components
 │   │   │   │   ├── Step5Emotion.tsx       # Emotional goals selection (Step 5)
 │   │   │   │   ├── Step6Voice.tsx         # Voice & narrative (Step 6)
@@ -642,9 +670,6 @@ easywebsitebuild/
 │   │   │   │   ├── Step5Discovery.tsx     # AI-powered discovery questionnaire (Step 8)
 │   │   │   │   ├── Step6Loading.tsx       # Animated generation loading screen (Step 9)
 │   │   │   │   └── index.ts
-│   │   │   └── preview/                   # Preview UI components
-│   │   │       ├── PreviewSidebar.tsx     # Spec metadata sidebar
-│   │   │       └── PreviewToolbar.tsx     # Viewport controls toolbar
 │   │   └── library/                       # Website component library (18 components)
 │   │       ├── base.types.ts              # BaseComponentProps, ImageSource, LinkItem, CTAButton
 │   │       ├── index.ts                   # Barrel exports for all components
@@ -687,6 +712,26 @@ easywebsitebuild/
 │       │   ├── generate-project.ts        # SiteIntentDocument → static HTML/CSS files
 │       │   ├── create-zip.ts              # JSZip bundling + browser download
 │       │   └── index.ts                   # Barrel export
+│       ├── visuals/                       # CSS visual system (Phase 5A)
+│       │   ├── css-patterns.ts            # 14 CSS background patterns + generation
+│       │   ├── industry-patterns.ts       # Business sub-type → pattern mapping (25+)
+│       │   ├── visual-vocabulary.ts       # Full visual language per business type
+│       │   ├── section-dividers.tsx       # Wave, angle, curve, zigzag SVG components
+│       │   ├── decorative-elements.tsx    # Blob, dot-grid, geometric-frame, diamond, circle
+│       │   ├── image-placeholder.tsx      # Gradient/pattern/shimmer placeholder variants
+│       │   ├── gradient-utils.ts          # Mesh gradient + placeholder gradient generation
+│       │   ├── use-parallax.ts            # Parallax hook (framer-motion + useSyncExternalStore)
+│       │   └── index.ts                   # Barrel export
+│       ├── screenshot/                    # Screenshot capture
+│       │   ├── types.ts                   # ScreenshotResult type
+│       │   ├── capture-client.ts          # html2canvas DOM-to-base64
+│       │   └── index.ts                   # Barrel export
+│       ├── vlm/                           # VLM evaluation utilities
+│       │   ├── types.ts                   # DimensionScore, VLMEvaluation
+│       │   ├── map-adjustments.ts         # VLM feedback → Partial<ThemeTokens>
+│       │   └── index.ts                   # Barrel export
+│       ├── hooks/
+│       │   └── use-is-mobile.ts           # Debounced mobile viewport detection hook
 │       ├── stores/
 │       │   └── intake-store.ts            # Zustand store with localStorage persistence (9-step flow)
 │       ├── types/
@@ -702,6 +747,10 @@ easywebsitebuild/
 └── convex/
     ├── schema.ts                          # Database schema (9 tables)
     ├── siteSpecs.ts                       # Site spec CRUD (saveSiteSpec, getSiteSpec)
+    ├── vlmEvaluations.ts                  # VLM evaluation save/query
+    ├── pipelineLogs.ts                    # Pipeline session logging
+    ├── feedback.ts                        # User satisfaction ratings
+    ├── testCases.ts                       # Named test case CRUD
     └── ai/                                # AI integration actions
         ├── generateQuestions.ts            # Claude-powered discovery questions
         └── generateSiteSpec.ts            # Claude-powered site spec generation

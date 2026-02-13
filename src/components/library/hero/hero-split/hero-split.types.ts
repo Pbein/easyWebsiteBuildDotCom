@@ -16,8 +16,8 @@ export interface HeroSplitProps extends BaseComponentProps {
   ctaPrimary?: CTAButton;
   /** Secondary call-to-action button. */
   ctaSecondary?: CTAButton;
-  /** Hero image. */
-  image: ImageSource;
+  /** Hero image (optional — renders themed gradient placeholder when absent). */
+  image?: ImageSource;
   /** Which side the image appears on. */
   imagePosition?: "left" | "right";
   /** Aspect ratio hint for the image. */

@@ -1,0 +1,99 @@
+{
+  "id": "content-comparison",
+  "category": "content",
+  "name": "Comparison Table",
+  "description": "Side-by-side feature or plan comparison with multiple display formats. Ideal for pricing tiers, product comparisons, or feature matrices.",
+  "siteTypes": ["business", "ecommerce", "booking"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "columns",
+      "type": "ComparisonColumn[]",
+      "description": "Array of column definitions with name and optional highlighted flag"
+    },
+    {
+      "name": "rows",
+      "type": "ComparisonRow[]",
+      "description": "Array of feature rows with per-column boolean or string values"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Section subheadline" },
+    {
+      "name": "variant",
+      "type": "string",
+      "description": "Visual variant: table, side-by-side, or checkmark-matrix"
+    }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-accent",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-fast",
+    "transition-base",
+    "ease-default",
+    "animation-distance",
+    "container-max",
+    "container-narrow",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "table",
+      "name": "Table",
+      "description": "HTML table with sticky first column and highlighted column accent"
+    },
+    {
+      "id": "side-by-side",
+      "name": "Side by Side",
+      "description": "Card columns listing features with check/x marks"
+    },
+    {
+      "id": "checkmark-matrix",
+      "name": "Checkmark Matrix",
+      "description": "Feature grid with checkmarks, columns as options, rows as features"
+    }
+  ],
+  "tags": ["comparison", "features", "versus", "table"]
+}

@@ -7,8 +7,8 @@ import {
 } from "@/components/library/manifest-index";
 
 describe("COMPONENT_MANIFESTS", () => {
-  it("contains 19 manifests (18 components + section)", () => {
-    expect(COMPONENT_MANIFESTS.length).toBe(19);
+  it("contains 25 manifests (24 components + section)", () => {
+    expect(COMPONENT_MANIFESTS.length).toBe(25);
   });
 
   it("each manifest has required fields", () => {
@@ -49,11 +49,12 @@ describe("getManifestById", () => {
     expect(getManifestById("fake")).toBeUndefined();
   });
 
-  it("finds all 18 component manifests", () => {
+  it("finds all 24 component manifests", () => {
     const componentIds = [
       "nav-sticky",
       "hero-centered",
       "hero-split",
+      "hero-video",
       "content-features",
       "content-split",
       "content-text",
@@ -61,12 +62,17 @@ describe("getManifestById", () => {
       "content-accordion",
       "content-timeline",
       "content-logos",
+      "content-steps",
+      "content-comparison",
+      "content-map",
+      "blog-preview",
       "cta-banner",
       "form-contact",
       "proof-testimonials",
       "proof-beforeafter",
       "team-grid",
       "commerce-services",
+      "pricing-table",
       "media-gallery",
       "footer-standard",
     ];

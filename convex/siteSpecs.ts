@@ -49,6 +49,23 @@ export const saveSiteSpecInternal = internalMutation({
   },
 });
 
+export const updateSiteSpecPages = internalMutation({
+  args: {
+    sessionId: v.string(),
+    pages: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("siteSpecs")
+      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .order("desc")
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { pages: args.pages });
+    }
+  },
+});
+
 export const getSiteSpec = query({
   args: { sessionId: v.string() },
   handler: async (ctx, args) => {

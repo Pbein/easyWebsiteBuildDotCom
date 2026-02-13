@@ -506,6 +506,18 @@ function renderComponent(c: ComponentPlacement, businessName: string): string {
       return renderAccordion(content);
     case "content-logos":
       return renderLogos(content);
+    case "pricing-table":
+      return renderPricingTable(content);
+    case "content-steps":
+      return renderSteps(content);
+    case "content-comparison":
+      return renderComparison(content);
+    case "hero-video":
+      return renderHero(content);
+    case "blog-preview":
+      return renderBlogPreview(content);
+    case "content-map":
+      return renderMap(content);
     default:
       return `<!-- Component: ${c.componentId} (not yet supported in export) -->`;
   }
@@ -818,6 +830,172 @@ function renderLogos(content: Record<string, unknown>): string {
       ${headline ? `<div class="section-header"><p class="section-header__eyebrow">${escapeHtml(headline)}</p></div>` : ""}
       <div style="display: flex; flex-wrap: wrap; gap: 3rem; justify-content: center; align-items: center; opacity: 0.5;">
         ${logos.map((l) => `<span style="font-family: var(--font-heading); font-size: var(--text-lg); font-weight: var(--weight-semibold); color: var(--color-text-secondary);">${escapeHtml(l.name)}</span>`).join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderPricingTable(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const subheadline = (content.subheadline as string) || "";
+  const plans =
+    (content.plans as Array<{
+      name: string;
+      price: string;
+      period?: string;
+      features?: Array<{ text: string; included: boolean }>;
+      featured?: boolean;
+    }>) || [];
+
+  return `  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-header__headline">${escapeHtml(headline)}</h2>
+        ${subheadline ? `<p class="section-header__subheadline">${escapeHtml(subheadline)}</p>` : ""}
+      </div>
+      <div class="features-grid">
+        ${plans
+          .map(
+            (
+              p
+            ) => `<div class="feature-card"${p.featured ? ' style="border-color: var(--color-primary); transform: scale(1.02);"' : ""}>
+          <h3 class="feature-card__title">${escapeHtml(p.name)}</h3>
+          <div style="font-family: var(--font-heading); font-size: clamp(2rem, 4vw, 3rem); font-weight: var(--weight-bold); color: var(--color-primary); margin: 0.5rem 0;">${escapeHtml(p.price)}${p.period ? `<span style="font-size: var(--text-sm); color: var(--color-text-secondary);">${escapeHtml(p.period)}</span>` : ""}</div>
+          ${
+            p.features
+              ? `<ul style="list-style: none; padding: 0; margin: 1rem 0;">
+            ${p.features.map((f) => `<li style="padding: 0.25rem 0; color: ${f.included ? "var(--color-text)" : "var(--color-text-secondary)"};">${f.included ? "✓" : "✗"} ${escapeHtml(f.text)}</li>`).join("\n            ")}
+          </ul>`
+              : ""
+          }
+        </div>`
+          )
+          .join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderSteps(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const subheadline = (content.subheadline as string) || "";
+  const steps = (content.steps as Array<{ title: string; description: string }>) || [];
+
+  return `  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-header__headline">${escapeHtml(headline)}</h2>
+        ${subheadline ? `<p class="section-header__subheadline">${escapeHtml(subheadline)}</p>` : ""}
+      </div>
+      <div style="max-width: 700px; margin: 0 auto;">
+        ${steps
+          .map(
+            (
+              s,
+              i
+            ) => `<div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; align-items: flex-start;">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); color: var(--color-text-on-primary); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); flex-shrink: 0;">${i + 1}</div>
+          <div>
+            <h3 class="feature-card__title">${escapeHtml(s.title)}</h3>
+            <p class="feature-card__description">${escapeHtml(s.description)}</p>
+          </div>
+        </div>`
+          )
+          .join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderComparison(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const columns = (content.columns as Array<{ name: string }>) || [];
+  const rows = (content.rows as Array<{ feature: string; values: (string | boolean)[] }>) || [];
+
+  return `  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-header__headline">${escapeHtml(headline)}</h2>
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr>
+              <th style="padding: 1rem; border-bottom: 2px solid var(--color-border); font-weight: var(--weight-semibold);">Feature</th>
+              ${columns.map((c) => `<th style="padding: 1rem; border-bottom: 2px solid var(--color-border); font-weight: var(--weight-semibold); text-align: center;">${escapeHtml(c.name)}</th>`).join("\n              ")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows
+              .map(
+                (r) => `<tr>
+              <td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-light);">${escapeHtml(r.feature)}</td>
+              ${r.values.map((v) => `<td style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border-light); text-align: center;">${typeof v === "boolean" ? (v ? "✓" : "✗") : escapeHtml(String(v))}</td>`).join("\n              ")}
+            </tr>`
+              )
+              .join("\n            ")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderBlogPreview(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const posts =
+    (content.posts as Array<{ title: string; excerpt: string; date?: string; author?: string }>) ||
+    [];
+
+  return `  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-header__headline">${escapeHtml(headline)}</h2>
+      </div>
+      <div class="features-grid">
+        ${posts
+          .map(
+            (p) => `<div class="feature-card">
+          <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-surface)); height: 160px; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
+          <h3 class="feature-card__title">${escapeHtml(p.title)}</h3>
+          <p class="feature-card__description">${escapeHtml(p.excerpt)}</p>
+          ${p.date || p.author ? `<p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: 0.75rem;">${p.date ? escapeHtml(p.date) : ""}${p.date && p.author ? " · " : ""}${p.author ? escapeHtml(p.author) : ""}</p>` : ""}
+        </div>`
+          )
+          .join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderMap(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const contactInfo = content.contactInfo as
+    | {
+        address?: string;
+        phone?: string;
+        email?: string;
+        hours?: string[];
+      }
+    | undefined;
+
+  return `  <section class="section section--alt">
+    <div class="container">
+      ${headline ? `<div class="section-header"><h2 class="section-header__headline">${escapeHtml(headline)}</h2></div>` : ""}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+        <div style="background: linear-gradient(135deg, var(--color-surface), var(--color-surface-elevated)); height: 300px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: var(--color-text-secondary);">
+          📍 Map Placeholder
+        </div>
+        ${
+          contactInfo
+            ? `<div style="display: flex; flex-direction: column; gap: 1.5rem; justify-content: center;">
+          ${contactInfo.address ? `<div><strong>Address</strong><br>${escapeHtml(contactInfo.address)}</div>` : ""}
+          ${contactInfo.phone ? `<div><strong>Phone</strong><br><a href="tel:${escapeHtml(contactInfo.phone)}">${escapeHtml(contactInfo.phone)}</a></div>` : ""}
+          ${contactInfo.email ? `<div><strong>Email</strong><br><a href="mailto:${escapeHtml(contactInfo.email)}">${escapeHtml(contactInfo.email)}</a></div>` : ""}
+          ${contactInfo.hours ? `<div><strong>Hours</strong><br>${contactInfo.hours.map((h) => escapeHtml(h)).join("<br>")}</div>` : ""}
+        </div>`
+            : ""
+        }
       </div>
     </div>
   </section>`;

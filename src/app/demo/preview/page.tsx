@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
+import posthog from "posthog-js";
 import { api } from "../../../../convex/_generated/api";
 import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
@@ -86,24 +87,56 @@ function PreviewContent(): React.ReactElement {
   }, []);
 
   const rawSpec = useQuery(api.siteSpecs.getSiteSpec, sessionId ? { sessionId } : "skip");
+  const hasTrackedPreviewViewed = useRef(false);
 
-  const handleExport = useCallback(async (specToExport: SiteIntentDocument): Promise<void> => {
-    setIsExporting(true);
-    try {
-      const [{ generateProject }, { createProjectZip, downloadBlob }] = await Promise.all([
-        import("@/lib/export/generate-project"),
-        import("@/lib/export/create-zip"),
-      ]);
-      const result: ExportResult = generateProject(specToExport);
-      const blob = await createProjectZip(result);
-      const filename = `${result.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-website.zip`;
-      downloadBlob(blob, filename);
-    } catch (err) {
-      console.error("Export failed:", err);
-    } finally {
-      setIsExporting(false);
+  // Track preview_viewed when spec is loaded
+  useEffect(() => {
+    if (rawSpec && !hasTrackedPreviewViewed.current) {
+      hasTrackedPreviewViewed.current = true;
+      posthog.capture("preview_viewed", {
+        session_id: sessionId,
+        site_type: rawSpec.siteType,
+        business_name: rawSpec.businessName,
+        method: rawSpec.metadata?.method || "unknown",
+        component_count: rawSpec.pages?.[0]?.components?.length || 0,
+      });
     }
-  }, []);
+  }, [rawSpec, sessionId]);
+
+  const handleExport = useCallback(
+    async (specToExport: SiteIntentDocument): Promise<void> => {
+      setIsExporting(true);
+      // Track export started
+      posthog.capture("export_clicked", {
+        session_id: sessionId,
+        site_type: specToExport.siteType,
+        business_name: specToExport.businessName,
+      });
+      try {
+        const [{ generateProject }, { createProjectZip, downloadBlob }] = await Promise.all([
+          import("@/lib/export/generate-project"),
+          import("@/lib/export/create-zip"),
+        ]);
+        const result: ExportResult = generateProject(specToExport);
+        const blob = await createProjectZip(result);
+        const filename = `${result.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-website.zip`;
+        downloadBlob(blob, filename);
+        // Track export completed
+        posthog.capture("export_completed", {
+          session_id: sessionId,
+          site_type: specToExport.siteType,
+          business_name: specToExport.businessName,
+          file_count: result.files.length,
+        });
+      } catch (err) {
+        console.error("Export failed:", err);
+        posthog.captureException(err);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [sessionId]
+  );
 
   // Loading
   if (rawSpec === undefined) {
@@ -610,6 +643,19 @@ function PreviewLayout({
 
   const [vlmOverrides, setVlmOverrides] = useState<Partial<ThemeTokens> | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
+  const prevVariantRef = useRef(activeVariant);
+
+  // Track theme variant switches (not on initial mount)
+  useEffect(() => {
+    if (prevVariantRef.current !== activeVariant) {
+      posthog.capture("theme_variant_switched", {
+        session_id: sessionId,
+        from_variant: prevVariantRef.current,
+        to_variant: activeVariant,
+      });
+      prevVariantRef.current = activeVariant;
+    }
+  }, [activeVariant, sessionId]);
 
   const activeTheme = useMemo(() => {
     const base = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
@@ -706,8 +752,16 @@ function PreviewLayout({
       try {
         const result = await capturePreviewScreenshot(previewRef.current);
         setLastScreenshot(result);
+        // Track screenshot captured
+        posthog.capture("screenshot_captured", {
+          session_id: sessionId,
+          viewport: "mobile",
+          width: result.width,
+          height: result.height,
+        });
       } catch (err) {
         console.error("Screenshot capture failed:", err);
+        posthog.captureException(err);
       } finally {
         setIsCapturing(false);
       }
@@ -728,13 +782,21 @@ function PreviewLayout({
         ),
       ]);
       setLastScreenshot(result);
+      // Track screenshot captured
+      posthog.capture("screenshot_captured", {
+        session_id: sessionId,
+        viewport,
+        width: result.width,
+        height: result.height,
+      });
     } catch (err) {
       console.error("Screenshot capture failed:", err);
+      posthog.captureException(err);
       screenshotResolveRef.current = null;
     } finally {
       setIsCapturing(false);
     }
-  }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe]);
+  }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe, sessionId, viewport]);
 
   const handleStartOver = useCallback((): void => {
     resetStore();

@@ -1,22 +1,23 @@
 # Assembly Engine Documentation
 
-> **Implementation Status (as of Feb 2026):** Core assembly engine implemented in Phase 3, expanded in Phase 4B.
+> **Implementation Status (as of Feb 2026):** Core assembly engine implemented in Phase 3, expanded in Phase 4B, enhanced with CSS visual system in Phase 5A.
 >
 > **Implemented:**
 >
-> - `SiteIntentDocument` type system (`src/lib/assembly/spec.types.ts`) — sessionId, pages with ComponentPlacement, personality vector, metadata
+> - `SiteIntentDocument` type system (`src/lib/assembly/spec.types.ts`) — sessionId, pages with ComponentPlacement (+ `VisualConfig`), personality vector, metadata
 > - `COMPONENT_REGISTRY` (`src/lib/assembly/component-registry.ts`) — maps 18 componentId strings to React components, `UNWRAPPED_COMPONENTS` set for nav/footer
-> - `AssemblyRenderer` (`src/lib/assembly/AssemblyRenderer.tsx`) — client component that generates theme from personality vector, loads fonts, sorts components by order, applies alternating backgrounds, renders inside ThemeProvider
+> - `AssemblyRenderer` (`src/lib/assembly/AssemblyRenderer.tsx`) — client component that generates theme from personality vector, applies emotional overrides, loads fonts, sorts components by order, resolves `VisualConfig` into Section props (patterns, dividers), applies alternating backgrounds, renders inside ThemeProvider
 > - `font-loader` (`src/lib/assembly/font-loader.ts`) — runtime Google Fonts injection with deduplication
 > - Theme resolution — `generateThemeFromVector()` maps personality vectors to complete token sets (fully working)
-> - Component library — 18 components with manifest descriptors, personality fit ranges, and variant metadata
+> - CSS visual system (`src/lib/visuals/`) — 14 CSS patterns, 4 section dividers (wave/angle/curve/zigzag), visual vocabulary per business type, ImagePlaceholder component, parallax scroll hook
+> - Component library — 18 components with manifest descriptors, personality fit ranges, and variant metadata; `hero-split` and `content-split` images optional with CSS gradient fallback
 > - Manifest index — `getManifestById()`, `getManifestsByCategory()`, `getManifestsBySiteType()` lookup utilities
-> - AI spec generation — Claude Sonnet generates complete SiteIntentDocument from intake data (`convex/ai/generateSiteSpec.ts`) with full support for all 18 components
-> - Deterministic fallback — personality-driven variant selection, content generation for all 11 site types, conditional component inclusion based on site type
-> - Live preview — `/demo/preview` page with responsive viewport switcher, metadata sidebar, toolbar
+> - AI spec generation — Claude Sonnet generates complete SiteIntentDocument from intake data (`convex/ai/generateSiteSpec.ts`) with full support for all 18 components + `visualConfig` output
+> - Deterministic fallback — personality-driven variant selection, content generation for all 11 site types, conditional component inclusion based on site type, visual config per component (patterns + dividers from industry defaults)
+> - Live preview — `/demo/preview` page with responsive viewport switcher (iframe-based), metadata sidebar, toolbar
 > - Export pipeline — `src/lib/export/` generates static HTML/CSS project, bundles as ZIP via JSZip, triggers browser download
 >
-> **Not yet built:** AI copy generation for refining placeholder content, full Next.js project generation, Vercel deployment pipeline, visual editor, preview approval/change request flow, preview sharing.
+> **Not yet built:** Stock photo integration (Phase 5B), AI image generation (Phase 5C), AI copy generation for refining content, full Next.js project generation, Vercel deployment pipeline, visual editor, preview approval/change request flow, preview sharing.
 
 ## Overview
 
@@ -113,10 +114,15 @@ Process:
 
 1. Sort components by `order` field
 2. Wrap non-unwrapped components in Section containers with alternating backgrounds
-3. Apply section-level spacing based on component `spacing` prop
-4. Insert navigation at top, footer at bottom (unwrapped components)
-5. Handle responsive layout (component stacking order on mobile)
-6. Output: Complete page layouts as component trees
+3. Resolve `visualConfig` for each component:
+   - Convert pattern ID to CSS background value via `generatePattern(patternId, themeColor)`
+   - Map `dividerBottom` to SVG divider component (wave/angle/curve/zigzag)
+   - Apply pattern opacity (default 0.06) and position
+4. Apply section-level spacing based on component `spacing` prop
+5. Insert navigation at top, footer at bottom (unwrapped components)
+6. Handle responsive layout (component stacking order on mobile)
+7. Render `ImagePlaceholder` (gradient/pattern/shimmer) for components with missing images (hero-split, content-split)
+8. Output: Complete page layouts as component trees
 
 ### Step 5: Generate Content
 

@@ -6,6 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { ImagePlaceholder } from "@/lib/visuals/image-placeholder";
 import type { HeroSplitProps } from "./hero-split.types";
 
 const SPACING_MAP = {
@@ -201,6 +202,8 @@ export function HeroSplit({
     </motion.div>
   );
 
+  const hasImage = image?.src;
+
   const imageContent = (
     <motion.div
       className="relative"
@@ -218,18 +221,27 @@ export function HeroSplit({
           opacity: 0.1,
         }}
       />
-      <div
-        className={cn("relative overflow-hidden", ASPECT_MAP[imageAspect])}
-        style={{ borderRadius: "var(--radius-xl)" }}
-      >
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 50vw"
+      {hasImage ? (
+        <div
+          className={cn("relative overflow-hidden", ASPECT_MAP[imageAspect])}
+          style={{ borderRadius: "var(--radius-xl)" }}
+        >
+          <Image
+            src={image.src}
+            alt={image.alt}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            {...(image.blurDataURL ? { placeholder: "blur", blurDataURL: image.blurDataURL } : {})}
+          />
+        </div>
+      ) : (
+        <ImagePlaceholder
+          variant="gradient"
+          aspectRatio={ASPECT_MAP[imageAspect]}
+          borderRadius="var(--radius-xl)"
         />
-      </div>
+      )}
     </motion.div>
   );
 

@@ -7,11 +7,12 @@
 
 ## Quick Reference
 
-| Command         | What It Does             | When to Use                      |
-| --------------- | ------------------------ | -------------------------------- |
-| `/verify`       | Karen quality gate       | After completing any task        |
-| `/deploy-ready` | Pre-deployment checklist | Before any production deployment |
-| `/ship`         | Stage, commit, push      | When ready to commit changes     |
+| Command                 | What It Does               | When to Use                         |
+| ----------------------- | -------------------------- | ----------------------------------- |
+| `/verify`               | Karen quality gate         | After completing any task           |
+| `/deploy-ready`         | Pre-deployment checklist   | Before any production deployment    |
+| `/ship`                 | Stage, commit, push        | When ready to commit changes        |
+| `/boardroom <question>` | 9-persona strategic debate | Strategic decisions, prioritization |
 
 **Use commands first. Fall back to direct agent calls for complex multi-step coordination.**
 
@@ -19,17 +20,23 @@
 
 ## Task Routing
 
-| Task Type                | Primary Agent        | Then                                            |
-| ------------------------ | -------------------- | ----------------------------------------------- |
-| **New component**        | Developer implements | Test Engineer → Karen `/verify`                 |
-| **Theme system change**  | Developer implements | Verify all 7 presets → Karen `/verify`          |
-| **Assembly engine work** | Developer implements | Test all 18 components render → Karen `/verify` |
-| **Intake flow change**   | Developer implements | Test full 9-step flow → Karen `/verify`         |
-| **AI integration**       | Developer implements | Test AI + fallback paths → Karen `/verify`      |
-| **Export pipeline**      | Developer implements | Test ZIP output → Karen `/verify`               |
-| **Bug fix**              | Developer fixes      | Test Engineer verifies → Karen `/verify`        |
-| **Phase completion**     | All agents involved  | Karen full reality assessment                   |
-| **Pre-deployment**       | Developer            | `/deploy-ready` → Karen `/verify`               |
+| Task Type                     | Primary Agent        | Then                                                    |
+| ----------------------------- | -------------------- | ------------------------------------------------------- |
+| **New component**             | Developer implements | Test Engineer → Karen `/verify`                         |
+| **Theme system change**       | Developer implements | Verify all 7 presets → Karen `/verify`                  |
+| **Assembly engine work**      | Developer implements | Test all 18 components render → Karen `/verify`         |
+| **Intake flow change**        | Developer implements | Test full 9-step flow → Karen `/verify`                 |
+| **AI integration**            | Developer implements | Test AI + fallback paths → Karen `/verify`              |
+| **Export pipeline**           | Developer implements | Test ZIP output → Karen `/verify`                       |
+| **CSS visual system change**  | Developer implements | Test patterns/dividers across presets → Karen `/verify` |
+| **Bug fix**                   | Developer fixes      | Test Engineer verifies → Karen `/verify`                |
+| **Phase completion**          | All agents involved  | Karen full reality assessment                           |
+| **Pre-deployment**            | Developer            | `/deploy-ready` → Karen `/verify`                       |
+| **Feature prioritization**    | JourneyBrain         | Map to journey step → revenue impact → recommend        |
+| **UX/conversion improvement** | JourneyBrain         | Identify friction → propose change → measurement plan   |
+| **Loading screen design**     | JourneyBrain         | Propose data capture + engagement during wait states    |
+| **Pricing/billing design**    | JourneyBrain         | Map triggers to journey steps → recommend pricing       |
+| **Analytics implementation**  | JourneyBrain         | Define events → Developer implements → Karen verifies   |
 
 ---
 
@@ -81,6 +88,17 @@
 6. /verify → Karen dual-path verification
 ```
 
+### CSS Visual System Change
+
+```
+1. Developer updates visuals (patterns, dividers, placeholders, vocabulary)
+2. Test visual consistency across all 7 presets
+3. Test pattern/divider rendering in AssemblyRenderer
+4. Verify theme colors flow correctly into patterns/dividers
+5. Verify image-optional components render ImagePlaceholder
+6. /verify → Karen visual approval
+```
+
 ### Pre-Deployment
 
 ```
@@ -89,6 +107,30 @@
 3. /deploy-ready → full checklist
 4. /verify → Karen go/no-go decision
 ```
+
+### Virtual Boardroom — Strategic Decision
+
+```
+1. /boardroom <strategic question>
+   ↓
+2. Round 1: CEO frames objective from codebase state
+   ↓
+3. Round 2: All 9 personas read mandatory files, explore codebase, present strategies
+   ↓
+4. Round 3: Adversarial cross-examination (min 6 exchanges, must cite code)
+   ↓
+5. Round 4: Synthesized decision with priorities, risks, implementation plan
+```
+
+Best for: Strategic decisions, roadmap prioritization, pricing strategy, competitive positioning, build-vs-buy, resource allocation.
+
+**Individual consultation**: Call any persona directly for domain-specific advice without the full debate:
+
+- `@ceo` — moat, strategy, prioritization
+- `@infra` — costs, scalability, performance
+- `@competitive` — feature parity, market intelligence
+- `@ux-psych` — behavioral psychology, engagement
+- `@cmo` / `@cro` / `@product` / `@monetization` / `@partnerships`
 
 ---
 
@@ -135,6 +177,15 @@ Karen is the **final authority** on completion. No task is "done" without Karen'
 - Tests intake flow state management
 - Tests export pipeline output
 - Identifies edge cases and regression risks
+
+### JourneyBrain (Business Advisor)
+
+- Maintains canonical user journey map (`/business/USER_JOURNEY.md`)
+- Identifies conversion friction and drop-off risks at every funnel step
+- Proposes productive use of loading/wait states (data capture, engagement)
+- Recommends feature prioritization through revenue-impact lens
+- Designs analytics event taxonomy and measurement plans
+- Evaluates whether generated output matches user intent and brand character
 
 ---
 

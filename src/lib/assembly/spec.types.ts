@@ -1,4 +1,21 @@
 /**
+ * Visual configuration for a component placement.
+ * Controls CSS patterns, dividers, and scroll effects.
+ */
+export interface VisualConfig {
+  /** CSS background pattern (from css-patterns.ts). */
+  pattern?: string;
+  /** Section divider at the bottom edge. */
+  dividerBottom?: "wave" | "angle" | "curve" | "zigzag" | "none";
+  /** Whether to apply parallax scroll effect. */
+  parallaxEnabled?: boolean;
+  /** Scroll reveal intensity. */
+  scrollRevealIntensity?: "none" | "subtle" | "moderate" | "dramatic";
+  /** CSS effect IDs to apply (from css-effects registry). */
+  effects?: string[];
+}
+
+/**
  * A placement of a single component within a page.
  */
 export interface ComponentPlacement {
@@ -6,6 +23,8 @@ export interface ComponentPlacement {
   variant: string;
   order: number;
   content: Record<string, unknown>;
+  /** Visual configuration for CSS patterns, dividers, and effects. */
+  visualConfig?: VisualConfig;
 }
 
 /**

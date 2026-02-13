@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Heart, Meh, ThumbsDown, X, Send } from "lucide-react";
+import posthog from "posthog-js";
 
 interface FeedbackBannerProps {
   sessionId: string;
@@ -95,9 +96,17 @@ export function FeedbackBanner({
         dimensions: selectedDimensions.length > 0 ? selectedDimensions : undefined,
         freeText: freeText.trim() || undefined,
       });
+      // Track feedback submission
+      posthog.capture("feedback_submitted", {
+        session_id: sessionId,
+        rating: selectedRating,
+        dimensions: selectedDimensions.length > 0 ? selectedDimensions : undefined,
+        has_free_text: freeText.trim().length > 0,
+      });
       setJustSubmitted(true);
     } catch (err) {
       console.error("Failed to save feedback:", err);
+      posthog.captureException(err);
     }
   }, [selectedRating, selectedDimensions, freeText, sessionId, saveFeedback]);
 

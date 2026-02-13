@@ -1,15 +1,16 @@
 # Theme System Specification
 
-> **Implementation Status (as of Feb 2026):** Fully implemented with emotional overrides and VLM feedback loop.
+> **Implementation Status (as of Feb 2026):** Fully implemented with emotional overrides, VLM feedback loop, and CSS visual system integration.
 >
 > - **87 CSS Custom Properties** across 6 categories (colors, typography, spacing, shape, shadows, animation)
 > - **Token map** (`src/lib/theme/token-map.ts`) — camelCase ↔ CSS variable mapping with `tokensToCSSProperties()` and `tokensToCSSString()` converters. Accepts `Partial<ThemeTokens>`.
 > - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation, 14 curated font pairings scored by personality fit + business type, industry color hue shifting, dark/light mode business bias
 > - **Emotional overrides** (`src/lib/theme/emotional-overrides.ts`) — Adjusts spacing, transitions, animation intensity, radius, AND colors based on emotional goals and anti-references
 > - **ThemeProvider + useTheme** (`src/lib/theme/ThemeProvider.tsx`) — React context that injects tokens as CSS custom properties on a wrapper `<div>`, supports nested overrides
-> - **7 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional, Bold Creative, Editorial, Tech Forward, Organic Natural
+> - **7 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional, Bold Creative, Editorial, Tech Forward, Organic Natural — ALL IMPLEMENTED
 > - **Preview page** (`/preview`) — live theme switching across all 18 components with preset selector + custom personality vector sliders
 > - **VLM feedback** — Claude Vision evaluates screenshots against intent, suggests `Partial<ThemeTokens>` adjustments, merged onto active theme via `useMemo` for instant re-render
+> - **CSS visual system integration** (Phase 5A) — Theme colors flow into CSS patterns (`generatePattern(id, themeColor)`), section dividers (SVG fill from theme tokens), gradient utilities (`generateMeshGradient(primary, secondary, accent)`), and `ImagePlaceholder` variants. Visual vocabulary per business type resolved via `getVisualVocabulary()` with archetype and personality overrides.
 
 ## Overview
 
@@ -179,7 +180,7 @@ spacing: generous
 animations: slow, elegant
 ```
 
-### Preset: Luxury Light
+### Preset: Luxury Light (Not yet implemented — candidate for future)
 
 ```
 personality: [0.5, 0.8, 0.2, 0.5, 0.3, 0.4]
@@ -201,7 +202,7 @@ spacing: generous
 animations: smooth, functional
 ```
 
-### Preset: Bold Creative
+### Preset: Bold Creative ✅ Implemented
 
 ```
 personality: [0.7, 0.3, 0.4, 0.9, 0.8, 0.9]
@@ -223,7 +224,7 @@ spacing: comfortable
 animations: gentle
 ```
 
-### Preset: Editorial
+### Preset: Editorial ✅ Implemented
 
 ```
 personality: [0.5, 0.7, 0.5, 0.7, 0.7, 0.3]
@@ -234,7 +235,7 @@ spacing: structured (grid-based)
 animations: minimal, typography-focused
 ```
 
-### Preset: Tech Forward
+### Preset: Tech Forward ✅ Implemented
 
 ```
 personality: [0.4, 0.7, 0.8, 0.6, 1.0, 0.7]
@@ -292,3 +293,54 @@ theme: {
 ```
 
 This way components use normal Tailwind classes (`text-primary`, `font-heading`) but the actual values come from the theme tokens.
+
+## CSS Visual System Integration (Phase 5A)
+
+Theme colors are the source of truth for the entire CSS visual system (`src/lib/visuals/`). All visual elements derive their colors from the active theme:
+
+### Pattern Color Resolution
+
+```
+pattern ID (e.g., "herringbone")
+  ↓
+generatePattern(id, theme.colorPrimary)  →  CSS background value
+  ↓
+Section pattern overlay (absolute positioned, pointer-events-none)
+```
+
+14 CSS-only patterns are available: pinstripe, diagonal-stripes, dots, grid, herringbone, cross-hatch, zigzag, waves, concentric-circles, seigaiha, topography, diamonds, circuit-dots, polka-dots.
+
+### Section Dividers
+
+SVG dividers (wave, angle, curve, zigzag) render at section edges using `fillColor` derived from the adjacent section's background color:
+
+```tsx
+<SectionDivider style="wave" position="bottom" fillColor={nextSectionBg} />
+```
+
+### Gradient Utilities
+
+- `generateMeshGradient(primary, secondary, accent, angle)` — Layered radial + linear gradients from theme colors
+- `generatePlaceholderGradient(primary, secondary, variant)` — Soft/bold/diagonal gradients for `ImagePlaceholder`
+- `generateNoiseOverlay(opacity)` — SVG feTurbulence noise for subtle texture
+
+### Visual Vocabulary
+
+Each business type gets a coherent visual language resolved by `getVisualVocabulary(subType, siteType)`:
+
+```typescript
+interface VisualVocabulary {
+  sectionDivider: "wave" | "angle" | "curve" | "zigzag" | "none";
+  accentShape: "circle" | "rectangle" | "organic" | "diamond" | "none";
+  imageOverlay: "none" | "gradient" | "vignette" | "duotone";
+  decorativeOpacity: number;
+  preferredImageAspect: "landscape" | "portrait" | "square";
+  enableParallax: boolean;
+  scrollRevealIntensity: "none" | "subtle" | "moderate" | "dramatic";
+}
+```
+
+Visual vocabulary is further refined by:
+
+- `applyArchetypeOverrides(vocab, archetype)` — 6 archetypes (guide, creative, rebel, artisan, caretaker, expert)
+- `applyPersonalityOverrides(vocab, personalityVector)` — adjusts based on personality axes

@@ -9,6 +9,7 @@ const ALL_COMPONENT_IDS = [
   "nav-sticky",
   "hero-centered",
   "hero-split",
+  "hero-video",
   "content-features",
   "content-split",
   "content-text",
@@ -16,23 +17,28 @@ const ALL_COMPONENT_IDS = [
   "content-accordion",
   "content-timeline",
   "content-logos",
+  "content-steps",
+  "content-comparison",
+  "content-map",
+  "blog-preview",
   "cta-banner",
   "form-contact",
   "proof-testimonials",
   "proof-beforeafter",
   "team-grid",
   "commerce-services",
+  "pricing-table",
   "media-gallery",
   "footer-standard",
 ];
 
 describe("COMPONENT_REGISTRY", () => {
-  it("registers exactly 18 components", () => {
+  it("registers exactly 24 components", () => {
     let count = 0;
     for (const id of ALL_COMPONENT_IDS) {
       if (isRegistered(id)) count++;
     }
-    expect(count).toBe(18);
+    expect(count).toBe(24);
   });
 
   describe("getComponent", () => {

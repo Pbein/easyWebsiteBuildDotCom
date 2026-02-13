@@ -1,0 +1,90 @@
+{
+  "id": "pricing-table",
+  "category": "commerce",
+  "name": "Pricing Table",
+  "description": "Display pricing plans with features, comparison, and CTAs. Supports simple cards, featured highlight, and full feature comparison table layouts.",
+  "siteTypes": ["business", "booking", "ecommerce", "blog", "nonprofit"],
+  "personalityFit": {
+    "minimal_rich": [0.0, 1.0],
+    "playful_serious": [0.0, 1.0],
+    "warm_cool": [0.0, 1.0],
+    "light_bold": [0.0, 1.0],
+    "classic_modern": [0.0, 1.0],
+    "calm_dynamic": [0.0, 1.0]
+  },
+  "requiredProps": [
+    {
+      "name": "plans",
+      "type": "PricingPlan[]",
+      "description": "Array of pricing plans with name, price, features"
+    }
+  ],
+  "optionalProps": [
+    { "name": "headline", "type": "string", "description": "Section headline" },
+    { "name": "subheadline", "type": "string", "description": "Section subheadline" },
+    { "name": "variant", "type": "string", "description": "simple | featured | comparison" }
+  ],
+  "consumedTokens": [
+    "color-primary",
+    "color-primary-light",
+    "color-primary-dark",
+    "color-background",
+    "color-surface",
+    "color-surface-elevated",
+    "color-text",
+    "color-text-secondary",
+    "color-text-on-primary",
+    "color-border",
+    "color-border-light",
+    "font-heading",
+    "font-body",
+    "text-xs",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+    "text-3xl",
+    "text-4xl",
+    "leading-tight",
+    "leading-normal",
+    "leading-relaxed",
+    "tracking-tight",
+    "weight-medium",
+    "weight-semibold",
+    "weight-bold",
+    "radius-md",
+    "radius-lg",
+    "radius-xl",
+    "radius-full",
+    "shadow-sm",
+    "shadow-md",
+    "shadow-lg",
+    "transition-base",
+    "transition-fast",
+    "ease-default",
+    "container-max",
+    "space-section",
+    "space-component",
+    "space-element",
+    "space-tight"
+  ],
+  "variants": [
+    {
+      "id": "simple",
+      "name": "Simple",
+      "description": "Clean card grid with all plans equally weighted"
+    },
+    {
+      "id": "featured",
+      "name": "Featured",
+      "description": "One plan visually elevated with primary color background"
+    },
+    {
+      "id": "comparison",
+      "name": "Comparison",
+      "description": "Table layout comparing features across all plans"
+    }
+  ],
+  "tags": ["pricing", "plans", "commerce", "SaaS", "subscription"]
+}

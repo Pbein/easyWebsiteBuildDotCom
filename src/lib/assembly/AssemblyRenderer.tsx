@@ -1,12 +1,76 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import type { SiteIntentDocument } from "./spec.types";
+import type { CSSProperties } from "react";
+import type { SiteIntentDocument, VisualConfig } from "./spec.types";
 import { getComponent, UNWRAPPED_COMPONENTS } from "./component-registry";
 import { loadGoogleFonts } from "./font-loader";
 import { generateThemeFromVector, ThemeProvider, applyEmotionalOverrides } from "@/lib/theme";
 import type { PersonalityVector, ThemeTokens } from "@/lib/theme";
 import { Section } from "@/components/library";
+import { generatePattern, getPatternSize, getPatternPosition } from "@/lib/visuals/css-patterns";
+import type { DividerStyle } from "@/lib/visuals/visual-vocabulary";
+import { getEffect, injectKeyframes } from "@/lib/css-effects";
+
+/**
+ * Converts a VisualConfig into Section component props.
+ * Resolves pattern IDs to CSS background values using theme colors.
+ */
+function buildSectionVisualProps(
+  vc: VisualConfig | undefined,
+  theme: ThemeTokens
+): Record<string, unknown> {
+  if (!vc) return {};
+
+  const props: Record<string, unknown> = {};
+
+  if (vc.pattern && vc.pattern !== "none") {
+    const patternCss = generatePattern(vc.pattern, theme.colorPrimary);
+    if (patternCss) {
+      props.pattern = patternCss;
+      props.patternSize = getPatternSize(vc.pattern);
+      props.patternPosition = getPatternPosition(vc.pattern);
+      props.patternOpacity = 0.06;
+    }
+  }
+
+  if (vc.dividerBottom && vc.dividerBottom !== "none") {
+    props.dividerBottom = vc.dividerBottom as DividerStyle;
+  }
+
+  return props;
+}
+
+/**
+ * Resolves effect IDs from VisualConfig into merged CSSProperties.
+ * Also injects any required @keyframes into the document.
+ */
+function buildEffectStyles(vc: VisualConfig | undefined, theme: ThemeTokens): CSSProperties {
+  if (!vc?.effects?.length) return {};
+
+  let merged: CSSProperties = {};
+
+  for (const effectId of vc.effects) {
+    const entry = getEffect(effectId);
+    if (!entry) continue;
+
+    const result = entry.generate({
+      colorPrimary: theme.colorPrimary,
+      colorSecondary: theme.colorSecondary ?? theme.colorPrimaryDark,
+      colorAccent: theme.colorAccent ?? theme.colorPrimaryLight,
+    });
+
+    // Inject keyframes if the effect has them
+    if (result.keyframes && result.keyframeName) {
+      injectKeyframes(result.keyframeName, result.keyframes);
+    }
+
+    // Merge styles (later effects override earlier ones)
+    merged = { ...merged, ...result.style };
+  }
+
+  return merged;
+}
 
 interface AssemblyRendererProps {
   spec: SiteIntentDocument;
@@ -114,16 +178,27 @@ export function AssemblyRenderer({
             );
           }
 
-          // Content component — wrap in Section with alternating background
+          // Content component — wrap in Section with alternating background + visual config
           const bg = bgCycle[bgIndex % bgCycle.length];
           bgIndex++;
+
+          const vc: VisualConfig | undefined = placement.visualConfig;
+          const sectionVisualProps = buildSectionVisualProps(vc, theme);
+          const effectStyles = buildEffectStyles(vc, theme);
 
           return (
             <Section
               key={`${placement.componentId}-${i}`}
               background={bg === "none" ? "default" : "surface"}
+              {...sectionVisualProps}
             >
-              <Component variant={placement.variant} {...placement.content} />
+              {Object.keys(effectStyles).length > 0 ? (
+                <div style={effectStyles}>
+                  <Component variant={placement.variant} {...placement.content} />
+                </div>
+              ) : (
+                <Component variant={placement.variant} {...placement.content} />
+              )}
             </Section>
           );
         })}

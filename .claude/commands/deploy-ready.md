@@ -44,6 +44,15 @@ npm run lint
 - No hardcoded color values in component library
 - Token map covers all required tokens
 
+#### 3.1b Visual System Compliance
+
+- CSS patterns produce valid background values for all 14 pattern types
+- Section dividers render without overflow at all viewports
+- `ImagePlaceholder` renders as CSS gradient fallback (not broken image tags)
+- `VisualConfig` flows from spec → AssemblyRenderer → Section props
+- Visual vocabulary defaults produce reasonable output for all business types
+- Parallax respects `prefers-reduced-motion` and disables on mobile (<768px)
+
 #### 3.2 Component Manifests
 
 - All manifests are valid JSON
@@ -112,6 +121,7 @@ git log --oneline -5
 | Check | Status | Details |
 |-------|--------|---------|
 | Theme Tokens | [PASS/FAIL] | [Compliant/Issues] |
+| Visual System | [PASS/FAIL] | [Patterns/Dividers/Placeholders working] |
 | Manifests | [PASS/FAIL] | [Valid/Issues] |
 | Preview Page | [PASS/FAIL] | [Working/Issues] |
 

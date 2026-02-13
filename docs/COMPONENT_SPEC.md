@@ -1,6 +1,8 @@
 # Component Library Specification
 
-> **Implementation Status (as of Feb 2026):** 18 components built across 8 categories (Phase 1 MVP + Phase 4B expansion complete). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all 18 components is available at `/preview` with the "Meridian Studio" sample site. All 18 components are registered in the assembly engine (`COMPONENT_REGISTRY`) and supported by both AI and deterministic spec generation.
+> **Implementation Status (as of Feb 2026):** 18 components built across 8 categories (Phase 1 MVP + Phase 4B expansion + Phase 5A visual foundation). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all 18 components is available at `/preview` with the "Meridian Studio" sample site. All 18 components are registered in the assembly engine (`COMPONENT_REGISTRY`) and supported by both AI and deterministic spec generation.
+>
+> **Phase 5A additions:** `hero-split` and `content-split` images are now optional — render `ImagePlaceholder` (gradient/pattern/shimmer) when absent. `section` wrapper extended with `dividerTop`, `dividerBottom`, `pattern`, `patternSize`, `patternPosition`, `patternOpacity` props for CSS-driven visual richness. `VisualConfig` on `ComponentPlacement` flows patterns and dividers through the spec pipeline.
 
 ## Overview
 
@@ -14,6 +16,8 @@ The component library is the core building block system for EasyWebsiteBuild. Ev
 4. **Responsive** — All components are fully responsive across mobile, tablet, and desktop.
 5. **Accessible** — WCAG 2.1 AA compliance as baseline. Semantic HTML, ARIA attributes, keyboard navigation.
 6. **Performance** — Optimized for Core Web Vitals. Lazy loading, image optimization, minimal JS.
+7. **Image-resilient** — Components with images (`hero-split`, `content-split`) render `ImagePlaceholder` (gradient/pattern/shimmer) when images are absent. No broken or empty image tags.
+8. **Visually configurable** — Components render inside `Section` wrappers that accept CSS patterns, section dividers (wave/angle/curve/zigzag), and decorative overlays via `VisualConfig`.
 
 ## Component File Structure
 
@@ -119,31 +123,31 @@ interface BaseComponentProps {
 
 ### Hero Components
 
-| ID               | Name                      | Variants                                      | Best For             | Status   |
-| ---------------- | ------------------------- | --------------------------------------------- | -------------------- | -------- |
-| `hero-centered`  | Centered Text Hero        | with-bg-image, gradient-bg                    | Universal            | ✅ Built |
-| `hero-split`     | Split Hero                | image-left, image-right                       | Business, services   | ✅ Built |
-| `hero-video`     | Video Background Hero     | autoplay, play-button, loop                   | Creative, events     |          |
-| `hero-parallax`  | Parallax Hero             | default, with-subject, with-video             | Luxury, creative     |          |
-| `hero-carousel`  | Carousel Hero             | fade, slide, with-thumbnails                  | Ecommerce, portfolio |          |
-| `hero-minimal`   | Minimal Hero              | text-only, with-line, with-badge              | Minimal, editorial   |          |
-| `hero-fullbleed` | Full Bleed Image Hero     | overlay-dark, overlay-light, overlay-gradient | Photography, events  |          |
-| `hero-animated`  | Animated/Interactive Hero | particles, morphing, typed-text               | Tech, creative       |          |
+| ID               | Name                      | Variants                                      | Best For             | Status                    |
+| ---------------- | ------------------------- | --------------------------------------------- | -------------------- | ------------------------- |
+| `hero-centered`  | Centered Text Hero        | with-bg-image, gradient-bg                    | Universal            | ✅ Built                  |
+| `hero-split`     | Split Hero                | image-left, image-right                       | Business, services   | ✅ Built (image optional) |
+| `hero-video`     | Video Background Hero     | autoplay, play-button, loop                   | Creative, events     |                           |
+| `hero-parallax`  | Parallax Hero             | default, with-subject, with-video             | Luxury, creative     |                           |
+| `hero-carousel`  | Carousel Hero             | fade, slide, with-thumbnails                  | Ecommerce, portfolio |                           |
+| `hero-minimal`   | Minimal Hero              | text-only, with-line, with-badge              | Minimal, editorial   |                           |
+| `hero-fullbleed` | Full Bleed Image Hero     | overlay-dark, overlay-light, overlay-gradient | Photography, events  |                           |
+| `hero-animated`  | Animated/Interactive Hero | particles, morphing, typed-text               | Tech, creative       |                           |
 
 ### Content Blocks
 
-| ID                   | Name             | Variants                            | Best For            | Status   |
-| -------------------- | ---------------- | ----------------------------------- | ------------------- | -------- |
-| `content-text`       | Text Block       | centered                            | Universal           | ✅ Built |
-| `content-features`   | Feature Grid     | icon-cards                          | Business, SaaS      | ✅ Built |
-| `content-split`      | Split Content    | alternating                         | Services, about     | ✅ Built |
-| `content-stats`      | Stats/Numbers    | inline, cards, animated-counter     | Business, nonprofit | ✅ Built |
-| `content-timeline`   | Timeline         | vertical, alternating               | About, history      | ✅ Built |
-| `content-logos`      | Logo Cloud       | grid, scroll, fade                  | Trust building      | ✅ Built |
-| `content-accordion`  | FAQ/Accordion    | single-open, multi-open, bordered   | Universal           | ✅ Built |
-| `content-cards`      | Card Grid        | uniform, masonry, horizontal-scroll | Universal           |          |
-| `content-comparison` | Comparison Table | toggle, side-by-side, stacked       | Pricing, products   |          |
-| `content-tabs`       | Tabbed Content   | horizontal, vertical, pill-style    | Services, features  |          |
+| ID                   | Name             | Variants                            | Best For            | Status                    |
+| -------------------- | ---------------- | ----------------------------------- | ------------------- | ------------------------- |
+| `content-text`       | Text Block       | centered                            | Universal           | ✅ Built                  |
+| `content-features`   | Feature Grid     | icon-cards                          | Business, SaaS      | ✅ Built                  |
+| `content-split`      | Split Content    | alternating                         | Services, about     | ✅ Built (image optional) |
+| `content-stats`      | Stats/Numbers    | inline, cards, animated-counter     | Business, nonprofit | ✅ Built                  |
+| `content-timeline`   | Timeline         | vertical, alternating               | About, history      | ✅ Built                  |
+| `content-logos`      | Logo Cloud       | grid, scroll, fade                  | Trust building      | ✅ Built                  |
+| `content-accordion`  | FAQ/Accordion    | single-open, multi-open, bordered   | Universal           | ✅ Built                  |
+| `content-cards`      | Card Grid        | uniform, masonry, horizontal-scroll | Universal           |                           |
+| `content-comparison` | Comparison Table | toggle, side-by-side, stacked       | Pricing, products   |                           |
+| `content-tabs`       | Tabbed Content   | horizontal, vertical, pill-style    | Services, features  |                           |
 
 ### Social Proof
 
@@ -215,15 +219,15 @@ interface BaseComponentProps {
 
 1. **`nav-sticky`** — transparent (solidifies on scroll) + solid variants; responsive mobile menu with hamburger toggle
 2. **`hero-centered`** — with-bg-image (gradient overlay) + gradient-bg (layered radial mesh) variants
-3. **`hero-split`** — image-right + image-left variants; decorative accent element behind image
+3. **`hero-split`** — image-right + image-left variants; decorative accent element behind image; **image optional** — renders `ImagePlaceholder` (gradient/pattern/shimmer) when no image provided
 4. **`content-features`** — icon-cards variant; Lucide icon lookup via `* as LucideIcons`, hover lift + shadow, staggered entry animation
-5. **`content-split`** — alternating variant; rows flip image side, per-row scroll animation
+5. **`content-split`** — alternating variant; rows flip image side, per-row scroll animation; **image optional per section** — renders `ImagePlaceholder` when image is absent
 6. **`content-text`** — centered variant; eyebrow, headline, body (supports HTML via `dangerouslySetInnerHTML`)
 7. **`cta-banner`** — full-width + contained variants; 4 background options (primary/dark/gradient/image)
 8. **`form-contact`** — simple variant; client-side validation, error states, success animation
 9. **`proof-testimonials`** — carousel variant; pagination dots, star ratings, avatar fallbacks
 10. **`footer-standard`** — multi-column variant; logo, tagline, link columns, SVG social icons, copyright bar
-11. **`section`** — universal layout wrapper with 6 bg variants, 5 spacing presets, container constraints
+11. **`section`** — universal layout wrapper with 6 bg variants, 5 spacing presets, container constraints; **Phase 5A extensions:** `dividerTop`/`dividerBottom` (wave/angle/curve/zigzag SVG), `pattern` (CSS background), `patternSize`, `patternPosition`, `patternOpacity` props for CSS-driven visual richness
 
 ### Phase 4B — 8 Additional Components
 
@@ -240,15 +244,48 @@ interface BaseComponentProps {
 
 When generating content for components (in AI spec generation or deterministic fallback), field names MUST match exactly:
 
-| Component           | Correct Field    | Wrong Field        |
-| ------------------- | ---------------- | ------------------ |
-| `content-stats`     | `value: number`  | `value: string`    |
-| `commerce-services` | `name`           | `title`            |
-| `team-grid`         | `image`          | `avatar`           |
-| `content-timeline`  | `date`           | `year`             |
-| `proof-beforeafter` | `comparisons`    | `items`            |
-| `content-logos`     | `headline`       | (no `subheadline`) |
-| `content-stats`     | `value` (number) | `value` (string)   |
+| Component           | Correct Field      | Wrong Field        |
+| ------------------- | ------------------ | ------------------ |
+| `content-stats`     | `value: number`    | `value: string`    |
+| `commerce-services` | `name`             | `title`            |
+| `team-grid`         | `image`            | `avatar`           |
+| `content-timeline`  | `date`             | `year`             |
+| `proof-beforeafter` | `comparisons`      | `items`            |
+| `content-logos`     | `headline`         | (no `subheadline`) |
+| `content-stats`     | `value` (number)   | `value` (string)   |
+| `content-split`     | `image` (OPTIONAL) | (required)         |
+| `hero-split`        | `image` (OPTIONAL) | (required)         |
+
+### Visual Config Interface (Phase 5A)
+
+Components can receive visual configuration through the `VisualConfig` type on `ComponentPlacement`:
+
+```typescript
+interface VisualConfig {
+  pattern?: string; // CSS background value for decorative pattern
+  dividerBottom?: "wave" | "angle" | "curve" | "zigzag" | "none";
+  parallaxEnabled?: boolean;
+  scrollRevealIntensity?: "none" | "subtle" | "moderate" | "dramatic";
+}
+```
+
+The `AssemblyRenderer` resolves `VisualConfig` into Section props using theme colors:
+
+- Pattern ID → `generatePattern(id, themeColor)` → CSS background value
+- Divider style → SVG `SectionDivider` component at section edges
+- Pattern opacity defaults to 0.06
+
+### ImagePlaceholder Component (Phase 5A)
+
+When `hero-split` or `content-split` images are absent, `ImagePlaceholder` renders instead:
+
+| Variant    | Behavior                                      |
+| ---------- | --------------------------------------------- |
+| `gradient` | Gradient base + SVG noise overlay             |
+| `pattern`  | Gradient + CSS pattern from industry defaults |
+| `shimmer`  | Gradient + animate-pulse loading shimmer      |
+
+All variants are theme-token-aware, deriving colors from the active palette.
 
 ---
 

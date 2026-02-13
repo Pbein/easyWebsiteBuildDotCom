@@ -1,4 +1,5 @@
 import type { BaseComponentProps } from "../../base.types";
+import type { DividerStyle } from "@/lib/visuals/visual-vocabulary";
 
 export interface SectionProps extends BaseComponentProps {
   /** HTML element to render. Default: "section". */
@@ -13,6 +14,18 @@ export interface SectionProps extends BaseComponentProps {
   borderTop?: boolean;
   /** Add a bottom border. */
   borderBottom?: boolean;
+  /** Section divider at the top edge. */
+  dividerTop?: DividerStyle;
+  /** Section divider at the bottom edge. */
+  dividerBottom?: DividerStyle;
+  /** CSS background pattern overlay (full CSS `background` value). */
+  pattern?: string;
+  /** Pattern background-size (for gradient-based patterns). */
+  patternSize?: string;
+  /** Pattern background-position (for multi-layer patterns). */
+  patternPosition?: string;
+  /** Pattern overlay opacity (0-1). */
+  patternOpacity?: number;
   /** Accessible label for the section landmark. */
   "aria-label"?: string;
   /** Accessible labelled-by for the section landmark. */
