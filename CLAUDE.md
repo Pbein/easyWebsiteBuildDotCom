@@ -70,6 +70,15 @@ easywebsitebuild/
 │   ├── settings.local.json      # Local permissions
 │   ├── commands/                # Slash commands (/ship, /pr, /verify, /deploy-ready)
 │   └── hooks/                   # Pre-commit, pre-push, pre-edit hooks
+├── business/
+│   ├── HORMOZI_ANALYSIS.md        # Revenue-first business analysis
+│   ├── USER_JOURNEY.md            # Full user journey map from codebase analysis
+│   └── boardroom/                 # Strategic decision governance
+│       ├── PROCESS.md             # How boardroom sessions work + reconciliation rules
+│       ├── STRATEGIC_PRINCIPLES.md # Core principles all decisions must align to (P1-P8)
+│       ├── DECISIONS_LOG.md       # Running log of all decisions with status tracking
+│       └── sessions/              # Individual session transcripts
+│           └── 2026-02-12-customization-system.md  # Session 001
 ├── docs/
 │   ├── ARCHITECTURE.md          # Full system architecture documentation
 │   ├── COMPONENT_SPEC.md        # Component library specification
@@ -337,16 +346,25 @@ easywebsitebuild/
 - **Animated wireframe assembly loading** — Step 9 loading screen shows animated wireframe blocks assembling into place (replaces cycling progress bar)
 - **Mobile UX overhaul** — Bottom sheet modals for sidebar (max 65vh), scroll position reset on tab change, tab-based mobile interface, `useIsMobile()` hook with debounced detection (`src/lib/hooks/use-is-mobile.ts`)
 
-### Next: Phase 5B-D — Stock Photos, AI Images, Advanced Scroll
+### Next: Phase 6 — Post-Generation Customization System (Boardroom BD-001)
 
-> Priorities informed by [docs/STRATEGIC_ROADMAP.md](docs/STRATEGIC_ROADMAP.md) — honest assessment, impact × feasibility ranking, integration-first strategy.
+> Decision source: `business/boardroom/sessions/2026-02-12-customization-system.md`
+> Strategic principles: `business/boardroom/STRATEGIC_PRINCIPLES.md`
+> All decisions logged: `business/boardroom/DECISIONS_LOG.md`
 
-- **Phase 5B: Stock photo integration** — Multi-provider search (Unsplash/Pexels/Pixabay), keyword builder, image caching, color-filtered search
-- **Phase 5C: AI image generation** — convex-nano-banana (Gemini), priority queue, reactive loading, experimental headshots
-- **Phase 5D: Advanced scroll effects** — CSS scroll-timeline, depth scrolling, scale transforms
-- Then: Multi-page generation & routing, refinement chat MVP, Vercel deployment, user accounts
-- Later: Integrations (booking, commerce, blog/CMS) via third-party services — we build the UI, they handle functionality
-- Visual editor deferred to Phase 9 (high effort, lower immediate impact)
+- **Phase 6A (Weeks 1-3)**: Free Customization MVP — sidebar panel with 7 presets, primary color picker (chroma-js auto-palette), 5/14 fonts, H1/H2 headline editing, Reset button, Zustand customization store
+- **Phase 6B (Weeks 3-5)**: Shareable preview links, "Built with EWB" badge, Open Graph meta, engagement nudges
+- **Phase 6C (Weeks 5-8)**: Clerk auth + Stripe billing (Pro $19/mo, Agency $49/mo), account wall at export, Pro-tier unlocks (all fonts, full color, effects, patterns, dividers, variants, body text, clean export)
+- **Phase 6D (Weeks 8-12)**: Component variant switching, personality sliders (Pro), section reorder, component add/remove, CSS effect selector
+
+> Parallel tracks (lower priority, interleave as capacity allows):
+>
+> - **Phase 5B**: Stock photo integration (Unsplash/Pexels/Pixabay)
+> - **Phase 5C**: AI image generation
+> - **Phase 5D**: Advanced scroll effects
+> - Multi-page generation & routing
+> - Integrations (booking, commerce, blog/CMS) via third-party services
+> - Visual editor deferred to Phase 9
 
 ## Component Library (18 Components)
 
@@ -493,6 +511,8 @@ npx convex deploy    # Deploy Convex functions
 - `ConvexClientProvider` wraps the entire app in `layout.tsx` — required for `useQuery`/`useAction` hooks in any component
 - Demo preview page at `/demo/preview?session=<sessionId>` fetches spec from Convex by sessionId
 - Export pipeline generates static HTML/CSS ZIP via JSZip — triggered from PreviewToolbar export button
+- **Boardroom governance**: Strategic decisions go through the Virtual Boardroom (9-persona debate system). Sessions logged in `business/boardroom/sessions/`. All decisions reconciled against `business/boardroom/STRATEGIC_PRINCIPLES.md` and `business/boardroom/DECISIONS_LOG.md`. Before any boardroom session, read these files + `docs/STRATEGIC_ROADMAP.md` to ensure continuity. See `business/boardroom/PROCESS.md` for full governance rules.
+- **Document alignment**: `business/`, `docs/`, and `CLAUDE.md` must stay in sync. When a boardroom decision changes priorities or roadmap, all three document families must be updated accordingly.
 
 ## Testing Philosophy & Failure Protocol
 

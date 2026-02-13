@@ -18,7 +18,7 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                                                                                                     | High — clients expect About, Services, Contact pages at minimum                                                       | Medium                              |
 | 2   | **~~No real images~~** — ⚠️ PARTIALLY RESOLVED: CSS visual foundation (Phase 5A) provides gradient placeholders, patterns, and dividers. Stock photo integration (Phase 5B) still needed for real images | Medium — sites look intentionally designed but still lack real photography                                            | Medium (API integration)            |
-| 3   | **No post-generation editing** — one-shot generation, take it or leave it                                                                                                                                | High — clients always want changes                                                                                    | High (refinement chat system)       |
+| 3   | **~~No post-generation editing~~** — ⚠️ BEING ADDRESSED: Customization System (Boardroom BD-001, 4 phases). Phase 1 ships free-tier sidebar customization (presets, color, fonts, headline editing)      | High — clients always want changes                                                                                    | Medium (phased approach)            |
 | 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured                                                                            | ~~High~~                                                                                                              | ~~Medium~~                          |
 | 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                                                                                                    | Medium — works for simple sites, limiting for anything more                                                           | Medium                              |
 | 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                                                                                                          | Medium — common expectation                                                                                           | Low                                 |
@@ -158,6 +158,51 @@ The VLM (Vision Language Model) Design Feedback Loop is operational and closes t
 ## High-Value Development Priority (Ranked by Impact × Feasibility)
 
 ### 🔴 CRITICAL — Do These First (Current → Next 2 Months)
+
+#### 0. Post-Generation Customization System ← NEW (Boardroom BD-001)
+
+**Impact: 10/10 | Effort: Medium (phased)**
+
+> Decision source: `business/boardroom/sessions/2026-02-12-customization-system.md`
+> Decisions: BD-001-01 through BD-001-05
+
+The #1 competitive gap. Every competitor offers post-generation customization; we have zero. This is the conversion mechanism that turns free demo users into paying customers.
+
+**Phase 1 — Free Customization MVP (Weeks 1-3):**
+
+- Customization sidebar panel (right side, collapsible)
+- 7 theme preset switcher (expand existing A/B toggle)
+- Primary color picker with chroma-js auto-palette derivation
+- 5 of 14 font pairings (AI-selected default always free, 9 soft-gated)
+- H1/H2 headline editing via sidebar + `ewb:update-content` PostMessage
+- "Reset to AI Original" button
+- 100ms debounced PostMessage for real-time iframe updates
+- Zustand `useCustomizationStore` for override state
+- All zero-marginal-cost (client-side CSS only)
+
+**Phase 2 — Sharing + Engagement (Weeks 3-5):**
+
+- Shareable preview links (Convex persistence)
+- "Built with EasyWebsiteBuild" badge on free exports/shares
+- Open Graph meta tags for social sharing
+- Time-based engagement nudge
+
+**Phase 3 — Accounts + Revenue (Weeks 5-8, requires Clerk):**
+
+- Clerk authentication + account wall at export/save
+- Stripe billing: Pro ($19/mo), Agency ($49/mo)
+- Pro unlocks: all 14 fonts, full color (18 tokens), 8 CSS effects, 14 patterns, 4 dividers, component variants, body text editing, clean export
+- Usage-based AI regeneration credits (5/mo Pro, unlimited Agency)
+
+**Phase 4 — Advanced Customization (Weeks 8-12):**
+
+- Component variant switching UI
+- Personality slider panel (Pro — leverages `generateThemeFromVector()`)
+- Section reorder, component add/remove
+- CSS effect selector per component
+- Clean export for Pro+
+
+**Competitive positioning:** "Guided Design" — every customization option curated for the user's brand. Not raw control like Wix/Framer, but brand-coherent options filtered through the character system.
 
 #### 1. Multi-Page Generation & Routing
 
