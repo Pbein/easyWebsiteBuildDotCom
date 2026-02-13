@@ -359,7 +359,7 @@ easywebsitebuild/
 
 > Parallel tracks (lower priority, interleave as capacity allows):
 >
-> - **Phase 5B**: Stock photo integration (Unsplash/Pexels/Pixabay)
+> - **Phase 5B**: Stock photo integration ✅ COMPLETE
 > - **Phase 5C**: AI image generation
 > - **Phase 5D**: Advanced scroll effects
 > - Multi-page generation & routing
@@ -469,7 +469,7 @@ Before starting work, always read:
 
 1. This file (CLAUDE.md)
 2. `docs/ARCHITECTURE.md` — for system design context
-3. `docs/ROADMAP.md` — for current priorities (Phase 5B: stock photo integration is next)
+3. `docs/ROADMAP.md` — for current priorities (Phase 6: Customization System is next)
 4. `docs/EPICS_AND_STORIES.md` — for Output Quality Overhaul tracking (30/33 shipped)
 5. Relevant doc files for the specific area you're working on
 

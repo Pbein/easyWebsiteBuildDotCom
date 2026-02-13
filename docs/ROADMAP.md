@@ -277,7 +277,7 @@ Polishing improvements shipped alongside Phase 5A:
 
 ### Deliverables
 
-- [ ] **Stock photo API integration** (Phase 5B) — Multi-provider search (Unsplash/Pexels/Pixabay), keyword builder, image caching, color-filtered search
+- [x] **Stock photo API integration** (Phase 5B) ✅ — Multi-provider search (Unsplash/Pexels/Pixabay), context-aware keyword builder, 24hr image caching, color-filtered search, automatic enrichment of hero-split/hero-centered/content-split/team-grid/media-gallery
 - [ ] **AI image generation** (Phase 5C) — convex-nano-banana (Gemini), priority queue, reactive loading, experimental headshots
 - [ ] **Advanced scroll effects** (Phase 5D) — CSS scroll-timeline, depth scrolling, scale transforms
 
