@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
@@ -30,7 +30,21 @@ interface RequestScreenshotMessage {
   requestId: string;
 }
 
-type ParentMessage = SetThemeMessage | SetPageMessage | RequestScreenshotMessage;
+interface UpdateContentMessage {
+  type: "ewb:update-content";
+  overrides: Record<number, Record<string, string>>;
+}
+
+interface ResetContentMessage {
+  type: "ewb:reset-content";
+}
+
+type ParentMessage =
+  | SetThemeMessage
+  | SetPageMessage
+  | RequestScreenshotMessage
+  | UpdateContentMessage
+  | ResetContentMessage;
 
 function isParentMessage(data: unknown): data is ParentMessage {
   return (
@@ -48,6 +62,9 @@ function RenderContent(): React.ReactElement {
 
   const [activePage, setActivePage] = useState("/");
   const [themeOverride, setThemeOverride] = useState<ThemeTokens | undefined>(undefined);
+  const [contentOverrides, setContentOverrides] = useState<Record<number, Record<string, string>>>(
+    {}
+  );
   const renderRef = useRef<HTMLDivElement>(null);
   const readySentRef = useRef(false);
 
@@ -129,12 +146,40 @@ function RenderContent(): React.ReactElement {
         case "ewb:request-screenshot":
           void handleScreenshotRequest(data.requestId);
           break;
+        case "ewb:update-content":
+          setContentOverrides(data.overrides);
+          break;
+        case "ewb:reset-content":
+          setContentOverrides({});
+          break;
       }
     }
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, [handleScreenshotRequest]);
+
+  // Apply content overrides to spec (deep clone + patch)
+  // Must be called before early returns to satisfy React hook rules
+  const effectiveSpec = useMemo((): SiteIntentDocument | null => {
+    if (!spec) return null;
+    if (Object.keys(contentOverrides).length === 0) return spec;
+
+    const cloned: SiteIntentDocument = JSON.parse(JSON.stringify(spec));
+    for (const page of cloned.pages) {
+      const sorted = [...page.components].sort((a, b) => a.order - b.order);
+      for (const [indexStr, fields] of Object.entries(contentOverrides)) {
+        const idx = Number(indexStr);
+        if (sorted[idx]) {
+          const content = sorted[idx].content as Record<string, unknown>;
+          for (const [field, value] of Object.entries(fields)) {
+            content[field] = value;
+          }
+        }
+      }
+    }
+    return cloned;
+  }, [spec, contentOverrides]);
 
   // Loading
   if (rawSpec === undefined || !spec) {
@@ -157,7 +202,7 @@ function RenderContent(): React.ReactElement {
   return (
     <div ref={renderRef}>
       <AssemblyRenderer
-        spec={spec}
+        spec={effectiveSpec!}
         activePage={activePage}
         previewMode
         themeOverride={themeOverride}

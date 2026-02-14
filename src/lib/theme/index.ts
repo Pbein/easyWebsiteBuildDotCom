@@ -12,3 +12,11 @@ export {
 } from "./presets";
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { applyEmotionalOverrides } from "./emotional-overrides";
+export { deriveThemeFromPrimaryColor } from "./derive-from-primary";
+export {
+  FONT_PAIRINGS,
+  FREE_FONT_IDS,
+  getFontPairingById,
+  selectFontPairing,
+} from "./font-pairings";
+export type { FontPairing } from "./font-pairings";

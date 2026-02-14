@@ -13,6 +13,7 @@ interface PreviewToolbarProps {
   isCapturing?: boolean;
   activeVariant?: "A" | "B";
   onVariantChange?: (variant: "A" | "B") => void;
+  activePresetName?: string | null;
 }
 
 const viewportOptions: {
@@ -35,6 +36,7 @@ export function PreviewToolbar({
   isCapturing = false,
   activeVariant,
   onVariantChange,
+  activePresetName,
 }: PreviewToolbarProps): React.ReactElement {
   return (
     <div className="flex h-12 shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.06)] bg-[#0d0e14] px-4">
@@ -49,6 +51,11 @@ export function PreviewToolbar({
         <span className="rounded-full bg-[#3ecfb4]/10 px-2 py-0.5 text-[10px] font-medium text-[#3ecfb4]">
           Preview
         </span>
+        {activePresetName && (
+          <span className="rounded-full bg-[#e8a849]/10 px-2 py-0.5 text-[10px] font-medium text-[#e8a849]">
+            {activePresetName}
+          </span>
+        )}
       </div>
 
       {/* Viewport toggles */}

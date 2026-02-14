@@ -11,15 +11,25 @@ import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ExportResult } from "@/lib/export/generate-project";
 import { capturePreviewScreenshot } from "@/lib/screenshot";
 import type { ScreenshotResult } from "@/lib/screenshot";
-import { generateThemeVariants, applyEmotionalOverrides } from "@/lib/theme";
+import {
+  generateThemeVariants,
+  applyEmotionalOverrides,
+  getPresetById,
+  deriveThemeFromPrimaryColor,
+  getFontPairingById,
+  selectFontPairing,
+  FREE_FONT_IDS,
+  THEME_PRESETS,
+} from "@/lib/theme";
 import type { PersonalityVector, ThemeTokens } from "@/lib/theme";
 import { mapAdjustmentsToTokenOverrides } from "@/lib/vlm";
-import { PreviewSidebar } from "@/components/platform/preview/PreviewSidebar";
+import { CustomizationSidebar } from "@/components/platform/preview/CustomizationSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
 import { FeedbackBanner } from "@/components/platform/preview/FeedbackBanner";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { useIntakeStore } from "@/lib/stores/intake-store";
+import { useCustomizationStore } from "@/lib/stores/customization-store";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -247,12 +257,12 @@ function PreviewContent(): React.ReactElement {
  * Mobile-specific components
  * ──────────────────────────────────────────────────────────── */
 
-type MobileTab = "preview" | "info" | "theme" | "actions";
+type MobileTab = "preview" | "info" | "customize" | "actions";
 
 const MOBILE_TABS: { id: MobileTab; icon: typeof Eye; label: string }[] = [
   { id: "preview", icon: Eye, label: "Preview" },
   { id: "info", icon: Info, label: "Info" },
-  { id: "theme", icon: Palette, label: "Theme" },
+  { id: "customize", icon: Palette, label: "Customize" },
   { id: "actions", icon: MoreHorizontal, label: "Actions" },
 ];
 
@@ -621,6 +631,35 @@ function PreviewLayout({
   const resetStore = useIntakeStore((s) => s.reset);
   const pv = spec.personalityVector as PersonalityVector;
 
+  // Customization store
+  const custStore = useCustomizationStore();
+  const {
+    activePresetId,
+    primaryColorOverride,
+    fontPairingId,
+    contentOverrides,
+    hasChanges: custHasChanges,
+    initSession: custInitSession,
+    setPreset: custSetPreset,
+    setPrimaryColor: custSetPrimaryColor,
+    setFontPairing: custSetFontPairing,
+    setContentOverride: custSetContentOverride,
+    resetAll: custResetAll,
+  } = custStore;
+
+  // Initialize customization store for this session
+  useEffect(() => {
+    if (sessionId) {
+      custInitSession(sessionId);
+    }
+  }, [sessionId, custInitSession]);
+
+  // Detect AI-selected font pairing
+  const aiFontPairingId = useMemo(
+    () => selectFontPairing(pv, spec.siteType).id,
+    [pv, spec.siteType]
+  );
+
   const themeVariants = useMemo(() => {
     const variants = generateThemeVariants(pv, { businessType: spec.siteType });
     if (spec.emotionalGoals?.length) {
@@ -644,6 +683,7 @@ function PreviewLayout({
   const [vlmOverrides, setVlmOverrides] = useState<Partial<ThemeTokens> | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const prevVariantRef = useRef(activeVariant);
+  const hasTrackedCustomization = useRef(false);
 
   // Track theme variant switches (not on initial mount)
   useEffect(() => {
@@ -657,10 +697,89 @@ function PreviewLayout({
     }
   }, [activeVariant, sessionId]);
 
+  // Track customization_started once (when user first changes something)
+  useEffect(() => {
+    if (custHasChanges && !hasTrackedCustomization.current) {
+      hasTrackedCustomization.current = true;
+      posthog.capture("customization_started", { session_id: sessionId });
+    }
+  }, [custHasChanges, sessionId]);
+
+  /**
+   * 4-layer theme priority:
+   *   Layer 1: base variant (A/B) OR preset tokens
+   *   Layer 2: + VLM overrides
+   *   Layer 3: + primary color override (derive full palette)
+   *   Layer 4: + font pairing override
+   */
   const activeTheme = useMemo(() => {
-    const base = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
-    return vlmOverrides ? { ...base, ...vlmOverrides } : base;
-  }, [activeVariant, themeVariants, vlmOverrides]);
+    // Layer 1: base or preset
+    let theme: ThemeTokens;
+    if (activePresetId) {
+      const preset = getPresetById(activePresetId);
+      theme = preset
+        ? preset.tokens
+        : activeVariant === "A"
+          ? themeVariants.variantA
+          : themeVariants.variantB;
+    } else {
+      theme = activeVariant === "A" ? themeVariants.variantA : themeVariants.variantB;
+    }
+
+    // Layer 2: VLM overrides
+    if (vlmOverrides) {
+      theme = { ...theme, ...vlmOverrides };
+    }
+
+    // Layer 3: primary color override
+    if (primaryColorOverride) {
+      const colorTokens = deriveThemeFromPrimaryColor(primaryColorOverride, pv, spec.siteType);
+      theme = { ...theme, ...colorTokens };
+    }
+
+    // Layer 4: font pairing override
+    if (fontPairingId) {
+      const pairing = getFontPairingById(fontPairingId);
+      if (pairing) {
+        theme = {
+          ...theme,
+          fontHeading: pairing.heading,
+          fontBody: pairing.body,
+          fontAccent: pairing.accent,
+        };
+      }
+    }
+
+    return theme;
+  }, [
+    activeVariant,
+    themeVariants,
+    vlmOverrides,
+    activePresetId,
+    primaryColorOverride,
+    fontPairingId,
+    pv,
+    spec.siteType,
+  ]);
+
+  // Apply content overrides for mobile direct-render path
+  const mobileEffectiveSpec = useMemo((): SiteIntentDocument => {
+    if (Object.keys(contentOverrides).length === 0) return spec;
+    const cloned: SiteIntentDocument = JSON.parse(JSON.stringify(spec));
+    for (const page of cloned.pages) {
+      const sorted = [...page.components].sort((a, b) => a.order - b.order);
+      for (const [indexStr, fields] of Object.entries(contentOverrides)) {
+        const idx = Number(indexStr);
+        if (sorted[idx]) {
+          const content = sorted[idx].content as Record<string, unknown>;
+          for (const [field, value] of Object.entries(fields)) {
+            content[field] = value;
+          }
+        }
+      }
+    }
+    return cloned;
+  }, [spec, contentOverrides]);
 
   const handleApplyAdjustments = useCallback((adjustments: Record<string, string>) => {
     const overrides = mapAdjustmentsToTokenOverrides(adjustments);
@@ -736,6 +855,17 @@ function PreviewLayout({
     }
   }, [activePage, isMobile, postToIframe]);
 
+  // Sync content overrides to iframe
+  useEffect(() => {
+    if (!isMobile) {
+      if (Object.keys(contentOverrides).length > 0) {
+        postToIframe({ type: "ewb:update-content", overrides: contentOverrides });
+      } else {
+        postToIframe({ type: "ewb:reset-content" });
+      }
+    }
+  }, [contentOverrides, isMobile, postToIframe]);
+
   // Reset iframe ready state when sessionId changes
   useEffect(() => {
     iframeReadyRef.current = false;
@@ -799,9 +929,66 @@ function PreviewLayout({
   }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe, sessionId, viewport]);
 
   const handleStartOver = useCallback((): void => {
+    custResetAll();
     resetStore();
     router.push("/demo");
-  }, [resetStore, router]);
+  }, [custResetAll, resetStore, router]);
+
+  // Customization sidebar callbacks
+  const handlePresetChange = useCallback(
+    (presetId: string | null): void => {
+      custSetPreset(presetId);
+      posthog.capture("preset_changed", { session_id: sessionId, preset_id: presetId });
+    },
+    [custSetPreset, sessionId]
+  );
+
+  const handleColorChange = useCallback(
+    (hex: string | null): void => {
+      custSetPrimaryColor(hex);
+      if (hex) {
+        posthog.capture("color_changed", { session_id: sessionId, color: hex });
+      }
+    },
+    [custSetPrimaryColor, sessionId]
+  );
+
+  const handleFontChange = useCallback(
+    (id: string | null): void => {
+      const pairing = id ? getFontPairingById(id) : null;
+      const isFree = id ? FREE_FONT_IDS.has(id) || id === aiFontPairingId : true;
+      if (id && !isFree) {
+        posthog.capture("gate_clicked", { session_id: sessionId, font_id: id });
+        return;
+      }
+      custSetFontPairing(id);
+      posthog.capture("font_changed", {
+        session_id: sessionId,
+        font_id: id,
+        font_name: pairing?.displayName,
+      });
+    },
+    [custSetFontPairing, aiFontPairingId, sessionId]
+  );
+
+  const handleContentChange = useCallback(
+    (componentIndex: number, field: string, value: string): void => {
+      custSetContentOverride(componentIndex, field, value);
+      posthog.capture("headline_edited", {
+        session_id: sessionId,
+        component_index: componentIndex,
+        field,
+      });
+    },
+    [custSetContentOverride, sessionId]
+  );
+
+  const handleResetCustomization = useCallback((): void => {
+    custResetAll();
+    // Reset content in iframe
+    postToIframe({ type: "ewb:reset-content" });
+    posthog.capture("reset_to_original", { session_id: sessionId });
+  }, [custResetAll, postToIframe, sessionId]);
 
   /* ── Mobile layout ─────────────────────────────────── */
   if (isMobile) {
@@ -820,7 +1007,7 @@ function PreviewLayout({
           <div className="flex-1 overflow-auto">
             <div ref={previewRef}>
               <AssemblyRenderer
-                spec={spec}
+                spec={mobileEffectiveSpec}
                 activePage={activePage}
                 previewMode
                 themeOverride={activeTheme}
@@ -840,24 +1027,105 @@ function PreviewLayout({
             </MobileBottomSheet>
           )}
 
-          {/* Theme sheet */}
-          {mobileTab === "theme" && (
-            <MobileBottomSheet title="Theme Variant" onClose={() => setMobileTab("preview")}>
-              <div className="flex items-center justify-center gap-4 py-4">
-                <Shuffle className="h-4 w-4 text-[#6b6d80]" />
-                {(["A", "B"] as const).map((v) => (
+          {/* Customize sheet */}
+          {mobileTab === "customize" && (
+            <MobileBottomSheet title="Customize" onClose={() => setMobileTab("preview")}>
+              <div className="space-y-5">
+                {/* A/B Variant toggle */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Theme Variant
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <Shuffle className="h-4 w-4 text-[#6b6d80]" />
+                    {(["A", "B"] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setActiveVariant(v)}
+                        className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
+                          activeVariant === v
+                            ? "bg-[rgba(232,168,73,0.15)] text-[#e8a849]"
+                            : "bg-[rgba(255,255,255,0.04)] text-[#9496a8]"
+                        }`}
+                      >
+                        Variant {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preset pills (horizontal scroll) */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Preset
+                  </span>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    <button
+                      onClick={() => handlePresetChange(null)}
+                      className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-medium transition-colors ${
+                        activePresetId === null
+                          ? "border-[#e8a849]/40 bg-[#e8a849]/10 text-[#e8a849]"
+                          : "border-[rgba(255,255,255,0.08)] text-[#9496a8]"
+                      }`}
+                    >
+                      AI Original
+                    </button>
+                    {THEME_PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => handlePresetChange(preset.id)}
+                        className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[11px] font-medium transition-colors ${
+                          activePresetId === preset.id
+                            ? "border-[#e8a849]/40 bg-[#e8a849]/10 text-[#e8a849]"
+                            : "border-[rgba(255,255,255,0.08)] text-[#9496a8]"
+                        }`}
+                      >
+                        <div
+                          className="h-3 w-3 rounded-full border border-[rgba(255,255,255,0.1)]"
+                          style={{ backgroundColor: preset.tokens.colorPrimary }}
+                        />
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Color picker row */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Primary Color
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div
+                        className="h-9 w-9 rounded-lg border-2 border-[rgba(255,255,255,0.12)]"
+                        style={{
+                          backgroundColor: primaryColorOverride ?? activeTheme.colorPrimary,
+                        }}
+                      />
+                      <input
+                        type="color"
+                        value={primaryColorOverride ?? activeTheme.colorPrimary}
+                        onChange={(e) => handleColorChange(e.target.value)}
+                        className="absolute inset-0 cursor-pointer opacity-0"
+                      />
+                    </div>
+                    <span className="font-mono text-xs text-[#9496a8]">
+                      {primaryColorOverride ?? activeTheme.colorPrimary}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Reset button */}
+                {custHasChanges && (
                   <button
-                    key={v}
-                    onClick={() => setActiveVariant(v)}
-                    className={`rounded-lg px-8 py-3 text-sm font-semibold transition-colors ${
-                      activeVariant === v
-                        ? "bg-[rgba(232,168,73,0.15)] text-[#e8a849]"
-                        : "bg-[rgba(255,255,255,0.04)] text-[#9496a8]"
-                    }`}
+                    onClick={handleResetCustomization}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[rgba(255,255,255,0.1)] px-4 py-2.5 text-xs font-medium text-[#c0c1cc] transition-colors hover:text-white"
                   >
-                    Variant {v}
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Reset to AI Original
                   </button>
-                ))}
+                )}
               </div>
             </MobileBottomSheet>
           )}
@@ -918,15 +1186,27 @@ function PreviewLayout({
         isCapturing={isCapturing}
         activeVariant={activeVariant}
         onVariantChange={setActiveVariant}
+        activePresetName={activePresetId ? getPresetById(activePresetId)?.name : null}
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Sidebar */}
+        {/* Customization Sidebar */}
         {sidebarOpen && (
-          <PreviewSidebar
+          <CustomizationSidebar
             spec={spec}
+            activeTheme={activeTheme}
+            activePresetId={activePresetId}
+            primaryColorOverride={primaryColorOverride}
+            fontPairingId={fontPairingId}
+            aiFontPairingId={aiFontPairingId}
+            hasChanges={custHasChanges}
             activePage={activePage}
             onPageChange={setActivePage}
+            onPresetChange={handlePresetChange}
+            onColorChange={handleColorChange}
+            onFontChange={handleFontChange}
+            onContentChange={handleContentChange}
+            onReset={handleResetCustomization}
             onClose={() => setSidebarOpen(false)}
           />
         )}
