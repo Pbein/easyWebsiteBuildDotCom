@@ -177,9 +177,17 @@ Loading State Design          —          —                ✅
 
 ---
 
-## Virtual Boardroom — 9 Strategic Personas
+## Virtual Boardroom — 10 Strategic Personas
 
-The boardroom is a multi-agent debate system invoked via `/boardroom <question>`. Each persona reads domain-specific files, explores the codebase for evidence, and argues from competing incentives. See `BOARDROOM_TENSION_MAP.md` for the 15 adversarial tensions.
+The boardroom is a multi-agent debate system invoked via `/boardroom <question>`. Each persona reads domain-specific files, explores the codebase for evidence, and argues from competing incentives. See `BOARDROOM_TENSION_MAP.md` for the 20 adversarial tensions.
+
+### Delight Champion — User Delight & Product Love (ELEVATED AUTHORITY)
+
+**File**: `boardroom-delight.md` | **Color**: gold | **Authority**: ELEVATED (P0)
+**Philosophy**: `USER_DELIGHT_MANIFESTO.md`
+**Strengths**: Joy audit (the Five Questions), delight journey mapping, screenshot-worthiness test, friend test, emotional arc assessment, polish/craft evaluation, dark pattern detection, celebration moment design
+**Use When**: Any decision might degrade the user experience, evaluating whether something is "good enough" to ship, assessing the emotional journey, fighting against transactional or soulless design, challenging aggressive monetization that hurts joy
+**Special Power**: The Delight Veto — can challenge any boardroom decision that fails the Five Questions test (Would someone smile? Screenshot this? Show a friend? Feel respected? Would WE love this?)
 
 ### CEO — Strategic Vision Architect
 
@@ -239,15 +247,17 @@ The boardroom is a multi-agent debate system invoked via `/boardroom <question>`
 
 ### Boardroom Routing
 
-| Strategic Question                | Key Personas                       | Why                              |
-| --------------------------------- | ---------------------------------- | -------------------------------- |
-| "What should we build next?"      | CEO + Competitive + Product        | Strategy + market + depth        |
-| "How do we increase conversions?" | CRO + UX Psych + CMO               | Funnel + psychology + traffic    |
-| "What should pricing look like?"  | Monetization + CRO + Competitive   | Revenue + conversion + market    |
-| "What are our AI costs at scale?" | Infra + Product + Monetization     | Costs + quality + revenue        |
-| "Which integrations matter?"      | Partnerships + Infra + Competitive | Ecosystem + complexity + parity  |
-| "Is our output good enough?"      | Product + Competitive + UX Psych   | Quality + market + perception    |
-| "Full strategic review"           | All 9 via `/boardroom`             | Comprehensive adversarial debate |
+| Strategic Question                | Key Personas                                   | Why                                    |
+| --------------------------------- | ---------------------------------------------- | -------------------------------------- |
+| "What should we build next?"      | CEO + Competitive + Product + **Delight**      | Strategy + market + depth + joy        |
+| "How do we increase conversions?" | CRO + UX Psych + CMO + **Delight**             | Funnel + psychology + traffic + love   |
+| "What should pricing look like?"  | Monetization + CRO + Competitive + **Delight** | Revenue + conversion + market + joy    |
+| "What are our AI costs at scale?" | Infra + Product + Monetization                 | Costs + quality + revenue              |
+| "Which integrations matter?"      | Partnerships + Infra + Competitive             | Ecosystem + complexity + parity        |
+| "Is our output good enough?"      | **Delight** + Product + Competitive + UX Psych | Joy + quality + market + perception    |
+| "Do people love our product?"     | **Delight** + UX Psych + CRO + CMO             | Joy + psychology + conversion + growth |
+| "Should we ship this?"            | **Delight** + CEO + Product                    | Joy + strategy + depth                 |
+| "Full strategic review"           | All 10 via `/boardroom`                        | Comprehensive adversarial debate       |
 
 ---
 

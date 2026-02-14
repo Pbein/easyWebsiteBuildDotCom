@@ -104,7 +104,8 @@ Any boardroom tension that was NOT resolved must be:
 
 When new decisions conflict with past decisions:
 
-1. **Revenue-impact decisions take precedence** over feature-scope decisions (Hormozi principle: revenue validates)
+0. **User delight is the foundational constraint (P0)** — any decision that degrades user experience must justify itself against the Delight Champion's challenge. The burden of proof is on the proposer.
+1. **Revenue-impact decisions take precedence** over feature-scope decisions (Hormozi principle: revenue validates) — but only when P0 is satisfied
 2. **User-facing improvements take precedence** over internal tooling (unless tooling is blocking user-facing work)
 3. **Simpler implementations take precedence** over architecturally pure ones (solo developer constraint)
 4. **The most recent boardroom consensus takes precedence** over individual persona opinions from past sessions
@@ -121,14 +122,15 @@ When new decisions conflict with past decisions:
 
 ## Personas
 
-| Persona                       | Focus                           | Tension Role                      |
-| ----------------------------- | ------------------------------- | --------------------------------- |
-| CEO (Marcus Chen)             | Strategic vision, sequencing    | Balances speed vs depth           |
-| CMO (Sierra Washington)       | Growth, virality, brand         | Pushes for generosity and reach   |
-| CRO (Diego Morales)           | Conversion, funnel optimization | Pushes for fewer steps, more CTAs |
-| Product (Amara Okafor)        | Character system, AI quality    | Pushes for depth and coherence    |
-| Infra (Viktor Petrov)         | Cost, performance, scalability  | Pushes for sustainability         |
-| Monetization (Priya Sharma)   | Revenue, pricing, tiers         | Pushes for capture and gates      |
-| Competitive (James Whitfield) | Market position, feature parity | Pushes for speed and matching     |
-| Partnerships (Elena Vasquez)  | Integrations, ecosystem         | Pushes for connectivity           |
-| UX Psych (Dr. Miriam Sato)    | Behavior, emotion, psychology   | Pushes for journey quality        |
+| Persona                       | Focus                           | Tension Role                       | Authority         |
+| ----------------------------- | ------------------------------- | ---------------------------------- | ----------------- |
+| **Delight Champion**          | User joy, product love, craft   | Challenges anything that kills joy | **ELEVATED (P0)** |
+| CEO (Marcus Chen)             | Strategic vision, sequencing    | Balances speed vs depth            | Standard          |
+| CMO (Sierra Washington)       | Growth, virality, brand         | Pushes for generosity and reach    | Standard          |
+| CRO (Diego Morales)           | Conversion, funnel optimization | Pushes for fewer steps, more CTAs  | Standard          |
+| Product (Amara Okafor)        | Character system, AI quality    | Pushes for depth and coherence     | Standard          |
+| Infra (Viktor Petrov)         | Cost, performance, scalability  | Pushes for sustainability          | Standard          |
+| Monetization (Priya Sharma)   | Revenue, pricing, tiers         | Pushes for capture and gates       | Standard          |
+| Competitive (James Whitfield) | Market position, feature parity | Pushes for speed and matching      | Standard          |
+| Partnerships (Elena Vasquez)  | Integrations, ecosystem         | Pushes for connectivity            | Standard          |
+| UX Psych (Dr. Miriam Sato)    | Behavior, emotion, psychology   | Pushes for journey quality         | Standard          |

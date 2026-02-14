@@ -2,8 +2,8 @@
 
 > Core principles that ALL boardroom decisions must align to. Overriding a principle requires explicit rationale and updating this document.
 >
-> Last updated: 2026-02-12
-> Updated by: Boardroom Session 001 (Customization System)
+> Last updated: 2026-02-14
+> Updated by: Strategic Decision — User Delight Champion Establishment
 
 ---
 
@@ -13,9 +13,21 @@
 
 ## Core Principles
 
+### P0: People Must Love It
+
+> Source: `.agents/agents/USER_DELIGHT_MANIFESTO.md`
+> Champion: User Delight Champion (elevated authority)
+
+**This is the foundation all other principles rest on.** Like a game that needs the best monetization and the smartest analytics — if the game isn't fun, nobody plays. If nobody plays, nothing else matters. Revenue (P1) only flows when the product creates genuine delight. The question "Will this make someone love being here?" comes before "Will this make someone pay?"
+
+The Delight Champion holds **elevated authority** under this principle: any boardroom persona may propose, but the Delight Champion can challenge any decision that degrades the user experience. The burden of proof shifts to the proposer to demonstrate that the experience remains lovable, not just functional.
+
+**In practice:** The free experience must be genuinely wonderful. The reveal moment is sacred. Polish is not optional. We build for people, not personas. If not for the users, who are we helping?
+
 ### P1: Revenue Validates
 
 > Source: `business/HORMOZI_ANALYSIS.md`
+> Relationship to P0: Revenue is the RESULT of delight, not the cause of it. P1 works because P0 is satisfied.
 
 No feature matters until someone pays for it. Every development decision must trace to a revenue path. Free features exist to create desire for paid features, not as charity. We measure success in dollars, not compliments.
 
@@ -65,6 +77,10 @@ New decisions must be reconciled with past decisions. If we change direction, we
 
 ## Anti-Principles (What We Explicitly Reject)
 
+### AP0: "Good Enough Is Good Enough"
+
+We do not ship experiences that are merely functional. "It works" is not the bar. "People love it" is the bar. Tolerance is not love, and we don't build for tolerance.
+
 ### AP1: "Build It and They Will Come"
 
 We do not build features without a revenue hypothesis. Every feature needs a clear answer to: "How does this make someone pay us?"
@@ -85,6 +101,8 @@ We do not wait for architectural perfection. Ship, measure, iterate. The codebas
 
 ## Principle Evolution Log
 
-| Date       | Principle     | Change             | Reason                                          | Session |
-| ---------- | ------------- | ------------------ | ----------------------------------------------- | ------- |
-| 2026-02-12 | P1-P8 created | Initial principles | First boardroom session established foundations | 001     |
+| Date       | Principle     | Change                                                | Reason                                                                                                       | Session |
+| ---------- | ------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------- |
+| 2026-02-12 | P1-P8 created | Initial principles                                    | First boardroom session established foundations                                                              | 001     |
+| 2026-02-14 | P0 created    | Added "People Must Love It" as foundational principle | User delight established as precondition for all other principles; Delight Champion given elevated authority | —       |
+| 2026-02-14 | AP0 created   | Added "Good Enough Is Good Enough" anti-principle     | Complement to P0; sets the bar at love, not tolerance                                                        | —       |

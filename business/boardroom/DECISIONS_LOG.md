@@ -3,7 +3,7 @@
 > Running log of all strategic decisions. Every boardroom session adds entries here.
 > Decisions are reconciled against `STRATEGIC_PRINCIPLES.md` and `docs/STRATEGIC_ROADMAP.md`.
 >
-> Last updated: 2026-02-12
+> Last updated: 2026-02-14
 
 ---
 
@@ -131,6 +131,67 @@
 | **Conflicts**  | None                                              |
 
 **Decision**: Build component variant switching UI, personality slider panel (Pro), section reorder via drag, component add/remove, CSS effect selector per component, pattern/divider customization, clean export for Pro+.
+
+---
+
+## Strategic Decision: User Delight Champion Establishment (2026-02-14)
+
+> Context: Founder recognition that user delight is the foundational precondition for all business outcomes. Like game design — if the game isn't fun, nothing else matters.
+
+### BD-002-01: Establish P0 "People Must Love It" as Foundational Principle
+
+| Field          | Value                                                                        |
+| -------------- | ---------------------------------------------------------------------------- |
+| **Status**     | ACTIVE                                                                       |
+| **Priority**   | P0 (highest — foundational)                                                  |
+| **Champion**   | Founder directive                                                            |
+| **Principles** | Creates P0, which underpins P1-P8                                            |
+| **Conflicts**  | None — P0 does not replace P1, it establishes the precondition P1 depends on |
+
+**Decision**: Add Strategic Principle P0: "People Must Love It" as the foundation all other principles rest on. Revenue (P1) only flows when the product creates genuine delight. The Delight Champion holds elevated authority to challenge any decision that degrades user experience.
+
+**Rationale**: The game design principle — a game can have perfect monetization, marketing, and infrastructure, but if it isn't fun, nobody plays. The user's joy is the highest purpose. If not for the users, who are we helping?
+
+---
+
+### BD-002-02: Create User Delight Champion Boardroom Persona with Elevated Authority
+
+| Field          | Value                                     |
+| -------------- | ----------------------------------------- |
+| **Status**     | ACTIVE                                    |
+| **Priority**   | Structural (affects all future decisions) |
+| **Champion**   | Founder directive                         |
+| **Principles** | P0 (People Must Love It)                  |
+| **Conflicts**  | None — adds to existing 9-persona system  |
+
+**Decision**: Add a 10th boardroom persona — the User Delight Champion — with elevated authority under P0. This persona:
+
+- Can challenge any decision that degrades user experience (the "Delight Veto")
+- Uses the Five Questions test (smile? screenshot? friend? trust? would WE love this?)
+- Operates from `.agents/agents/boardroom-delight.md` with philosophy in `USER_DELIGHT_MANIFESTO.md`
+- Is included in ALL boardroom debates, not just UX-specific ones
+- Has 5 new tensions (16-20) in the Tension Map, all marked ELEVATED
+
+**Implementation**: Agent file created, manifesto written, Strategic Principles updated, Tension Map expanded from 15 to 20, all index files updated.
+
+---
+
+### BD-002-03: Establish User Delight Manifesto as Governing Document
+
+| Field          | Value                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| **Status**     | ACTIVE                                                                                              |
+| **Priority**   | Strategic direction (permanent)                                                                     |
+| **Champion**   | Founder directive                                                                                   |
+| **Principles** | P0 (People Must Love It)                                                                            |
+| **Conflicts**  | Evolves AP1 ("Build It and They Will Come") — we still need revenue hypotheses, but joy comes first |
+
+**Decision**: The User Delight Manifesto (`.agents/agents/USER_DELIGHT_MANIFESTO.md`) establishes:
+
+- Seven Principles of Delight (D1-D7): Joy Before Revenue, The Reveal Is Sacred, Respect Is Foundation, Personality Is the Product, Polish Is Not Optional, Delight Scales, We Build for People
+- Delight Checklist: 8-point test before any feature ships (smile, screenshot, friend, trust, polish, personality, worse, pride)
+- Stage-by-stage emotional targets from homepage through export
+- The game design analogy as the founding philosophy
 
 ---
 

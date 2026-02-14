@@ -1,6 +1,8 @@
 # Virtual Boardroom — Adversarial Tension Map
 
-**Purpose**: Documents the 15 core tensions between boardroom personas. These tensions are the engine of the `/boardroom` debate — they force genuine disagreement, prevent groupthink, and surface trade-offs that a single advisor would gloss over.
+**Purpose**: Documents the 20 core tensions between boardroom personas. These tensions are the engine of the `/boardroom` debate — they force genuine disagreement, prevent groupthink, and surface trade-offs that a single advisor would gloss over.
+
+**Note**: The **Delight Champion** operates with **elevated authority** under Strategic Principle P0. Tensions involving Delight carry special weight — see tensions 16-20.
 
 **Last Updated**: February 2026
 
@@ -12,7 +14,7 @@ Each tension represents a **genuine strategic trade-off** where both sides have 
 
 ---
 
-## The 15 Core Tensions
+## The 20 Core Tensions
 
 ### 1. Traffic vs Funnel
 
@@ -209,6 +211,76 @@ Each tension represents a **genuine strategic trade-off** where both sides have 
 
 ---
 
+### 16. Delight vs Revenue Capture (ELEVATED)
+
+|                         |                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Side A**              | **Delight Champion** (User Delight) — ELEVATED AUTHORITY                                                                           |
+| **Side B**              | **Monetization** (SaaS Economist)                                                                                                  |
+| **Core Disagreement**   | Joy-first free experience vs gating value early to capture revenue                                                                 |
+| **Delight argues**      | "A user who hits a paywall before experiencing magic never comes back. Delight drives desire to pay. Gates drive desire to leave." |
+| **Monetization argues** | "Every free user costs tokens. Ungated delight without a conversion path is a charity. At some point joy must become revenue."     |
+| **Resolution signal**   | Gate AFTER the wow moment, never before. The free experience must be genuinely wonderful — then offer more depth for payment.      |
+| **P0 weight**           | Delight Champion's position carries elevated weight under P0. Monetization must prove gating doesn't kill the joy.                 |
+
+---
+
+### 17. Delight vs Conversion Optimization (ELEVATED)
+
+|                       |                                                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Side A**            | **Delight Champion** (User Delight) — ELEVATED AUTHORITY                                                                                  |
+| **Side B**            | **CRO** (Conversion Architect)                                                                                                            |
+| **Core Disagreement** | Experience quality vs conversion rate percentage                                                                                          |
+| **Delight argues**    | "A 5% conversion from users who love us is worth more than 15% from users pressured through a funnel. Loyalty > quick conversion."        |
+| **CRO argues**        | "Unmeasured delight is a feel-good hypothesis. Show me completion rates, time-to-value, and conversion data."                             |
+| **Resolution signal** | Both matter. Measure delight signals (NPS, shares, return visits) alongside conversion. If conversion tactics hurt delight signals, stop. |
+| **P0 weight**         | When conversion tactics make the experience feel transactional, Delight Champion's challenge takes priority.                              |
+
+---
+
+### 18. Delight vs Shipping Speed (ELEVATED)
+
+|                       |                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Side A**            | **Delight Champion** (User Delight) — ELEVATED AUTHORITY                                                                                        |
+| **Side B**            | **CEO** (Strategic Vision) + **Competitive** (Intelligence)                                                                                     |
+| **Core Disagreement** | Polish and craft vs velocity and market response                                                                                                |
+| **Delight argues**    | "Shipping something unpolished is shipping something that kills first impressions. You don't get a second chance to make someone fall in love." |
+| **CEO argues**        | "Every week without shipping is a week without learning. Ship, measure, iterate. Polish is a luxury."                                           |
+| **Resolution signal** | Ship FAST but never ship UGLY. The minimum bar is "Would I show this to a friend?" If no, it needs one more pass. If yes, ship it.              |
+| **P0 weight**         | Delight Champion can delay a ship if the experience doesn't pass the Five Questions test. Speed serves nothing if users don't love the result.  |
+
+---
+
+### 19. Delight vs Infrastructure Cost (ELEVATED)
+
+|                       |                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Side A**            | **Delight Champion** (User Delight) — ELEVATED AUTHORITY                                                                                    |
+| **Side B**            | **Infra** (Technical Infrastructure)                                                                                                        |
+| **Core Disagreement** | Beautiful, alive experiences vs lean, fast, cheap operations                                                                                |
+| **Delight argues**    | "The 200ms animation that makes a transition magical isn't waste — it's the difference between a tool and a product people love."           |
+| **Infra argues**      | "Animation = render cycles = bundle size = slower load = worse Core Web Vitals. Fast + plain beats slow + pretty."                          |
+| **Resolution signal** | Performance budget with delight floor. CWV must pass, AND experience must be alive. Optimize to achieve both, never sacrifice one entirely. |
+| **P0 weight**         | A fast, sterile experience fails P0. Infra must find ways to make it fast AND beautiful, not choose between them.                           |
+
+---
+
+### 20. Delight vs Feature Depth (ELEVATED)
+
+|                       |                                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Side A**            | **Delight Champion** (User Delight) — ELEVATED AUTHORITY                                                                                                                             |
+| **Side B**            | **Product** (Product Architect)                                                                                                                                                      |
+| **Core Disagreement** | Magical user experience vs deep technical differentiation                                                                                                                            |
+| **Delight argues**    | "Depth means nothing if it doesn't feel magical. The character system should feel like the AI 'gets me', not like I'm filling out a form."                                           |
+| **Product argues**    | "The differentiation IS the depth. Without 10 emotional goals, 3 voice tones, 6 archetypes, output is generic. Depth creates the magic."                                             |
+| **Resolution signal** | Depth serves delight. If depth adds complexity users feel (more steps, more confusion), it hurts. If depth adds magic users experience (better output, more personalized), it helps. |
+| **P0 weight**         | Product must prove depth creates joy, not just differentiation. Differentiation users don't feel is invisible. Joy they feel is everything.                                          |
+
+---
+
 ## Tension Network Diagram
 
 ```
@@ -241,6 +313,21 @@ Each tension represents a **genuine strategic trade-off** where both sides have 
         Monetization ←————→ CMO/CRO
               Generosity vs Revenue
               Free Wow vs Paid Gate
+
+    ╔══════════════════════════════════════════╗
+    ║          ★ DELIGHT CHAMPION ★            ║
+    ║        (Elevated Authority — P0)         ║
+    ║                                          ║
+    ║  Challenges ALL personas when            ║
+    ║  user experience is at stake:            ║
+    ║                                          ║
+    ║  ←→ Monetization (Joy vs Revenue)        ║
+    ║  ←→ CRO (Love vs Conversion)            ║
+    ║  ←→ CEO/Competitive (Polish vs Speed)   ║
+    ║  ←→ Infra (Beauty vs Performance)       ║
+    ║  ←→ Product (Magic vs Depth)            ║
+    ║  ←→ UX Psych (natural ally)             ║
+    ╚══════════════════════════════════════════╝
 ```
 
 ---
