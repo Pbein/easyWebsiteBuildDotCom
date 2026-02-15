@@ -16,6 +16,7 @@ import type * as feedback from "../feedback.js";
 import type * as imageCache from "../imageCache.js";
 import type * as intakeResponses from "../intakeResponses.js";
 import type * as pipelineLogs from "../pipelineLogs.js";
+import type * as sharedPreviews from "../sharedPreviews.js";
 import type * as siteSpecs from "../siteSpecs.js";
 import type * as testCases from "../testCases.js";
 import type * as vlmEvaluations from "../vlmEvaluations.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   imageCache: typeof imageCache;
   intakeResponses: typeof intakeResponses;
   pipelineLogs: typeof pipelineLogs;
+  sharedPreviews: typeof sharedPreviews;
   siteSpecs: typeof siteSpecs;
   testCases: typeof testCases;
   vlmEvaluations: typeof vlmEvaluations;

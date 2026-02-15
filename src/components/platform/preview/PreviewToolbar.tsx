@@ -1,6 +1,17 @@
 "use client";
 
-import { Monitor, Tablet, Smartphone, Download, Shuffle, Camera } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Monitor,
+  Tablet,
+  Smartphone,
+  Download,
+  Shuffle,
+  Camera,
+  Share2,
+  Check,
+  X,
+} from "lucide-react";
 import posthog from "posthog-js";
 
 interface PreviewToolbarProps {
@@ -14,6 +25,10 @@ interface PreviewToolbarProps {
   activeVariant?: "A" | "B";
   onVariantChange?: (variant: "A" | "B") => void;
   activePresetName?: string | null;
+  onShare?: () => void;
+  isGeneratingShareLink?: boolean;
+  shareUrl?: string | null;
+  onShareModalClose?: () => void;
 }
 
 const viewportOptions: {
@@ -37,7 +52,47 @@ export function PreviewToolbar({
   activeVariant,
   onVariantChange,
   activePresetName,
+  onShare,
+  isGeneratingShareLink = false,
+  shareUrl,
+  onShareModalClose,
 }: PreviewToolbarProps): React.ReactElement {
+  const [copied, setCopied] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Close popover on outside click
+  useEffect(() => {
+    if (!shareUrl) return;
+    function handleClickOutside(e: MouseEvent): void {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        onShareModalClose?.();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [shareUrl, onShareModalClose]);
+
+  const handleCopy = async (): Promise<void> => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      posthog.capture("share_link_copied", { share_url: shareUrl });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement("input");
+      input.value = shareUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      posthog.capture("share_link_copied", { share_url: shareUrl });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="flex h-12 shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.06)] bg-[#0d0e14] px-4">
       {/* Business name */}
@@ -119,6 +174,73 @@ export function PreviewToolbar({
           <Camera className={`h-3.5 w-3.5 ${isCapturing ? "animate-pulse" : ""}`} />
           <span className="hidden sm:inline">{isCapturing ? "Capturing..." : "Screenshot"}</span>
         </button>
+
+        {/* Share button + popover */}
+        <div className="relative">
+          <button
+            onClick={onShare}
+            disabled={!onShare || isGeneratingShareLink}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+              onShare && !isGeneratingShareLink
+                ? "cursor-pointer text-[#e8a849] hover:bg-[rgba(232,168,73,0.1)]"
+                : "cursor-not-allowed text-[#9496a8] opacity-50"
+            }`}
+            title={isGeneratingShareLink ? "Generating link..." : "Share Preview"}
+          >
+            <Share2 className={`h-3.5 w-3.5 ${isGeneratingShareLink ? "animate-pulse" : ""}`} />
+            <span className="hidden sm:inline">
+              {isGeneratingShareLink ? "Sharing..." : "Share"}
+            </span>
+          </button>
+
+          {/* Share popover */}
+          {shareUrl && (
+            <div
+              ref={popoverRef}
+              className="absolute top-full right-0 z-50 mt-2 w-80 rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#12131a] p-4 shadow-2xl"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold text-white">Share Link</span>
+                <button
+                  onClick={onShareModalClose}
+                  className="p-0.5 text-[#6b6d80] transition-colors hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={shareUrl}
+                  className="flex-1 rounded-lg border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-3 py-2 font-mono text-xs text-[#c0c1cc] outline-none"
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  onClick={() => void handleCopy()}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                    copied
+                      ? "bg-[#3ecfb4]/15 text-[#3ecfb4]"
+                      : "bg-[#e8a849]/15 text-[#e8a849] hover:bg-[#e8a849]/25"
+                  }`}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Copied!
+                    </>
+                  ) : (
+                    "Copy"
+                  )}
+                </button>
+              </div>
+              <p className="mt-2.5 text-[10px] text-[#6b6d80]">
+                Anyone with this link can view your customized preview.
+              </p>
+            </div>
+          )}
+        </div>
+
         <button
           onClick={onExport}
           disabled={!onExport || isExporting}

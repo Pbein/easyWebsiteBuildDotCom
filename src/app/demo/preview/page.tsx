@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import posthog from "posthog-js";
 import { api } from "../../../../convex/_generated/api";
+import { generateShareId } from "@/lib/share";
 import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ExportResult } from "@/lib/export/generate-project";
@@ -47,6 +48,7 @@ import {
   Ban,
   X,
   FileText,
+  Share2,
 } from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
@@ -66,6 +68,8 @@ function PreviewContent(): React.ReactElement {
   const [activeVariant, setActiveVariant] = useState<"A" | "B">("A");
   const [isCapturing, setIsCapturing] = useState(false);
   const [lastScreenshot, setLastScreenshot] = useState<ScreenshotResult | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
 
   // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
   const isDevParam = searchParams.get("dev") === "true";
@@ -127,7 +131,7 @@ function PreviewContent(): React.ReactElement {
           import("@/lib/export/generate-project"),
           import("@/lib/export/create-zip"),
         ]);
-        const result: ExportResult = generateProject(specToExport);
+        const result: ExportResult = generateProject(specToExport, { includeBadge: true });
         const blob = await createProjectZip(result);
         const filename = `${result.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-website.zip`;
         downloadBlob(blob, filename);
@@ -137,6 +141,7 @@ function PreviewContent(): React.ReactElement {
           site_type: specToExport.siteType,
           business_name: specToExport.businessName,
           file_count: result.files.length,
+          include_badge: true,
         });
       } catch (err) {
         console.error("Export failed:", err);
@@ -249,6 +254,10 @@ function PreviewContent(): React.ReactElement {
       setLastScreenshot={setLastScreenshot}
       devPanelOpen={devPanelOpen}
       sessionId={sessionId}
+      shareUrl={shareUrl}
+      setShareUrl={setShareUrl}
+      isGeneratingShareLink={isGeneratingShareLink}
+      setIsGeneratingShareLink={setIsGeneratingShareLink}
     />
   );
 }
@@ -607,6 +616,10 @@ function PreviewLayout({
   setLastScreenshot,
   devPanelOpen,
   sessionId,
+  shareUrl,
+  setShareUrl,
+  isGeneratingShareLink,
+  setIsGeneratingShareLink,
 }: {
   spec: SiteIntentDocument;
   viewport: "desktop" | "tablet" | "mobile";
@@ -625,11 +638,16 @@ function PreviewLayout({
   setLastScreenshot: (v: ScreenshotResult | null) => void;
   devPanelOpen: boolean;
   sessionId: string | null;
+  shareUrl: string | null;
+  setShareUrl: (v: string | null) => void;
+  isGeneratingShareLink: boolean;
+  setIsGeneratingShareLink: (v: boolean) => void;
 }): React.ReactElement {
   const isMobile = useIsMobile();
   const router = useRouter();
   const resetStore = useIntakeStore((s) => s.reset);
   const pv = spec.personalityVector as PersonalityVector;
+  const createShareLink = useMutation(api.sharedPreviews.createShareLink);
 
   // Customization store
   const custStore = useCustomizationStore();
@@ -928,6 +946,74 @@ function PreviewLayout({
     }
   }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe, sessionId, viewport]);
 
+  const handleShare = useCallback(async (): Promise<void> => {
+    if (isGeneratingShareLink || !sessionId) return;
+    setIsGeneratingShareLink(true);
+    try {
+      const shareId = generateShareId();
+      await createShareLink({
+        shareId,
+        sessionId,
+        customization: {
+          activePresetId: activePresetId ?? null,
+          primaryColorOverride: primaryColorOverride ?? null,
+          fontPairingId: fontPairingId ?? null,
+          contentOverrides: contentOverrides,
+        },
+        businessName: spec.businessName,
+        tagline: spec.tagline || undefined,
+        siteType: spec.siteType,
+        primaryColor: primaryColorOverride ?? activeTheme.colorPrimary,
+      });
+
+      const url = `${window.location.origin}/s/${shareId}`;
+      setShareUrl(url);
+
+      posthog.capture("share_link_generated", {
+        session_id: sessionId,
+        share_id: shareId,
+        site_type: spec.siteType,
+        business_name: spec.businessName,
+        has_customization: custHasChanges,
+      });
+
+      // Use Web Share API on mobile if available
+      if (isMobile && navigator.share) {
+        try {
+          await navigator.share({
+            title: `${spec.businessName} — Website Preview`,
+            url,
+          });
+        } catch {
+          // User cancelled share — that's fine
+        }
+      }
+    } catch (err) {
+      console.error("Share link generation failed:", err);
+      posthog.captureException(err);
+    } finally {
+      setIsGeneratingShareLink(false);
+    }
+  }, [
+    isGeneratingShareLink,
+    sessionId,
+    createShareLink,
+    activePresetId,
+    primaryColorOverride,
+    fontPairingId,
+    contentOverrides,
+    spec,
+    activeTheme,
+    custHasChanges,
+    isMobile,
+    setShareUrl,
+    setIsGeneratingShareLink,
+  ]);
+
+  const handleShareModalClose = useCallback((): void => {
+    setShareUrl(null);
+  }, [setShareUrl]);
+
   const handleStartOver = useCallback((): void => {
     custResetAll();
     resetStore();
@@ -1135,6 +1221,14 @@ function PreviewLayout({
             <MobileBottomSheet title="Actions" onClose={() => setMobileTab("preview")}>
               <div className="flex flex-col gap-1 py-2">
                 <button
+                  onClick={() => void handleShare()}
+                  disabled={isGeneratingShareLink}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                >
+                  <Share2 className="h-5 w-5 text-[#e8a849]" />
+                  {isGeneratingShareLink ? "Generating link..." : "Share Preview"}
+                </button>
+                <button
                   onClick={() => void handleScreenshot()}
                   disabled={isCapturing}
                   className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
@@ -1187,6 +1281,10 @@ function PreviewLayout({
         activeVariant={activeVariant}
         onVariantChange={setActiveVariant}
         activePresetName={activePresetId ? getPresetById(activePresetId)?.name : null}
+        onShare={() => void handleShare()}
+        isGeneratingShareLink={isGeneratingShareLink}
+        shareUrl={shareUrl}
+        onShareModalClose={handleShareModalClose}
       />
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
