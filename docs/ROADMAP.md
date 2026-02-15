@@ -269,89 +269,267 @@ Polishing improvements shipped alongside Phase 5A:
 
 ---
 
-## Phase 5B-D: Stock Photos, AI Images, Advanced Scroll (Next)
+## Phase 5B: Stock Photo Integration ✅ COMPLETE
 
-**Goal**: Layer real images and advanced scroll effects on top of the CSS visual foundation.
-
-> See [STRATEGIC_ROADMAP.md](./STRATEGIC_ROADMAP.md) for full prioritization rationale, competitive analysis, and the website-to-web-application spectrum strategy.
+**Goal**: Layer real images on top of the CSS visual foundation.
 
 ### Deliverables
 
-- [x] **Stock photo API integration** (Phase 5B) ✅ — Multi-provider search (Unsplash/Pexels/Pixabay), context-aware keyword builder, 24hr image caching, color-filtered search, automatic enrichment of hero-split/hero-centered/content-split/team-grid/media-gallery
-- [ ] **AI image generation** (Phase 5C) — convex-nano-banana (Gemini), priority queue, reactive loading, experimental headshots
-- [ ] **Advanced scroll effects** (Phase 5D) — CSS scroll-timeline, depth scrolling, scale transforms
-
-## Phase 5E: Multi-Page Generation & Core Quality (Weeks 1-4)
-
-**Goal**: Transform single-page output into multi-page websites with polished export.
-
-### Deliverables
-
-- [ ] **Multi-page generation & routing** — AI spec already outputs `pages[]` array; generate separate page routes (`/about`, `/services`, `/contact`), shared nav/footer, per-page component composition
-- [ ] **Next.js project export upgrade** — Proper App Router project with component files, routing, and `npm run dev` support (replacing static HTML/CSS export)
-- [ ] **WCAG contrast enforcement** — Prevent theme generation from producing inaccessible color combinations (yellow text on white, low-contrast CTA buttons) using chroma.contrast() validation at theme generation layer
+- [x] **Stock photo API integration** — Multi-provider search (Unsplash/Pexels/Pixabay), context-aware keyword builder, 24hr image caching, color-filtered search, automatic enrichment of hero-split/hero-centered/content-split/team-grid/media-gallery
 
 ---
 
-## Phase 6: Refinement Chat & Deployment (Weeks 5-8)
+## Component Wave 1 ✅ COMPLETE
 
-**Goal**: Enable post-generation editing through conversational refinement and one-click deployment.
+**Goal**: Expand component library and add CSS effects system.
 
 ### Deliverables
 
-- [ ] **Refinement chat (MVP)** — Conversational interface for post-generation changes:
-  - `adjust_theme` — change colors, spacing, fonts
-  - `rewrite_copy` — regenerate text for a specific component
-  - `add_component` — insert a new section
-  - `remove_component` — delete a section
-- [ ] **User image upload** — Upload own images during or after generation; store in Convex File Storage; replace stock images
-- [ ] **Working contact forms** — Convex mutation stores submissions + email notification via Resend (hosted); configurable endpoint for exported sites (Formspree/Netlify Forms)
-- [ ] **Vercel deployment via API** — Deploy directly from preview; user gets a live URL instantly
+- [x] 6 new components (24 total): PricingTable, ContentSteps, ContentComparison, HeroVideo, BlogPreview, ContentMap
+- [x] CSS effects system — 8 effects, 14 patterns, 4 dividers per section
 
 ---
 
-## Phase 7: User Accounts & Platform Features (Weeks 9-16)
+## Phase 6A: Free Customization MVP ✅ COMPLETE
 
-**Goal**: Add user accounts, project management, and preview sharing to make this a real product.
+> Decision source: `business/boardroom/sessions/2026-02-12-customization-system.md` (BD-001-01)
+
+**Goal**: Transform read-only preview into interactive customization experience.
 
 ### Deliverables
 
-- [ ] User authentication via **Clerk** — admin dashboard, role-based access (admin vs public), protected /docs page, data flow visibility
+- [x] Customization sidebar (replaces PreviewSidebar) with 5 controls
+- [x] Theme preset switcher — 7 presets, single-click apply
+- [x] Primary color picker — hex input + visual picker, chroma-js auto-palette derivation
+- [x] Font pairing selector — 5 free / 9 locked with lock icons + upgrade nudge
+- [x] H1/H2 headline editor — live preview via `ewb:update-content` PostMessage
+- [x] Reset to AI Original — clears all customizations
+- [x] `useCustomizationStore` — Zustand with localStorage persistence
+- [x] `deriveThemeFromPrimaryColor()` — full palette from single hex
+- [x] `font-pairings.ts` — extracted from generate-theme.ts with FREE_FONT_IDS
+- [x] 4-layer theme priority: base variant → preset → VLM → color/font overrides
+
+---
+
+# CURRENT PRIORITIES — Revenue Foundation
+
+> **Strategy shift**: Boardroom Sessions 002-003 (Feb 2026) replaced the old sequential Phase 6-9 plan with a parallel-track approach focused on reaching first revenue as fast as possible. "Revenue is the only validation that matters" (P1).
+>
+> Decision sources:
+>
+> - `business/boardroom/sessions/2026-02-14-rd-training-and-pricing.md` (BD-003-01 through BD-003-04)
+> - `business/boardroom/sessions/2026-02-15-product-simplification.md` (BD-004-01 through BD-004-03)
+> - `docs-specific-feature-plans/PRICING_MONETIZATION_STRATEGY.md`
+>
+> **Our ONE core action**: "Describe your business → see your website." (BD-004-01, unanimous)
+
+---
+
+## Track 1: Express Path — "60-Second Website" (Weeks 1-2)
+
+> BD-004-01 | Priority: P1 (highest) | Removes #1 conversion barrier
+
+**Goal**: Reduce time-to-preview from 4-5 minutes to under 90 seconds. Match Wix ADI speed.
+
+**Why**: Codebase complexity audit found 82-122+ user decisions, 4-5 min median time. Competitors do 60-90 seconds. The 9-step intake IS our moat, but nobody experiences the moat because they drop off before the preview.
+
+### Deliverables
+
+- [ ] **2-step express intake flow** (default experience):
+  - Step 1: Site type selection (existing Step 1)
+  - Step 2: Business name + description (existing Step 3, combined into one screen)
+  - Generate immediately using deterministic path ($0 cost, 2-5 seconds)
+- [ ] **Mode toggle**: "Quick Build (60s)" vs "Deep Brand Capture (3 min)" at start of intake
+- [ ] **Shortened loading screen** for deterministic generation (2-5 seconds vs 10-20)
+- [ ] **Express-mode store support** in `useIntakeStore` — skip Steps 4-8
+
+**Quality gate**: Delight Champion veto if R&D benchmark (BD-003-02) scores fast-path output <6/10 average.
+
+**Files**: `src/app/demo/page.tsx`, `src/lib/stores/intake-store.ts`, `convex/ai/generateSiteSpec.ts`
+
+---
+
+## Track 2: Immersive Preview Reveal (Weeks 2-3)
+
+> BD-004-02 | Priority: P2
+
+**Goal**: Make the first preview experience emotionally impactful, not overwhelming.
+
+**Why**: Preview page currently shows 39+ controls on desktop. The "wow" moment is buried under toolbar buttons and sidebar metadata. Robinhood principle: show the portfolio value in big numbers first, order book later.
+
+### Deliverables
+
+- [ ] **Full-screen immersive preview** on load — sidebar hidden, toolbar minimal
+- [ ] **3-5 second celebration moment** — subtle animation + "Your website is ready" overlay before controls appear
+- [ ] **Sidebar slides in** after celebration with "Customize" label
+- [ ] **Progressive disclosure** — dev panel hidden by default (Ctrl+Shift+D only), A/B toggle moved to sidebar
+- [ ] **Mobile**: same pattern — full-screen → bottom sheet CTA after delay
+
+**Files**: `src/app/demo/preview/page.tsx`, `src/components/platform/preview/PreviewToolbar.tsx`, `src/components/platform/preview/CustomizationSidebar.tsx`
+
+---
+
+## Track 3: Monetization Infrastructure (Weeks 1-3)
+
+> BD-003-01 | Priority: P1 | Revenue foundation
+
+**Goal**: Let people pay us. Ship the simplest possible billing.
+
+**Tier structure** (boardroom consensus):
+
+| Tier          | Price        | Core Value                                                                                                    |
+| ------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Free Demo** | $0           | Full intake → generate → preview → customize. Export with "Built with EWB" badge                              |
+| **Starter**   | $12/mo       | Live site (Vercel hosting), clean export (no badge), working contact form, 1 AI Chat message                  |
+| **Pro**       | $29/mo       | All 14 fonts, full color control, CSS effects, unlimited AI Chat, booking/payment integrations, custom domain |
+| **Own It**    | $99 one-time | Full project export, zero lock-in, deployment guide                                                           |
+
+### Deliverables
+
+- [ ] **Stripe Checkout** — one product ($12/mo Starter), webhook listener
+- [ ] **Clerk Auth** — minimal email login (no social yet), gate at "Go Live" and "$99 Export"
+- [ ] **"Make It Yours" modal** — three-option conversion UI: "Go Live" ($12/mo), "Download" ($99), "Free Preview" (with badge)
+- [ ] **Vercel deployment pipeline** — deploy from export pipeline, user gets live URL
+- [ ] **Subscription status hook** — `useSubscription()` checks active subscription via Clerk metadata
+
+**Files**: `src/app/api/stripe/webhook/route.ts`, `src/app/layout.tsx` (ClerkProvider), `src/components/platform/preview/MakeItYoursModal.tsx`, `src/app/api/deploy/route.ts`
+
+**Feature plan**: `docs-specific-feature-plans/PRICING_MONETIZATION_STRATEGY.md`
+
+---
+
+## Track 4: Distribution Foundation (Weeks 3-5)
+
+> BD-003-03 | Priority: P3 (parallel with monetization)
+
+**Goal**: Get users to the product and give them reasons to share.
+
+### Deliverables
+
+- [ ] **Fix homepage** — replace fabricated testimonials with real generated examples; correct stats to "24 Components | 7 Presets | 13 Site Types"; single primary CTA
+- [ ] **Email capture during loading screen** — AFTER wireframe animation (~7.5s), BEFORE final polish; "Where should we send your editable link?"; skip option
+- [ ] **Shareable preview links** (Phase 6B foundation already committed):
+  - [x] Convex `sharedPreviews` table + mutations
+  - [x] OG image generation API route (`/api/og`)
+  - [x] Share page route (`/s/[shareId]`)
+  - [x] "Built with EWB" footer badge component
+  - [ ] Share button in PreviewToolbar with copy-to-clipboard
+  - [ ] Twitter/LinkedIn share templates
+- [ ] **PostHog analytics events** — full funnel tracking throughout
+
+---
+
+## Track 5: R&D Quality Benchmark (Weeks 2-4)
+
+> BD-003-02 | Priority: P2 | Quality validation
+
+**Goal**: Quantify output quality. Know if we're good enough to charge money.
+
+### Deliverables
+
+- [ ] **20 reference websites** curated (2 per top 10 business types) with metadata
+- [ ] **Benchmark runner** — load reference, run pipeline with synthetic intake, screenshot output (Playwright)
+- [ ] **Claude Vision scoring** — 6 dimensions (visual quality, color, typography, layout, content, emotional resonance)
+- [ ] **Dev benchmark page** (`/dev/benchmark`) — scores, trends, competitive comparison
+- [ ] **Wix ADI comparison** — same 5 sites on both platforms, scored identically
+- [ ] **Fast-path quality validation** — score express path output (BD-004-01 quality gate)
+
+**Feature plan**: `docs-specific-feature-plans/DESIGN_QUALITY_RD_BENCHMARK.md`
+
+---
+
+## Post-Revenue: Premium Features (Weeks 5-8)
+
+> These ship AFTER monetization infrastructure is operational.
+
+### Post-Generation Brand Discovery (BD-004-03, Weeks 5-7)
+
+**Goal**: Move character capture from pre-generation intake to post-generation customization sidebar.
+
+- [ ] **"Discover Your Brand" sidebar section** — emotional goals, voice detection, archetype picker
+- [ ] **Progressive personalization** — each selection triggers PostMessage theme/content update to iframe
+  - Emotional goals → color palette shift (visible immediately)
+  - Voice selection → headline/CTA rewrite (visible immediately)
+  - Archetype → layout/component adjustments (visible with transition)
+- [ ] **Credit system** — AI-powered refinement uses 1 credit (free users get 1, Pro unlimited)
+
+**Files**: New `BrandDiscovery.tsx`, modified `preview/page.tsx`, `render/page.tsx`, `generateSiteSpec.ts`
+
+### AI Design Chat (BD-003-04, Weeks 6-8)
+
+**Goal**: Conversational AI refinement as the Pro-tier killer feature.
+
+- [ ] **Chat UI** — sidebar panel or bottom sheet
+- [ ] **Claude integration** — patch types: `adjust_theme`, `rewrite_copy`, `add_component`, `remove_component`
+- [ ] **Usage tracking** — 1 free message / unlimited Pro
+- [ ] **PostHog events** — `chat_started`, `chat_message`, `chat_upgrade_prompted`
+
+### $99 Enhanced Export (Weeks 6-7)
+
+- [ ] **Stripe one-time payment** — $99 product, separate webhook
+- [ ] **Enhanced export** — improved HTML/CSS output, all dependencies, deployment guide
+- [ ] **Post-payment download flow** — confirmation page with ZIP download
+
+---
+
+## Future: Product Enrichment (Months 3-6)
+
+> Lower priority. Interleave as capacity allows after revenue is flowing.
+
+### Phase 5C-D: Advanced Visuals
+
+- [ ] **AI image generation** (5C) — Gemini via Convex, priority queue, reactive loading
+- [ ] **Advanced scroll effects** (5D) — CSS scroll-timeline, depth scrolling, scale transforms
+
+### Multi-Page & Export Upgrade
+
+- [ ] **Multi-page generation** — AI spec already outputs `pages[]`; generate `/about`, `/services`, `/contact` with shared nav/footer
+- [ ] **Next.js project export** — proper App Router project replacing static HTML/CSS
+- [ ] **WCAG contrast enforcement** — `chroma.contrast()` validation at theme generation layer
+
+### User Image Upload
+
+- [ ] Upload own images during or after generation; store in Convex File Storage; replace stock images
+
+### Working Contact Forms
+
+- [ ] Formspree integration for Starter tier; configurable endpoint for exported sites
+
+---
+
+## Future: Platform Maturity (Months 6-12)
+
+### Accounts & Project Management
+
 - [ ] Project dashboard — save projects, return later, manage multiple sites
-- [ ] Preview sharing — shareable links for client review
-- [ ] Custom domain configuration for deployed sites
-- [ ] Preview approval/change request flow
+- [ ] Custom domain configuration for deployed sites (Pro tier)
+
+### Integrations (P6: Integration Over Invention)
+
+> We build beautiful, branded INTERFACES. Third-party services handle FUNCTIONALITY.
+
+- [ ] **Booking** — Calendly/Acuity embed styled to match site theme (Pro tier)
+- [ ] **Commerce** — Stripe Payment Links for simple purchases (Pro tier)
+- [ ] **Newsletter** — Mailchimp/ConvertKit integration component
+- [ ] **Blog/CMS** — Convex-backed simple CMS (future tier)
+
+### Advanced Customization
+
+- [ ] Component variant switching per section
+- [ ] Personality sliders (regenerate theme on change)
+- [ ] Section reorder (arrow buttons, drag-drop deferred)
+- [ ] Component add/remove from modal picker
+- [ ] CSS effect selector per section
+- [ ] Pattern/divider customizer per section
 
 ---
 
-## Phase 8: Dynamic Sites & Integrations (Months 4-8)
+## Future: Scale & Maturation (Year 2+)
 
-**Goal**: Move from static marketing sites to dynamic sites with real functionality via third-party integrations.
-
-> Strategy: We build beautiful, branded INTERFACES. Third-party services handle FUNCTIONALITY. See [STRATEGIC_ROADMAP.md](./STRATEGIC_ROADMAP.md) § "The Integration Strategy" for rationale.
-
-### Deliverables
-
-- [ ] **Blog/CMS** — Convex-backed simple CMS: markdown editor, themed blog pages, title + body + date + optional cover image
-- [ ] **Booking integration** — Calendly/Acuity embed styled to match site theme (`booking-embed` component with themed iframe wrapper)
-- [ ] **Newsletter signup** — Mailchimp/ConvertKit integration component
-- [ ] **Commerce lite** — Snipcart or Shopify Buy Button integration for product sales (our themed product cards + their checkout/payment backend)
-- [ ] **Stripe Payment Links** — "Buy Now" buttons link to Stripe checkout for simple service/product purchases
-- [ ] **Analytics embed** — Plausible or PostHog integration component
-
----
-
-## Phase 9: Visual Editor & Subscription Model (Months 8+)
-
-**Goal**: Enable ongoing content management for subscription clients and build long-term revenue.
-
-### Deliverables
-
-- [ ] Visual editor — click-to-edit text, drag-to-reorder sections, theme adjustment panel
+- [ ] Visual editor — click-to-edit text, drag-to-reorder sections
 - [ ] Change history / undo
-- [ ] Subscription/payment integration (Stripe billing)
 - [ ] Role-based access (owner, editor, viewer)
-- [ ] Knowledge base & learning — semantic embeddings, proven recipe promotion, content pattern extraction
+- [ ] Knowledge base & learning — semantic embeddings, proven recipe promotion
 - [ ] White-label / agency mode
 - [ ] Template marketplace
 

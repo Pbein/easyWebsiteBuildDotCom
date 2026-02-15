@@ -77,8 +77,10 @@ easywebsitebuild/
 │       ├── PROCESS.md             # How boardroom sessions work + reconciliation rules
 │       ├── STRATEGIC_PRINCIPLES.md # Core principles all decisions must align to (P1-P8)
 │       ├── DECISIONS_LOG.md       # Running log of all decisions with status tracking
-│       └── sessions/              # Individual session transcripts
-│           └── 2026-02-12-customization-system.md  # Session 001
+│       └── sessions/              # Individual session transcripts (001-003)
+│           ├── 2026-02-12-customization-system.md  # Session 001: Phase 6 customization
+│           ├── 2026-02-14-rd-and-pricing.md        # Session 002: R&D benchmark + pricing
+│           └── 2026-02-15-product-simplification.md # Session 003: Express path + one core action
 ├── docs/
 │   ├── ARCHITECTURE.md          # Full system architecture documentation
 │   ├── COMPONENT_SPEC.md        # Component library specification
@@ -121,7 +123,8 @@ easywebsitebuild/
 │   │   │   │   ├── Step6Loading.tsx   # Animated generation loading screen (Step 9)
 │   │   │   │   └── index.ts
 │   │   │   └── preview/         # Preview UI components
-│   │   │       ├── PreviewSidebar.tsx # Spec metadata sidebar
+│   │   │       ├── CustomizationSidebar.tsx # Customization panel (presets, color, fonts, headlines, reset)
+│   │   │       ├── PreviewSidebar.tsx # Spec metadata sidebar (legacy, replaced by CustomizationSidebar)
 │   │   │       ├── PreviewToolbar.tsx # Viewport controls + export toolbar
 │   │   │       ├── DevPanel.tsx        # Developer diagnostic panel (6 tabs)
 │   │   │       └── FeedbackBanner.tsx  # Quick satisfaction rating banner
@@ -154,13 +157,16 @@ easywebsitebuild/
 │       ├── hooks/
 │       │   └── use-is-mobile.ts # Mobile detection hook with debounced resize listener
 │       ├── stores/
-│       │   └── intake-store.ts  # Zustand store with localStorage persistence (9-step flow)
+│       │   ├── intake-store.ts  # Zustand store with localStorage persistence (9-step flow)
+│       │   └── customization-store.ts # Zustand store for post-generation customizations (presets, colors, fonts, content)
 │       ├── theme/               # Theme system
-│       │   ├── types.ts         # ThemeTokens interface (87 tokens, 6 categories)
+│       │   ├── theme.types.ts   # ThemeTokens interface (87 tokens, 6 categories)
 │       │   ├── token-map.ts     # Token → CSS property mapping
 │       │   ├── generate-theme.ts # Personality → tokens generation (chroma-js)
 │       │   ├── emotional-overrides.ts # Emotion/anti-reference → token adjustments
 │       │   ├── presets.ts       # 7 presets
+│       │   ├── font-pairings.ts # 14 font pairings + FREE_FONT_IDS + selection logic
+│       │   ├── derive-from-primary.ts # Single hex → full palette derivation (chroma-js)
 │       │   ├── ThemeProvider.tsx # React context + CSS variable injection
 │       │   └── index.ts         # Barrel export
 │       ├── visuals/              # CSS visual system (Phase 5A)
@@ -238,33 +244,41 @@ easywebsitebuild/
 
 ## Current Status
 
-**All phases through 5B are COMPLETE.** See `docs/ROADMAP.md` for full history.
+**All phases through 6A are COMPLETE.** See `docs/ROADMAP.md` for full history.
 
-| Phase   | What shipped                                                                                  |
-| ------- | --------------------------------------------------------------------------------------------- |
-| 1       | Platform website (homepage, demo, docs) + Navbar/Footer/ConditionalLayout                     |
-| 2       | Component library MVP (10 components), theme system (87 tokens, 7 presets), preview page      |
-| 3       | 9-step intake flow, AI + deterministic dual-path generation, assembly engine, Convex schema   |
-| 4A      | Content field accuracy fixes, questionsInputKey staleness detection                           |
-| 4B      | +8 components (18 total), +4 presets (7 total), export pipeline (HTML/CSS ZIP)                |
-| 4C      | Brand character system: emotional goals, voice tones, archetypes, anti-references (Steps 5-7) |
-| 4D      | Mobile responsiveness: font clamping, responsive carousel/masonry, CTA sizing                 |
-| Quality | Output Quality Overhaul: 30/33 stories (6 tiers), VLM feedback loop, dev tooling              |
-| 5A      | CSS visual foundation: 14 patterns, 4 dividers, placeholders, parallax, visual vocabulary     |
-| Wave 1  | +6 components (24 total), CSS effects system (8 effects), agent playbook                      |
-| 5B      | Stock photo integration (Unsplash/Pexels/Pixabay, context-aware, cached)                      |
-| UI      | Iframe viewport switcher, wireframe loading animation, mobile bottom sheets                   |
+| Phase   | What shipped                                                                                                                     |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | Platform website (homepage, demo, docs) + Navbar/Footer/ConditionalLayout                                                        |
+| 2       | Component library MVP (10 components), theme system (87 tokens, 7 presets), preview page                                         |
+| 3       | 9-step intake flow, AI + deterministic dual-path generation, assembly engine, Convex schema                                      |
+| 4A      | Content field accuracy fixes, questionsInputKey staleness detection                                                              |
+| 4B      | +8 components (18 total), +4 presets (7 total), export pipeline (HTML/CSS ZIP)                                                   |
+| 4C      | Brand character system: emotional goals, voice tones, archetypes, anti-references (Steps 5-7)                                    |
+| 4D      | Mobile responsiveness: font clamping, responsive carousel/masonry, CTA sizing                                                    |
+| Quality | Output Quality Overhaul: 30/33 stories (6 tiers), VLM feedback loop, dev tooling                                                 |
+| 5A      | CSS visual foundation: 14 patterns, 4 dividers, placeholders, parallax, visual vocabulary                                        |
+| Wave 1  | +6 components (24 total), CSS effects system (8 effects), agent playbook                                                         |
+| 5B      | Stock photo integration (Unsplash/Pexels/Pixabay, context-aware, cached)                                                         |
+| UI      | Iframe viewport switcher, wireframe loading animation, mobile bottom sheets                                                      |
+| 6A      | Free Customization MVP: sidebar panel, 7 presets, color picker, 5/14 fonts, headline editing, reset, Zustand customization store |
 
-### Current: Phase 6 — Post-Generation Customization System
+### Next: Revenue Foundation (Parallel Tracks)
 
-> Boardroom BD-001: `business/boardroom/sessions/2026-02-12-customization-system.md`
+> Boardroom Sessions: BD-001 (Customization), BD-003 (Pricing/Monetization), BD-004 (Product Simplification)
+> See `docs/ROADMAP.md` for full details and `business/boardroom/DECISIONS_LOG.md` for decision context.
 
-- **6A** (Weeks 1-3): Free Customization MVP — sidebar panel, 7 presets, color picker, 5/14 fonts, headline editing, reset
-- **6B** (Weeks 3-5): Shareable preview links + "Built with EWB" badge
-- **6C** (Weeks 5-8): Clerk auth + Stripe billing (Pro $19/mo, Agency $49/mo)
-- **6D** (Weeks 8-12): Variant switching, personality sliders, section reorder
+**Critical Path (all run in parallel, ~6 weeks to "people can pay us"):**
 
-> Parallel: Phase 5C (AI images), 5D (scroll effects), multi-page, integrations. Visual editor deferred to Phase 9.
+| Track          | What                                                                                             | Key Decision |
+| -------------- | ------------------------------------------------------------------------------------------------ | ------------ |
+| Express Path   | 2-step intake (site type + business name/description), deterministic generation, <90s to preview | BD-004-01    |
+| Preview Reveal | Full-screen immersive reveal, 3-5s celebration, progressive disclosure of controls               | BD-004-02    |
+| Monetization   | Clerk auth + Stripe billing — Free ($0) → Starter ($12/mo) → Pro ($29/mo) → Own It ($99 export)  | BD-003-01    |
+| Distribution   | Shareable preview links, "Built with EWB" badge, OG meta                                         | BD-003-03    |
+| R&D Benchmark  | Curated reference sites, screenshot analysis, pipeline comparison scoring                        | BD-003-02    |
+
+**Post-Revenue:** Brand Discovery in sidebar (BD-004-03), AI Design Chat (Pro), advanced customization (fonts, effects, variants)
+**Future:** Multi-page, Next.js export, WCAG audit, integrations, visual editor
 
 ## Component Library (24 Components)
 
@@ -392,7 +406,7 @@ Before starting work, always read:
 
 1. This file (CLAUDE.md)
 2. `docs/ARCHITECTURE.md` — for system design context
-3. `docs/ROADMAP.md` — for current priorities (Phase 6: Customization System is next)
+3. `docs/ROADMAP.md` — for current priorities (Revenue Foundation parallel tracks)
 4. `docs/EPICS_AND_STORIES.md` — for Output Quality Overhaul tracking (30/33 shipped)
 5. Relevant doc files for the specific area you're working on
 

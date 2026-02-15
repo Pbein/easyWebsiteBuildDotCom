@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, RotateCcw } from "lucide-react";
 import { useAction } from "convex/react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { api } from "../../../../convex/_generated/api";
 import { useIntakeStore } from "@/lib/stores/intake-store";
 
@@ -13,7 +14,7 @@ import { useIntakeStore } from "@/lib/stores/intake-store";
  * Each phase corresponds to an assembly block appearing
  * ──────────────────────────────────────────────────────────── */
 
-const BUILDING_STEPS = [
+const DEEP_BUILDING_STEPS = [
   { text: "Reading your brand story...", block: "story", delay: 0 },
   { text: "Mapping your personality vector...", block: "personality", delay: 1800 },
   { text: "Choosing your color palette...", block: "nav", delay: 3600 },
@@ -27,17 +28,27 @@ const BUILDING_STEPS = [
   { text: "Almost there...", block: "done", delay: 16400 },
 ];
 
+const EXPRESS_BUILDING_STEPS = [
+  { text: "Analyzing your business...", block: "analyze", delay: 0 },
+  { text: "Selecting components...", block: "components", delay: 800 },
+  { text: "Building your site...", block: "build", delay: 1600 },
+  { text: "Adding finishing touches...", block: "polish", delay: 2400 },
+  { text: "Almost ready...", block: "done", delay: 3200 },
+];
+
 /* ────────────────────────────────────────────────────────────
  * Wireframe assembly blocks — the miniature site preview
  * ──────────────────────────────────────────────────────────── */
 
-const WIREFRAME_BLOCKS: {
+type WireframeBlockDef = {
   id: string;
   label: string;
-  appearsAt: number; // which step index triggers appearance
+  appearsAt: number;
   height: string;
   pattern: "nav" | "hero" | "features" | "text" | "cards" | "cta" | "footer";
-}[] = [
+};
+
+const DEEP_WIREFRAME_BLOCKS: WireframeBlockDef[] = [
   { id: "nav", label: "Navigation", appearsAt: 2, height: "h-6", pattern: "nav" },
   { id: "hero", label: "Hero", appearsAt: 3, height: "h-16", pattern: "hero" },
   { id: "features", label: "Features", appearsAt: 4, height: "h-12", pattern: "features" },
@@ -47,11 +58,18 @@ const WIREFRAME_BLOCKS: {
   { id: "footer", label: "Footer", appearsAt: 8, height: "h-6", pattern: "footer" },
 ];
 
+const EXPRESS_WIREFRAME_BLOCKS: WireframeBlockDef[] = [
+  { id: "nav", label: "Navigation", appearsAt: 0, height: "h-6", pattern: "nav" },
+  { id: "hero", label: "Hero", appearsAt: 1, height: "h-16", pattern: "hero" },
+  { id: "content", label: "Content", appearsAt: 2, height: "h-12", pattern: "features" },
+  { id: "footer", label: "Footer", appearsAt: 3, height: "h-6", pattern: "footer" },
+];
+
 function WireframeBlock({
   block,
   index,
 }: {
-  block: (typeof WIREFRAME_BLOCKS)[number];
+  block: WireframeBlockDef;
   index: number;
 }): React.ReactElement {
   const patterns: Record<string, React.ReactNode> = {
@@ -159,6 +177,10 @@ export function Step6Loading(): React.ReactElement {
   const brandArchetype = useIntakeStore((s) => s.brandArchetype);
   const antiReferences = useIntakeStore((s) => s.antiReferences);
   const reset = useIntakeStore((s) => s.reset);
+  const isExpress = useIntakeStore((s) => s.expressMode);
+
+  const BUILDING_STEPS = isExpress ? EXPRESS_BUILDING_STEPS : DEEP_BUILDING_STEPS;
+  const WIREFRAME_BLOCKS = isExpress ? EXPRESS_WIREFRAME_BLOCKS : DEEP_WIREFRAME_BLOCKS;
 
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +212,13 @@ export function Step6Loading(): React.ReactElement {
         narrativePrompts: Object.keys(narrativePrompts).length > 0 ? narrativePrompts : undefined,
       });
 
+      if (isExpress) {
+        posthog.capture("express_generation_completed", {
+          session_id: sessionId,
+          site_type: siteType,
+          business_name: businessName,
+        });
+      }
       // Navigate to preview on success
       router.push(`/demo/preview?session=${encodeURIComponent(sessionId)}`);
     } catch (err) {
@@ -216,6 +245,7 @@ export function Step6Loading(): React.ReactElement {
     narrativePrompts,
     brandArchetype,
     antiReferences,
+    isExpress,
     router,
   ]);
 
@@ -241,11 +271,12 @@ export function Step6Loading(): React.ReactElement {
     }, 200);
 
     return () => clearInterval(timer);
-  }, [error]);
+  }, [error, BUILDING_STEPS]);
 
   // Logarithmic progress: fast at start, asymptotically approaches 95%
-  // At 5s → ~55%, at 10s → ~72%, at 15s → ~82%, at 20s → ~88%, at 30s → ~93%
-  const progress = Math.min(95, (1 - Math.exp(-elapsedMs / 8000)) * 100);
+  // Express: ~4s total (faster curve). Deep: ~16s total.
+  const progressDecay = isExpress ? 3000 : 8000;
+  const progress = Math.min(95, (1 - Math.exp(-elapsedMs / progressDecay)) * 100);
 
   // Which wireframe blocks are visible based on current step
   const visibleBlocks = WIREFRAME_BLOCKS.filter((b) => b.appearsAt <= activeStep);

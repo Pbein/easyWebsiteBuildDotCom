@@ -38,6 +38,9 @@ export interface IntakeState {
   /** Fingerprint of intake inputs when questions were generated (for staleness check) */
   questionsInputKey: string | null;
 
+  /** Express mode: 3-step flow (default) vs full 9-step deep flow */
+  expressMode: boolean;
+
   /** Anonymous session ID for Convex storage */
   sessionId: string;
 
@@ -62,6 +65,7 @@ export interface IntakeActions {
   setAiQuestions: (questions: IntakeState["aiQuestions"]) => void;
   setAiResponse: (questionId: string, response: string) => void;
   setSpecId: (id: string) => void;
+  setExpressMode: (mode: boolean) => void;
 
   goToStep: (step: number) => void;
   goNext: () => void;
@@ -89,6 +93,7 @@ const initialState: IntakeState = {
   brandArchetype: null,
   antiReferences: [],
   aiQuestions: [],
+  expressMode: true,
   aiResponses: {},
   questionsGeneratedAt: null,
   questionsInputKey: null,
@@ -127,6 +132,7 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
           aiResponses: { ...state.aiResponses, [questionId]: response },
         })),
       setSpecId: (id) => set({ specId: id }),
+      setExpressMode: (mode) => set({ expressMode: mode }),
 
       goToStep: (step) =>
         set((state) => ({
@@ -151,6 +157,7 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
     {
       name: "ewb-intake",
       partialize: (state) => ({
+        expressMode: state.expressMode,
         siteType: state.siteType,
         goal: state.goal,
         businessName: state.businessName,

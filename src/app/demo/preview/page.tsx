@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import posthog from "posthog-js";
@@ -60,9 +61,10 @@ const VIEWPORT_WIDTHS: Record<string, string> = {
 function PreviewContent(): React.ReactElement {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
+  const expressMode = useIntakeStore((s) => s.expressMode);
 
   const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // starts closed for immersive reveal
   const [activePage, setActivePage] = useState("/");
   const [isExporting, setIsExporting] = useState(false);
   const [activeVariant, setActiveVariant] = useState<"A" | "B">("A");
@@ -70,6 +72,8 @@ function PreviewContent(): React.ReactElement {
   const [lastScreenshot, setLastScreenshot] = useState<ScreenshotResult | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(true);
+  const revealCompleted = useRef(false);
 
   // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
   const isDevParam = searchParams.get("dev") === "true";
@@ -113,9 +117,10 @@ function PreviewContent(): React.ReactElement {
         business_name: rawSpec.businessName,
         method: rawSpec.metadata?.method || "unknown",
         component_count: rawSpec.pages?.[0]?.components?.length || 0,
+        express_mode: expressMode,
       });
     }
-  }, [rawSpec, sessionId]);
+  }, [rawSpec, sessionId, expressMode]);
 
   const handleExport = useCallback(
     async (specToExport: SiteIntentDocument): Promise<void> => {
@@ -258,6 +263,9 @@ function PreviewContent(): React.ReactElement {
       setShareUrl={setShareUrl}
       isGeneratingShareLink={isGeneratingShareLink}
       setIsGeneratingShareLink={setIsGeneratingShareLink}
+      isRevealing={isRevealing}
+      setIsRevealing={setIsRevealing}
+      revealCompleted={revealCompleted}
     />
   );
 }
@@ -620,6 +628,9 @@ function PreviewLayout({
   setShareUrl,
   isGeneratingShareLink,
   setIsGeneratingShareLink,
+  isRevealing,
+  setIsRevealing,
+  revealCompleted,
 }: {
   spec: SiteIntentDocument;
   viewport: "desktop" | "tablet" | "mobile";
@@ -642,6 +653,9 @@ function PreviewLayout({
   setShareUrl: (v: string | null) => void;
   isGeneratingShareLink: boolean;
   setIsGeneratingShareLink: (v: boolean) => void;
+  isRevealing: boolean;
+  setIsRevealing: (v: boolean) => void;
+  revealCompleted: React.MutableRefObject<boolean>;
 }): React.ReactElement {
   const isMobile = useIsMobile();
   const router = useRouter();
@@ -702,6 +716,42 @@ function PreviewLayout({
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
   const prevVariantRef = useRef(activeVariant);
   const hasTrackedCustomization = useRef(false);
+
+  // Immersive reveal: auto-dismiss after 3 seconds, then show controls
+  useEffect(() => {
+    if (!isRevealing || revealCompleted.current) {
+      if (!isRevealing && !sidebarOpen && !isMobile) {
+        setSidebarOpen(true);
+      }
+      return;
+    }
+    const timer = setTimeout(() => {
+      revealCompleted.current = true;
+      setIsRevealing(false);
+      if (!isMobile) {
+        setSidebarOpen(true);
+      }
+      posthog.capture("reveal_completed", {
+        session_id: sessionId,
+        skipped: false,
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing]);
+
+  const skipReveal = useCallback((): void => {
+    if (!isRevealing) return;
+    revealCompleted.current = true;
+    setIsRevealing(false);
+    if (!isMobile) {
+      setSidebarOpen(true);
+    }
+    posthog.capture("reveal_completed", {
+      session_id: sessionId,
+      skipped: true,
+    });
+  }, [isRevealing, setIsRevealing, setSidebarOpen, isMobile, sessionId, revealCompleted]);
 
   // Track theme variant switches (not on initial mount)
   useEffect(() => {
@@ -1090,7 +1140,7 @@ function PreviewLayout({
         {/* Full-bleed preview + bottom sheets */}
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* Preview area — full bleed, no padding */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto" onClick={isRevealing ? skipReveal : undefined}>
             <div ref={previewRef}>
               <AssemblyRenderer
                 spec={mobileEffectiveSpec}
@@ -1101,8 +1151,37 @@ function PreviewLayout({
             </div>
           </div>
 
+          {/* Immersive reveal overlay — mobile */}
+          <AnimatePresence>
+            {isRevealing && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="rounded-2xl bg-black/60 px-8 py-5 text-center backdrop-blur-md"
+                >
+                  <p
+                    className="text-lg font-bold text-white"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    Your website is ready
+                  </p>
+                  <p className="mt-1 text-xs text-white/60">Tap anywhere to explore</p>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Info sheet */}
-          {mobileTab === "info" && (
+          {!isRevealing && mobileTab === "info" && (
             <MobileBottomSheet title="Site Details" onClose={() => setMobileTab("preview")}>
               <MobileSidebarContent
                 spec={spec}
@@ -1114,7 +1193,7 @@ function PreviewLayout({
           )}
 
           {/* Customize sheet */}
-          {mobileTab === "customize" && (
+          {!isRevealing && mobileTab === "customize" && (
             <MobileBottomSheet title="Customize" onClose={() => setMobileTab("preview")}>
               <div className="space-y-5">
                 {/* A/B Variant toggle */}
@@ -1217,7 +1296,7 @@ function PreviewLayout({
           )}
 
           {/* Actions sheet */}
-          {mobileTab === "actions" && (
+          {!isRevealing && mobileTab === "actions" && (
             <MobileBottomSheet title="Actions" onClose={() => setMobileTab("preview")}>
               <div className="flex flex-col gap-1 py-2">
                 <button
@@ -1257,39 +1336,65 @@ function PreviewLayout({
           )}
         </div>
 
-        {/* Tab bar */}
-        <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} />
+        {/* Tab bar — fades in after reveal */}
+        <AnimatePresence>
+          {!isRevealing && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <MobileTabBar activeTab={mobileTab} onTabChange={setMobileTab} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Feedback Banner — positioned above tab bar */}
-        {sessionId && <FeedbackBanner sessionId={sessionId} isMobile />}
+        {sessionId && !isRevealing && <FeedbackBanner sessionId={sessionId} isMobile />}
       </div>
     );
   }
 
-  /* ── Desktop layout (unchanged) ────────────────────── */
+  /* ── Desktop layout ────────────────────────────────── */
   return (
     <div className="flex h-screen flex-col bg-[#0a0b0f]">
-      {/* Toolbar */}
-      <PreviewToolbar
-        businessName={spec.businessName}
-        viewport={viewport}
-        onViewportChange={setViewport}
-        onExport={() => handleExport(spec)}
-        isExporting={isExporting}
-        onScreenshot={() => void handleScreenshot()}
-        isCapturing={isCapturing}
-        activeVariant={activeVariant}
-        onVariantChange={setActiveVariant}
-        activePresetName={activePresetId ? getPresetById(activePresetId)?.name : null}
-        onShare={() => void handleShare()}
-        isGeneratingShareLink={isGeneratingShareLink}
-        shareUrl={shareUrl}
-        onShareModalClose={handleShareModalClose}
-      />
+      {/* Toolbar — minimal during reveal, full after */}
+      {isRevealing ? (
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.06)] bg-[#0d0e14] px-4">
+          <div className="flex items-center gap-3">
+            <span
+              className="text-sm font-semibold text-white"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              {spec.businessName}
+            </span>
+            <span className="rounded-full bg-[#3ecfb4]/10 px-2.5 py-0.5 text-[10px] font-medium text-[#3ecfb4]">
+              Preview
+            </span>
+          </div>
+        </div>
+      ) : (
+        <PreviewToolbar
+          businessName={spec.businessName}
+          viewport={viewport}
+          onViewportChange={setViewport}
+          onExport={() => handleExport(spec)}
+          isExporting={isExporting}
+          onScreenshot={() => void handleScreenshot()}
+          isCapturing={isCapturing}
+          activeVariant={activeVariant}
+          onVariantChange={setActiveVariant}
+          activePresetName={activePresetId ? getPresetById(activePresetId)?.name : null}
+          onShare={() => void handleShare()}
+          isGeneratingShareLink={isGeneratingShareLink}
+          shareUrl={shareUrl}
+          onShareModalClose={handleShareModalClose}
+        />
+      )}
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Customization Sidebar */}
-        {sidebarOpen && (
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
+        {/* Customization Sidebar — hidden during reveal */}
+        {!isRevealing && sidebarOpen && (
           <CustomizationSidebar
             spec={spec}
             activeTheme={activeTheme}
@@ -1309,8 +1414,8 @@ function PreviewLayout({
           />
         )}
 
-        {/* Toggle sidebar button when closed */}
-        {!sidebarOpen && (
+        {/* Toggle sidebar button when closed (after reveal) */}
+        {!isRevealing && !sidebarOpen && (
           <button
             onClick={() => setSidebarOpen(true)}
             className="absolute top-1/2 left-0 z-10 -translate-y-1/2 rounded-r-lg border border-l-0 border-[var(--color-border)] bg-[var(--color-bg-card)] px-1.5 py-6 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]"
@@ -1330,7 +1435,10 @@ function PreviewLayout({
         )}
 
         {/* Main preview area — iframe for real responsive breakpoints */}
-        <div className="flex flex-1 justify-center overflow-auto p-4">
+        <div
+          className="flex flex-1 justify-center overflow-auto p-4"
+          onClick={isRevealing ? skipReveal : undefined}
+        >
           <div
             className="shadow-2xl transition-[width] duration-300"
             style={{
@@ -1347,6 +1455,35 @@ function PreviewLayout({
             />
           </div>
         </div>
+
+        {/* Immersive reveal overlay — desktop */}
+        <AnimatePresence>
+          {isRevealing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="rounded-2xl bg-black/50 px-10 py-6 text-center backdrop-blur-lg"
+              >
+                <p
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  Your website is ready
+                </p>
+                <p className="mt-2 text-sm text-white/50">Click anywhere to customize</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Dev Panel — bottom drawer */}
@@ -1360,7 +1497,7 @@ function PreviewLayout({
       )}
 
       {/* Feedback Banner — floating bottom-right */}
-      {sessionId && <FeedbackBanner sessionId={sessionId} />}
+      {sessionId && !isRevealing && <FeedbackBanner sessionId={sessionId} />}
     </div>
   );
 }

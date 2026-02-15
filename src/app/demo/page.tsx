@@ -20,6 +20,8 @@ import {
   LayoutList,
   User,
   HelpCircle,
+  Zap,
+  Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useIntakeStore } from "@/lib/stores/intake-store";
@@ -373,7 +375,8 @@ const pageVariants = {
 /* ------------------------------------------------------------------ */
 
 export default function DemoPage(): React.ReactElement {
-  const [step, setStep] = useState(1);
+  // step 0 = mode selector, steps 1-9 = intake flow
+  const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [state, setState] = useState<LocalIntakeState>({
     siteType: null,
@@ -386,12 +389,14 @@ export default function DemoPage(): React.ReactElement {
   const [placeholderIndex] = useState(() => Math.floor(Math.random() * placeholders.length));
   const hasTrackedIntakeStart = useRef(false);
 
+  const expressMode = useIntakeStore((s) => s.expressMode);
+  const setExpressMode = useIntakeStore((s) => s.setExpressMode);
   const setSiteType = useIntakeStore((s) => s.setSiteType);
   const setGoal = useIntakeStore((s) => s.setGoal);
   const setBusinessName = useIntakeStore((s) => s.setBusinessName);
   const setDescription = useIntakeStore((s) => s.setDescription);
 
-  const totalSteps = 9;
+  const totalSteps = expressMode ? 3 : 9;
 
   // Reset scroll position on step change — prevents landing at bottom on mobile
   useEffect(() => {
@@ -407,38 +412,61 @@ export default function DemoPage(): React.ReactElement {
         step_name: stepLabels[previousStep] || `Step ${previousStep}`,
         site_type: state.siteType,
         goal: state.goal,
+        express_mode: expressMode,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  /** Bridge local state → Zustand store at step 4→5 boundary */
-  const bridgeToStore = useCallback((): void => {
-    setSiteType(state.siteType || "business");
-    setGoal(state.goal || "contact");
-    setBusinessName(state.businessName);
-    setDescription(state.description);
-    // Set all personality axes in a single store update
-    useIntakeStore.setState({ personality: [...state.personality] });
-  }, [state, setSiteType, setGoal, setBusinessName, setDescription]);
+  /** Bridge local state → Zustand store at step 4→5 boundary (or 3→9 in express) */
+  const bridgeToStore = useCallback(
+    (personalityOverride?: number[]): void => {
+      setSiteType(state.siteType || "business");
+      setGoal(state.goal || "contact");
+      setBusinessName(state.businessName);
+      setDescription(state.description);
+      useIntakeStore.setState({
+        personality: personalityOverride ?? [...state.personality],
+      });
+    },
+    [state, setSiteType, setGoal, setBusinessName, setDescription]
+  );
 
   const goNext = useCallback((): void => {
+    // Express mode: after step 3, bridge with neutral personality and jump to generation
+    if (expressMode && step === 3) {
+      bridgeToStore([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+      posthog.capture("express_generation_started", {
+        site_type: state.siteType,
+        goal: state.goal,
+        business_name: state.businessName,
+      });
+      setDirection(1);
+      setStep(9);
+      return;
+    }
+
     if (step === 4 && personalityStep >= personalityAxes.length) {
-      // Bridge to Zustand store before moving to step 5
+      // Deep mode: bridge to Zustand store before moving to step 5
       bridgeToStore();
       setDirection(1);
       setStep(5);
       return;
     }
     setDirection(1);
-    setStep((s) => Math.min(s + 1, totalSteps));
-  }, [step, personalityStep, bridgeToStore]);
+    setStep((s) => Math.min(s + 1, 9));
+  }, [step, personalityStep, bridgeToStore, expressMode, state]);
 
   const goBack = useCallback((): void => {
     if (step === 5) {
-      // Back from Emotion → Personality
       setDirection(-1);
       setStep(4);
+      return;
+    }
+    if (step === 1) {
+      // Go back to mode selector
+      setDirection(-1);
+      setStep(0);
       return;
     }
     setDirection(-1);
@@ -461,7 +489,8 @@ export default function DemoPage(): React.ReactElement {
   };
 
   // Steps 5-7 have their own nav; steps 8-9 manage their own navigation
-  const showNavButtons = step <= 4;
+  // In express mode, steps 1-3 show nav buttons
+  const showNavButtons = expressMode ? step >= 1 && step <= 3 : step >= 1 && step <= 4;
 
   const stepLabels: Record<number, string> = {
     1: "Site Type",
@@ -475,12 +504,23 @@ export default function DemoPage(): React.ReactElement {
     9: "Generating",
   };
 
-  // Progress segments: Setup (1-4) | Character (5-7) | Discovery (8) | Generate (9, hidden)
-  const progressGroups = [
+  // Express mode: single progress bar; Deep mode: segmented groups
+  const expressProgress = step >= 1 && step <= 3 ? step / 3 : step >= 9 ? 1 : 0;
+
+  const deepProgressGroups = [
     { label: "Setup", steps: [1, 2, 3, 4] },
     { label: "Character", steps: [5, 6, 7] },
     { label: "Discovery", steps: [8] },
   ];
+
+  const handleModeSelect = (mode: "express" | "deep"): void => {
+    setExpressMode(mode === "express");
+    posthog.capture(mode === "express" ? "express_mode_selected" : "deep_mode_selected", {
+      source: "toggle",
+    });
+    setDirection(1);
+    setStep(1);
+  };
 
   return (
     <div className="min-h-screen pt-20 pb-16">
@@ -499,56 +539,82 @@ export default function DemoPage(): React.ReactElement {
             Build Your Website
           </h1>
           <p className="text-[var(--color-text-secondary)]">
-            Answer a few questions and watch the magic happen. Takes about 3 minutes.
+            {step === 0
+              ? "Choose how you want to build."
+              : expressMode
+                ? "Describe your business and we'll build it. Takes about 60 seconds."
+                : "Answer a few questions and watch the magic happen. Takes about 3 minutes."}
           </p>
         </motion.div>
 
-        {/* Progress Bar — segmented by group */}
-        {step <= 8 && (
+        {/* Progress Bar */}
+        {step >= 1 && step <= 8 && (
           <div className="mx-auto mb-12 max-w-lg">
-            <div className="mb-2 flex gap-1.5">
-              {progressGroups.map((group) => {
-                const groupStart = group.steps[0];
-                const groupEnd = group.steps[group.steps.length - 1];
-                const isComplete = step > groupEnd;
-                const isActive = step >= groupStart && step <= groupEnd;
-                const progress = isComplete
-                  ? 1
-                  : isActive
-                    ? (step - groupStart) / group.steps.length
-                    : 0;
+            {expressMode ? (
+              /* Express: single clean progress bar */
+              <>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-500"
+                    style={{ width: `${expressProgress * 100}%` }}
+                  />
+                </div>
+                <p
+                  className="mt-3 text-center text-xs text-[var(--color-text-tertiary)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  Step {step} of {totalSteps}
+                  {stepLabels[step] ? ` — ${stepLabels[step]}` : ""}
+                </p>
+              </>
+            ) : (
+              /* Deep: segmented by group */
+              <>
+                <div className="mb-2 flex gap-1.5">
+                  {deepProgressGroups.map((group) => {
+                    const groupStart = group.steps[0];
+                    const groupEnd = group.steps[group.steps.length - 1];
+                    const isComplete = step > groupEnd;
+                    const isActive = step >= groupStart && step <= groupEnd;
+                    const progress = isComplete
+                      ? 1
+                      : isActive
+                        ? (step - groupStart) / group.steps.length
+                        : 0;
 
-                return (
-                  <div key={group.label} className="flex-1">
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
-                      <div
-                        className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-500"
-                        style={{ width: `${progress * 100}%` }}
-                      />
-                    </div>
-                    <p
-                      className={`mt-1.5 text-center text-[10px] font-medium transition-colors ${
-                        isActive
-                          ? "text-[var(--color-accent)]"
-                          : isComplete
-                            ? "text-[var(--color-text-secondary)]"
-                            : "text-[var(--color-text-tertiary)]"
-                      }`}
-                      style={{ fontFamily: "var(--font-heading)" }}
-                    >
-                      {group.label}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-            <p
-              className="mt-3 text-center text-xs text-[var(--color-text-tertiary)]"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              Step {step} of {totalSteps}
-              {stepLabels[step] ? ` — ${stepLabels[step]}` : ""}
-            </p>
+                    return (
+                      <div key={group.label} className="flex-1">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
+                          <div
+                            className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-500"
+                            style={{ width: `${progress * 100}%` }}
+                          />
+                        </div>
+                        <p
+                          className={`mt-1.5 text-center text-[10px] font-medium transition-colors ${
+                            isActive
+                              ? "text-[var(--color-accent)]"
+                              : isComplete
+                                ? "text-[var(--color-text-secondary)]"
+                                : "text-[var(--color-text-tertiary)]"
+                          }`}
+                          style={{ fontFamily: "var(--font-heading)" }}
+                        >
+                          {group.label}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p
+                  className="mt-3 text-center text-xs text-[var(--color-text-tertiary)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  Step {step} of {totalSteps}
+                  {stepLabels[step] ? ` — ${stepLabels[step]}` : ""}
+                </p>
+              </>
+            )}
           </div>
         )}
 
@@ -563,16 +629,17 @@ export default function DemoPage(): React.ReactElement {
             exit="exit"
             transition={{ duration: 0.35, ease: [0.21, 0.47, 0.32, 0.98] }}
           >
+            {step === 0 && <ModeSelector onSelect={handleModeSelect} expressMode={expressMode} />}
             {step === 1 && (
               <Step1SiteType
                 selected={state.siteType}
                 onSelect={(id) => {
                   setState((s) => ({ ...s, siteType: id, goal: null }));
-                  // Track intake_started on first site type selection
                   if (!hasTrackedIntakeStart.current) {
                     hasTrackedIntakeStart.current = true;
                     posthog.capture("intake_started", {
                       site_type: id,
+                      express_mode: expressMode,
                     });
                   }
                 }}
@@ -656,12 +723,11 @@ export default function DemoPage(): React.ReactElement {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation — only shown for steps 1-4 */}
+        {/* Navigation — only shown for steps 1-3 (express) or 1-4 (deep) */}
         {showNavButtons && (
           <div className="mx-auto mt-12 flex max-w-2xl justify-between">
             <button
               onClick={goBack}
-              disabled={step === 1}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-6 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:border-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -672,13 +738,13 @@ export default function DemoPage(): React.ReactElement {
               disabled={!canProceed()}
               className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-6 py-2.5 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
             >
-              {step === 4 && canProceed() ? "Continue" : "Continue"}
+              {expressMode && step === 3 ? "Build My Site" : "Continue"}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        {/* Back button for Discovery (step 8) */}
+        {/* Back button for Discovery (step 8, deep mode only) */}
         {step === 8 && (
           <div className="mx-auto mt-12 flex max-w-2xl justify-start">
             <button
@@ -1101,6 +1167,127 @@ function Step4Personality({
         >
           Confirm &amp; Next Axis
           <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mode Selector (Step 0)                                             */
+/* ------------------------------------------------------------------ */
+
+function ModeSelector({
+  onSelect,
+  expressMode,
+}: {
+  onSelect: (mode: "express" | "deep") => void;
+  expressMode: boolean;
+}): React.ReactElement {
+  return (
+    <div className="mx-auto max-w-2xl">
+      <h2
+        className="mb-2 text-center text-2xl font-bold text-[var(--color-text-primary)]"
+        style={{ fontFamily: "var(--font-heading)" }}
+      >
+        How do you want to build?
+      </h2>
+      <p className="mb-10 text-center text-[var(--color-text-secondary)]">
+        Get a professional site in seconds, or take time to craft every detail.
+      </p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* Express Build */}
+        <button
+          onClick={() => onSelect("express")}
+          className={`group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+            expressMode
+              ? "border-[var(--color-accent)] bg-[var(--color-accent-glow)] shadow-[0_0_40px_-12px_rgba(232,168,73,0.2)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent)]"
+          }`}
+        >
+          {expressMode && (
+            <div className="absolute top-3 right-3">
+              <Check className="h-4 w-4 text-[var(--color-accent)]" />
+            </div>
+          )}
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-accent)]/10">
+            <Zap className="h-6 w-6 text-[var(--color-accent)]" />
+          </div>
+          <div className="mb-1 flex items-center gap-2">
+            <p
+              className="text-lg font-bold text-[var(--color-text-primary)]"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Express Build
+            </p>
+            <span className="rounded-full bg-[var(--color-accent)]/15 px-2.5 py-0.5 text-[10px] font-bold text-[var(--color-accent)]">
+              60 seconds
+            </span>
+          </div>
+          <p className="mb-4 text-sm leading-relaxed text-[var(--color-text-tertiary)]">
+            Tell us your business type and description. We handle the rest.
+          </p>
+          <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex gap-1">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[9px] font-bold text-[var(--color-accent)]"
+                >
+                  {n}
+                </div>
+              ))}
+            </div>
+            <span>3 quick steps</span>
+          </div>
+        </button>
+
+        {/* Deep Brand Capture */}
+        <button
+          onClick={() => onSelect("deep")}
+          className={`group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#e8a849] focus-visible:outline-none ${
+            !expressMode
+              ? "border-[#3ecfb4]/50 bg-[#3ecfb4]/[0.03] shadow-[0_0_40px_-12px_rgba(62,207,180,0.15)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-border-accent)]"
+          }`}
+        >
+          {!expressMode && (
+            <div className="absolute top-3 right-3">
+              <Check className="h-4 w-4 text-[#3ecfb4]" />
+            </div>
+          )}
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#3ecfb4]/10">
+            <Sparkles className="h-6 w-6 text-[#3ecfb4]" />
+          </div>
+          <div className="mb-1 flex items-center gap-2">
+            <p
+              className="text-lg font-bold text-[var(--color-text-primary)]"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Deep Brand Capture
+            </p>
+            <span className="rounded-full bg-[#3ecfb4]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#3ecfb4]">
+              3 minutes
+            </span>
+          </div>
+          <p className="mb-4 text-sm leading-relaxed text-[var(--color-text-tertiary)]">
+            Define your brand personality, voice, emotions, and visual culture for a fully tailored
+            result.
+          </p>
+          <div className="flex items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                <div
+                  key={n}
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[#3ecfb4]/10 text-[9px] font-bold text-[#3ecfb4]"
+                >
+                  {n}
+                </div>
+              ))}
+            </div>
+            <span>9 detailed steps</span>
+          </div>
         </button>
       </div>
     </div>

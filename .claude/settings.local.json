@@ -55,7 +55,11 @@
       "WebFetch(domain:glama.ai)",
       "WebFetch(domain:apidog.com)",
       "Bash(claude mcp add-json \"posthog\" \"{\"\"command\"\":\"\"npx\"\",\"\"args\"\":[\"\"-y\"\",\"\"mcp-remote@latest\"\",\"\"https://mcp.posthog.com/mcp\"\",\"\"--header\"\",\"\"Authorization:Bearer phx_Jkm7eqobwSGWb8OB7zUPCK4l1RLy3uZjRNdkHwLc5mGcU4x\"\"]}\")",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "Bash(node -e:*)",
+      "Bash(git check-ignore:*)",
+      "WebFetch(domain:www.startuparchive.org)",
+      "WebFetch(domain:tremendous.blog)"
     ]
   }
 }

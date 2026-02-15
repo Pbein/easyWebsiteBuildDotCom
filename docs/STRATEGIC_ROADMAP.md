@@ -3,6 +3,7 @@
 > **Purpose:** Honest evaluation of where EasyWebsiteBuild is today, what the highest-value next moves are, and how to think about the website vs web-application spectrum.
 >
 > **Date:** February 2026
+> **Last updated:** 2026-02-15 (aligned with Boardroom Sessions 001-003)
 
 ---
 
@@ -10,7 +11,7 @@
 
 ### What We Can Deliver Today
 
-A single-page, themed, responsive marketing website with AI-generated industry-specific content, exported as HTML/CSS/README ZIP.
+A single-page, themed, responsive marketing website with AI-generated industry-specific content, 24 components, 7 theme presets, stock photos, CSS visual effects, and real-time customization (presets, color, fonts, headlines). Exported as HTML/CSS/README ZIP.
 
 ### Limitation Inventory
 
@@ -18,7 +19,7 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | 1   | **Single-page only** — nav links exist but all point to `#sections` on the same page                                                                                                                                                      | High — clients expect About, Services, Contact pages at minimum                                                       | Medium                              |
 | 2   | **~~No real images~~** ✅ **RESOLVED** — Phase 5A CSS visual foundation (placeholders, patterns, dividers) + Phase 5B stock photo integration (Unsplash/Pexels/Pixabay with context-aware keyword builder, color filtering, 24hr caching) | ~~Medium~~                                                                                                            | ~~Medium~~                          |
-| 3   | **~~No post-generation editing~~** — ⚠️ BEING ADDRESSED: Customization System (Boardroom BD-001, 4 phases). Phase 1 ships free-tier sidebar customization (presets, color, fonts, headline editing)                                       | High — clients always want changes                                                                                    | Medium (phased approach)            |
+| 3   | **~~No post-generation editing~~** ✅ **RESOLVED** — Phase 6A customization sidebar shipped (7 presets, color picker, 5/14 fonts, headline editing, reset). Post-generation Brand Discovery planned (BD-004-03)                           | ~~High~~                                                                                                              | ~~Medium~~                          |
 | 4   | ~~**Character capture not built**~~ ✅ **RESOLVED in Phase 4C** — emotional goals, voice, archetype, anti-references captured                                                                                                             | ~~High~~                                                                                                              | ~~Medium~~                          |
 | 5   | **Export is basic HTML/CSS** — not a real Next.js project, no routing                                                                                                                                                                     | Medium — works for simple sites, limiting for anything more                                                           | Medium                              |
 | 6   | **Forms don't submit** — contact form shows success animation but sends nothing                                                                                                                                                           | Medium — common expectation                                                                                           | Low                                 |
@@ -28,7 +29,7 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 | 10  | **No third-party integrations** — Stripe, Calendly, Mailchimp, analytics = zero                                                                                                                                                           | Medium-High                                                                                                           | Varies per integration              |
 | 11  | **No deployment** — users get a ZIP, must self-host                                                                                                                                                                                       | Medium — friction for non-technical users                                                                             | Medium (Vercel API)                 |
 | 12  | **No user accounts** — can't save projects, return later, manage multiple sites                                                                                                                                                           | Medium — essential for a real product                                                                                 | Medium                              |
-| 13  | **Component variety still limited** — 18 components covers basics but not all site types                                                                                                                                                  | Medium — diminishing returns per component                                                                            | Low per component                   |
+| 13  | **Component variety limited** — 24 components covers most cases but not all site types                                                                                                                                                    | Low — diminishing returns per component                                                                               | Low per component                   |
 | 14  | **No mobile app preview** — viewport toggle simulates but isn't a real device test                                                                                                                                                        | Low — nice to have                                                                                                    | Low                                 |
 | 15  | **No WCAG contrast enforcement** — Theme generation can produce inaccessible color combinations (yellow CTA + white text)                                                                                                                 | Medium — accessibility & readability                                                                                  | Low (chroma.contrast() check)       |
 | 16  | **No design evaluation feedback** — No automated way to assess if generated site matches intent                                                                                                                                           | ~~Medium~~ ✅ **RESOLVED** — VLM Design Feedback Loop (T3-E1) evaluates screenshots against intent with Claude Vision | ~~High~~                            |
@@ -37,14 +38,16 @@ A single-page, themed, responsive marketing website with AI-generated industry-s
 
 For context on where the market is:
 
-| Feature       | Squarespace        | Wix         | Framer        | Our Advantage                                |
-| ------------- | ------------------ | ----------- | ------------- | -------------------------------------------- |
-| Templates     | 100+ hand-designed | 800+        | 100+          | AI-generated from scratch — infinite variety |
-| AI generation | Basic (text only)  | ADI (basic) | AI page gen   | Deep brand understanding, not just layout    |
-| Customization | Drag-drop editor   | Drag-drop   | Visual editor | Conversational refinement (planned)          |
-| E-commerce    | Built-in           | Built-in    | Limited       | Integration-based (planned)                  |
-| Hosting       | Included           | Included    | Included      | Self-host or Vercel (planned)                |
-| Pricing       | $16-65/mo          | $17-159/mo  | $5-30/mo      | One-time purchase + optional subscription    |
+| Feature         | Squarespace        | Wix         | Framer        | EasyWebsiteBuild                             |
+| --------------- | ------------------ | ----------- | ------------- | -------------------------------------------- |
+| Templates       | 100+ hand-designed | 800+        | 100+          | AI-generated from scratch — infinite variety |
+| AI generation   | Basic (text only)  | ADI (basic) | AI page gen   | Deep brand capture (9-step character system) |
+| Customization   | Drag-drop editor   | Drag-drop   | Visual editor | Guided + AI Chat (BD-003-04)                 |
+| Export/own      | No                 | No          | Limited       | **Yes ($99, zero lock-in)**                  |
+| Lock-in         | High               | High        | Medium        | **Zero** (anti-lock-in as brand identity)    |
+| Hosting         | Included           | Included    | Included      | Vercel ($12/mo Starter)                      |
+| Pricing         | $16-65/mo          | $17-159/mo  | $5-30/mo      | **$12-29/mo** (BD-003-01)                    |
+| Time to preview | 2-3 min            | 1-2 min     | 1-2 min       | **<90 sec** target (BD-004-01 express path)  |
 
 **Our unique angle:** Nobody else does deep brand personality capture + AI-driven assembly from components. The competitors give you templates and let you customize. We understand your brand and build from scratch. That's genuinely different — but only if the output quality is high enough to justify it.
 
@@ -90,46 +93,61 @@ We do NOT build e-commerce, booking, payments, or CMS from scratch. We build bea
 - The CONFIGURATION (which Stripe products, which Calendly calendar, which Mailchimp list)
 - The THEMING (the integration looks like it belongs on the site, not like a widget dropped in)
 
-### Tier Strategy
+### Pricing & Tier Strategy (Boardroom BD-003-01)
 
-**Tier 1: Static Sites (NOW — perfecting this)**
+> Decision source: `business/boardroom/sessions/2026-02-14-rd-training-and-pricing.md`
+> Feature plan: `docs-specific-feature-plans/PRICING_MONETIZATION_STRATEGY.md`
 
-- ✅ CSS visual foundation (patterns, dividers, decorative elements, parallax) — Phase 5A COMPLETE
-- ✅ Character capture for brand-specific output — Phase 4C COMPLETE
-- Multi-page marketing sites with proper routing
-- Real image handling (stock API → AI generation → user upload)
-- Refinement chat for post-generation editing
-- Next.js project export
+**Philosophy:** "Other companies make websites. We make YOUR website." The personalization IS the product. Anti-lock-in is our brand identity.
+
+| Tier          | Price        | What You Get                                                                                                                  | Unit Economics                        |
+| ------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **Free Demo** | $0           | Express path (60s) or full intake → generate → preview → customize (7 presets, color, 5 fonts, headlines). Export with badge. | ~$0.05/gen (AI) or $0 (deterministic) |
+| **Starter**   | $12/mo       | Live site (Vercel), clean export (no badge), working contact form, 1 AI Chat message                                          | ~$0.50/mo → 96% margin                |
+| **Pro**       | $29/mo       | All 14 fonts, full color control, CSS effects, unlimited AI Chat, booking/payment integrations, custom domain                 | ~$1-2/mo → 93% margin                 |
+| **Own It**    | $99 one-time | Full project export, zero lock-in, deployment guide. Available to any tier.                                                   | $0 → 100% margin                      |
+
+**Break-even:** ~4 Starter users OR 2 Pro users.
+
+### Product Tier Strategy (Technical)
+
+**Tier 1: Static Sites (NOW — shipping)**
+
+- ✅ CSS visual foundation — Phase 5A COMPLETE
+- ✅ Character capture — Phase 4C COMPLETE
+- ✅ Stock photos — Phase 5B COMPLETE
+- ✅ Real-time customization — Phase 6A COMPLETE
+- 🔴 Express path (<90 sec to preview) — BD-004-01
+- 🔴 Monetization infrastructure (Stripe + Clerk) — BD-003-01
+- 🔴 Vercel deployment — BD-003-01
+- 🟡 Multi-page generation with routing
+- 🟡 Next.js project export upgrade
 
 **Tier 2: Dynamic Sites (NEXT — 3-6 months)**
 
-- Working contact form submission (Convex backend)
-- Blog/CMS (Convex-based simple content management)
+- Working contact forms (Formspree for Starter, Convex for hosted)
+- AI Design Chat (Pro feature) — BD-003-04
+- Post-generation Brand Discovery — BD-004-03
 - Newsletter signup (Mailchimp/ConvertKit integration)
-- Basic analytics (Plausible or PostHog embed)
-- Social media embeds (Instagram feed, X feed)
 
 **Tier 3: Service Sites (LATER — 6-12 months)**
 
-- Booking integration (Calendly embed or Acuity API)
-- Stripe payment links for simple purchases
-- Testimonial/review collection (native or third-party)
-- Appointment reminders (email/SMS via Resend/Twilio)
+- Booking integration (Calendly embed, Pro tier)
+- Stripe Payment Links for purchases (Pro tier)
+- Blog/CMS (Convex-backed simple CMS)
 
 **Tier 4: Commerce Lite (FUTURE — 12+ months)**
 
-- Snipcart or Shopify Buy Button for product sales
-- Product catalog display (our components, their backend)
-- Cart + checkout (Snipcart handles this)
-- Order notifications (webhook → email)
-- NOT building: inventory management, shipping logistics, customer accounts, returns
+- Snipcart or Shopify Buy Button
+- Product catalog display
+- NOT building: inventory, shipping, customer accounts, returns
 
 **Out of Scope (Forever):**
 
-- Full e-commerce platforms (that's Shopify)
-- Custom web applications (that's a dev agency)
-- User authentication systems (that's Auth0/Clerk)
-- Database-heavy applications (that's custom development)
+- Full e-commerce platforms (Shopify's territory)
+- Custom web applications (dev agency work)
+- Database-heavy applications (custom development)
+- Custom marketplaces
 
 ### VLM Design Feedback Loop ✅ IMPLEMENTED
 
@@ -155,207 +173,107 @@ The VLM (Vision Language Model) Design Feedback Loop is operational and closes t
 
 ---
 
-## High-Value Development Priority (Ranked by Impact × Feasibility)
+## High-Value Development Priority
 
-### 🔴 CRITICAL — Do These First (Current → Next 2 Months)
+> Restructured per Boardroom Sessions 001-003. Replaces old numbered priority list.
+> Full decision trail: `business/boardroom/DECISIONS_LOG.md`
 
-#### 0. Post-Generation Customization System ← NEW (Boardroom BD-001)
+### 🔴 CRITICAL — Revenue Foundation (Now → 6 Weeks)
 
-**Impact: 10/10 | Effort: Medium (phased)**
+All tracks run in parallel. The goal: first paying customer within 30 days.
 
-> Decision source: `business/boardroom/sessions/2026-02-12-customization-system.md`
-> Decisions: BD-001-01 through BD-001-05
+#### Express Path (BD-004-01) — "60-Second Website"
 
-The #1 competitive gap. Every competitor offers post-generation customization; we have zero. This is the conversion mechanism that turns free demo users into paying customers.
+**Impact: 10/10 | Effort: Low (deterministic path already exists)**
 
-**Phase 1 — Free Customization MVP (Weeks 1-3):**
+The #1 conversion barrier is time-to-preview (4-5 min vs competitors' 60-90s). Express path: site type + business name + description → deterministic generation → preview in <90 seconds. Full 9-step "Deep Brand Capture" remains as optional toggle. $0 cost per generation.
 
-- Customization sidebar panel (right side, collapsible)
-- 7 theme preset switcher (expand existing A/B toggle)
-- Primary color picker with chroma-js auto-palette derivation
-- 5 of 14 font pairings (AI-selected default always free, 9 soft-gated)
-- H1/H2 headline editing via sidebar + `ewb:update-content` PostMessage
-- "Reset to AI Original" button
-- 100ms debounced PostMessage for real-time iframe updates
-- Zustand `useCustomizationStore` for override state
-- All zero-marginal-cost (client-side CSS only)
+#### Monetization Infrastructure (BD-003-01) — Stripe + Clerk + Vercel
 
-**Phase 2 — Sharing + Engagement (Weeks 3-5):**
+**Impact: 10/10 | Effort: Medium**
 
-- Shareable preview links (Convex persistence)
-- "Built with EasyWebsiteBuild" badge on free exports/shares
-- Open Graph meta tags for social sharing
-- Time-based engagement nudge
+Stripe Checkout ($12/mo Starter), Clerk auth (minimal email login), "Make It Yours" three-option modal, Vercel deployment pipeline for live URLs. This is the cash register. Without it, nothing else matters.
 
-**Phase 3 — Accounts + Revenue (Weeks 5-8, requires Clerk):**
+#### Immersive Preview Reveal (BD-004-02)
 
-- Clerk authentication + account wall at export/save
-- Stripe billing: Pro ($19/mo), Agency ($49/mo)
-- Pro unlocks: all 14 fonts, full color (18 tokens), 8 CSS effects, 14 patterns, 4 dividers, component variants, body text editing, clean export
-- Usage-based AI regeneration credits (5/mo Pro, unlimited Agency)
+**Impact: 8/10 | Effort: Low**
 
-**Phase 4 — Advanced Customization (Weeks 8-12):**
+Full-screen site preview on load, 3-5 second celebration, sidebar slides in after. The "wow" moment must be sacred (P0). Progressive disclosure hides complexity.
 
-- Component variant switching UI
-- Personality slider panel (Pro — leverages `generateThemeFromVector()`)
-- Section reorder, component add/remove
-- CSS effect selector per component
-- Clean export for Pro+
+#### R&D Quality Benchmark (BD-003-02)
 
-**Competitive positioning:** "Guided Design" — every customization option curated for the user's brand. Not raw control like Wix/Framer, but brand-coherent options filtered through the character system.
+**Impact: 7/10 | Effort: Medium**
 
-#### 1. Multi-Page Generation & Routing
+20 reference sites, Claude Vision scoring on 6 dimensions, Wix ADI comparison. Validates that output quality justifies charging money. Quality gate for express path: Delight Champion veto if score <6/10.
 
-**Impact: 9/10 | Effort: Medium**
+Feature plan: `docs-specific-feature-plans/DESIGN_QUALITY_RD_BENCHMARK.md`
 
-This is the single highest-impact improvement. Every real website has multiple pages. A barbershop needs Home + Services + About + Contact at minimum.
+#### Distribution Foundation (BD-003-03)
 
-**What to build:**
+**Impact: 7/10 | Effort: Medium**
 
-- AI spec generation already outputs `pages[]` array — the data is there
-- Generate separate page routes (not just anchor-link sections)
-- Nav links point to real pages (`/about`, `/services`, `/contact`)
-- Each page has its own component composition
-- Shared nav + footer across all pages
-- Export generates proper routing (Next.js App Router pages)
+Fix homepage (real examples, correct stats, single CTA). Email capture during loading screen. Shareable preview links (foundation already committed). PostHog analytics for full funnel tracking.
 
-**The AI prompt already has this capability** — it just needs the instructions to use it. Currently the prompt tends to put everything on one page because the examples show that pattern.
+### 🟡 HIGH VALUE — Premium Features (Weeks 5-8)
 
-#### 2. ~~Character Capture System (Phase 4C)~~ ✅ COMPLETE
+Ship after monetization infrastructure is operational.
+
+#### Post-Generation Brand Discovery (BD-004-03)
 
 **Impact: 8/10 | Effort: Medium**
 
-Emotional goals, brand voice, archetype, anti-references. Implemented in Phase 4C — 3 new intake steps (Steps 5-7), emotional theme overrides, voice-keyed content, anti-reference constraints.
+Character capture (emotional goals, voice, archetype) moves from pre-generation intake to post-generation sidebar. Each answer triggers visible site transformation in real-time. This is our moat — repositioned for better UX.
 
-#### 3. Refinement Chat (MVP)
+#### AI Design Chat (BD-003-04)
 
 **Impact: 9/10 | Effort: Medium-High**
 
-Even a simple version — "make it darker," "change the headline," "add a team section" — would transform the user experience. Start with these patch types:
+Conversational refinement as Pro-tier killer feature. Patch types: adjust_theme, rewrite_copy, add_component, remove_component. 1 free message for all users, unlimited Pro. "Your AI design partner" — no competitor offers this at $29/mo.
 
-- `adjust_theme` (change colors, spacing, fonts)
-- `rewrite_copy` (regenerate text for a specific component)
-- `add_component` (insert a new section)
-- `remove_component` (delete a section)
+#### $99 Export (BD-003-01)
 
-This doesn't need to be perfect. It needs to work for the 80% case.
+**Impact: 6/10 | Effort: Low**
 
-#### 4. Real Image Handling
+Enhanced project export with all dependencies and deployment guide. Zero lock-in positioning: "Build with AI, own forever." 100% margin.
 
-**Impact: 8/10 | Effort: Medium**
+### 🟢 VALUABLE — Product Enrichment (Months 3-6)
 
-Sites with placeholder divs will never impress. Three approaches (do all three, progressively):
+#### Multi-Page Generation & Routing
 
-**Phase A: Descriptive Placeholders** — Instead of gray divs, show styled cards that describe what image should go there: "Upload: A warm photo of your barbershop interior" with the alt text visible. This costs nothing and makes the preview much more useful.
+**Impact: 9/10 | Effort: Medium**
 
-**Phase B: Stock Photo API** — Integrate Unsplash or Pexels free API. When generating the spec, include image search keywords per component (e.g., "luxury barbershop interior", "barber cutting hair"). Fetch and display real stock photos. The user can swap them later.
+AI spec already outputs `pages[]` array. Generate separate routes (`/about`, `/services`, `/contact`), shared nav/footer. Every real website needs multiple pages.
 
-**Phase C: User Upload** — Let users upload their own images during or after generation. Store in Convex File Storage. Replace stock images with real ones.
-
-#### 5. WCAG Contrast Enforcement
-
-**Impact: 7/10 | Effort: Low**
-
-The theme generation layer can produce inaccessible color combinations (e.g., yellow CTA background with white text). Fix at the source:
-
-**What to build:**
-
-- Add `chroma.contrast(bg, text)` validation after theme generation
-- Enforce minimum 4.5:1 contrast for body text, 3:1 for large text (WCAG AA)
-- Auto-adjust: if CTA background + text contrast < 3:1, darken the text or lighten the background
-- Apply to: `colorTextOnPrimary` vs `colorPrimary`, `colorTextOnDark` vs dark backgrounds, CTA text vs CTA background
-- Run as a post-processing step in `generateThemeFromVector()` before returning tokens
-
-This prevents accessibility issues at the theme layer rather than relying on VLM evaluation to catch them after rendering.
-
-### 🟡 HIGH VALUE — Do These Next (2-4 Months)
-
-#### 5. Next.js Project Export (Upgrade from HTML/CSS)
+#### Next.js Project Export
 
 **Impact: 7/10 | Effort: Medium**
 
-The current HTML/CSS export works but isn't a real project. A proper Next.js export with App Router, component files, proper routing, and `npm run dev` support would be dramatically more valuable — especially for the one-time purchase model.
+Upgrade from HTML/CSS to proper App Router project with routing and `npm run dev` support. More valuable for $99 export tier.
 
-#### 6. Working Contact Forms
+#### WCAG Contrast Enforcement
 
 **Impact: 7/10 | Effort: Low**
 
-This is surprisingly easy and high-impact. When someone fills out the contact form on a generated site:
+`chroma.contrast()` validation in theme generation. Prevent inaccessible color combinations at the source.
 
-- For hosted/subscription sites: Convex mutation stores the submission + sends email notification via Resend
-- For exported sites: Form action points to a configurable endpoint (Formspree, Netlify Forms, or a simple Convex HTTP endpoint)
+#### Working Contact Forms
 
-#### 7. Vercel Deployment
+**Impact: 7/10 | Effort: Low**
 
-**Impact: 7/10 | Effort: Medium**
+Formspree for Starter tier, Convex backend for hosted sites.
 
-Instead of exporting a ZIP, deploy directly to Vercel via their API. The user gets a live URL instantly. This is the subscription model enabler.
+### 🔵 FUTURE — Platform Maturity (Months 6+)
 
-#### 8. User Accounts & Project Dashboard
-
-**Impact: 6/10 | Effort: Medium**
-
-Users need to save projects, return later, manage multiple sites. Use Clerk or Convex auth. Dashboard shows all projects with preview thumbnails, edit/export/deploy actions.
-
-### 🟢 VALUABLE — Do When Ready (4-8 Months)
-
-#### 9. Blog/CMS System
-
-**Impact: 6/10 | Effort: Medium-High**
-
-A simple Convex-backed CMS: create posts with a markdown editor, posts appear on the blog page with the site's theme. No complex permissions, no categories/tags initially. Just title + body + date + optional cover image.
-
-#### 10. Booking Integration
-
-**Impact: 7/10 for booking sites | Effort: Medium**
-
-Two approaches:
-
-- **Simple:** Embed Calendly/Acuity widget styled to match the site theme. We build a `booking-embed` component that takes a Calendly URL and renders it in an iframe with themed wrapper.
-- **Premium:** Build our own booking UI (calendar, time slots, provider selection) with Convex backend. More work but more control over the experience.
-
-Start with the simple approach. It can work in the demo (show the UI) and in production (real bookings).
-
-#### 11. Commerce Lite (Snipcart)
-
-**Impact: 7/10 for e-commerce sites | Effort: Medium**
-
-Snipcart is a JavaScript library that adds cart + checkout to any website. You add `data-item-*` attributes to HTML elements and Snipcart handles the rest — cart, checkout, Stripe payments, webhooks.
-
-**What we'd build:**
-
-- `commerce-product-card` component that includes Snipcart data attributes
-- `commerce-cart` component (Snipcart provides this, we theme it)
-- Configuration step in intake: "Connect your Stripe account" or "Set up Snipcart"
-- Products defined in the spec, rendered as themed cards with buy buttons
-
-**What Snipcart handles:**
-
-- Shopping cart state
-- Checkout flow
-- Payment processing (via their Stripe integration)
-- Order notifications
-- Customer management
-
-This gives us "e-commerce" without building any e-commerce backend.
-
-### 🔵 FUTURE — Strategic Bets (8+ Months)
-
-#### 12. Visual Editor (for subscription sites)
-
-Click-to-edit text, drag-to-reorder sections, theme adjustment panel. This is what makes the subscription model sticky — clients can make small changes without regenerating.
-
-#### 13. Knowledge Base & Learning
-
-Semantic embeddings, proven recipe promotion, content pattern extraction. Makes the system smarter over time. High effort, high long-term value.
-
-#### 14. White-Label / Agency Mode
-
-Let web agencies use EasyWebsiteBuild under their own brand. They do the client intake, the system generates the site, they deliver it. Multiplies revenue without multiplying users.
-
-#### 15. Template Marketplace
-
-Let designers create and sell component sets, theme presets, and page templates. Creates an ecosystem and expands variety without internal development.
+- Project dashboard — save/return/manage multiple sites
+- Booking integration (Calendly embed, Pro tier)
+- Commerce (Stripe Payment Links, Pro tier)
+- Blog/CMS (Convex-backed)
+- Custom domains (Pro tier)
+- Visual editor — click-to-edit, drag-to-reorder
+- AI image generation (Gemini)
+- Knowledge base & learning system
+- White-label / agency mode
+- Template marketplace
 
 ---
 
@@ -404,42 +322,60 @@ Full in-site shopping experience. Add to cart, view cart, checkout — all on th
 
 ## Recommended Development Sequence
 
+> Updated 2026-02-15 to reflect Boardroom Sessions 001-003. The old sequential Phase 6-9 plan has been replaced by a parallel-track approach focused on reaching first revenue.
+>
+> **Our ONE core action** (BD-004-01): "Describe your business → see your website."
+
 ```
-DONE (Phases 4A-4D + 5A):
-  ✅ Quality fixes (4A)
-  ✅ Component expansion — 18 components (4B)
-  ✅ Basic export (4B)
-  ✅ Character capture (4C)
-  ✅ Mobile responsiveness (4D)
-  ✅ CSS visual foundation — patterns, dividers, placeholders, parallax (5A)
+DONE (Phases 1-5B + Quality + Wave 1 + 6A):
+  ✅ Platform website + foundation (Phase 1)
+  ✅ Component library — 24 components, 7 presets (Phases 2, 4B, Wave 1)
+  ✅ 9-step intake, AI generation, assembly engine (Phase 3)
+  ✅ Quality fixes + content accuracy (Phase 4A)
+  ✅ Character capture — emotional goals, voice, archetype (Phase 4C)
+  ✅ Mobile responsiveness (Phase 4D)
+  ✅ Output Quality Overhaul — 30/33 stories (Cross-cutting)
+  ✅ CSS visual foundation — 14 patterns, 4 dividers, parallax (Phase 5A)
+  ✅ CSS effects system — 8 effects (Wave 1)
+  ✅ Stock photo integration — Unsplash/Pexels/Pixabay (Phase 5B)
+  ✅ UI enhancements — iframe preview, wireframe loading, mobile sheets
+  ✅ Free customization MVP — presets, color, fonts, headlines, reset (Phase 6A)
 
-NEXT (Weeks 1-4):
-  ✅ Stock photo API integration (5B) — COMPLETE
-  🔴 Post-generation customization system (Phase 6A-D, Boardroom BD-001)
-  🔴 Multi-page generation & routing
+CRITICAL PATH — Revenue Foundation (Weeks 1-6, parallel tracks):
+  🔴 Express path — 2-step intake, <90 sec to preview (BD-004-01)
+  🔴 Immersive preview reveal — full-screen wow, progressive disclosure (BD-004-02)
+  🔴 Stripe Checkout ($12/mo) + Clerk auth + "Make It Yours" modal (BD-003-01)
+  🔴 Vercel deployment pipeline — live URL for Starter tier (BD-003-01)
+  🔴 R&D quality benchmark — 20 sites, Claude Vision scoring (BD-003-02)
+  🔴 Distribution — fix homepage, email capture, shareable links (BD-003-03)
 
-THEN (Weeks 5-8):
-  🔴 Refinement chat (MVP)
+PREMIUM FEATURES (Weeks 5-8, after monetization ships):
+  🟡 Post-generation Brand Discovery — character capture in sidebar (BD-004-03)
+  🟡 AI Design Chat — conversational refinement, Pro feature (BD-003-04)
+  🟡 $99 enhanced export — one-time purchase, zero lock-in (BD-003-01)
+
+PRODUCT ENRICHMENT (Months 3-6):
+  🟡 Multi-page generation & routing
   🟡 Next.js project export upgrade
   🟡 WCAG contrast enforcement
+  🟡 Working contact forms (Formspree)
 
-AFTER (Weeks 9-16):
-  🟡 Working contact forms
-  🟡 Vercel deployment
-  🟡 Clerk authentication + admin dashboard
+PLATFORM MATURITY (Months 6-12):
+  🟢 Project dashboard — save/return/manage multiple sites
+  🟢 Booking integration (Calendly embed, Pro)
+  🟢 Commerce (Stripe Payment Links, Pro)
+  🟢 Blog/CMS (Convex-backed)
+  🟢 Custom domains (Pro)
 
-LATER (Months 4-8):
-  🟢 Booking integration (Calendly embed)
-  🟢 Blog/CMS
-  🟢 Commerce lite (Snipcart or Stripe Payment Links)
-
-FUTURE (Months 8+):
+FUTURE (Year 2+):
   🔵 Visual editor
-  🔵 Knowledge base
-  🔵 White-label mode
+  🔵 AI image generation
+  🔵 Knowledge base & learning
+  🔵 White-label / agency mode
+  🔵 Template marketplace
 ```
 
-Each step makes the product more complete and more sellable. The first 8 weeks alone would take you from "demo that generates a single page" to "tool that generates multi-page, image-rich, character-specific websites that can be refined through conversation and deployed to Vercel."
+**Critical insight (Boardroom Session 003):** The 9-step intake is our competitive moat, but nobody experiences it because 4-5 minutes kills conversion. The express path gets users to "wow" in 60 seconds; character capture moves to post-generation where users WANT to invest because they're enriching something that already exists.
 
 ---
 
@@ -491,11 +427,9 @@ This is the same flywheel that made recommendation systems powerful — each int
 
 ---
 
-## Authentication & Admin Dashboard (Clerk)
+## Authentication & Billing (Clerk + Stripe)
 
-### Overview
-
-Clerk authentication enables admin-only features, data visibility, and protected routes without building auth from scratch.
+> Part of BD-003-01 monetization infrastructure. Clerk is dual-purpose: user auth for billing AND admin access for dev tools.
 
 ### Architecture
 
@@ -504,70 +438,59 @@ Clerk authentication enables admin-only features, data visibility, and protected
 │                    CLERK AUTH                         │
 │                                                      │
 │  Public Routes (no auth required):                   │
-│    /            Homepage                             │
-│    /demo        Intake flow                          │
-│    /demo/preview Generated site preview              │
-│    /preview     Component library demo               │
+│    /              Homepage                           │
+│    /demo          Intake flow (express + deep)       │
+│    /demo/preview  Generated site preview + customize │
+│    /preview       Component library demo             │
+│    /s/[shareId]   Shared preview pages               │
 │                                                      │
-│  Admin Routes (Clerk admin role required):            │
-│    /docs        Full project documentation           │
-│    /admin       Admin dashboard                      │
-│    /admin/sessions  Session browser & pipeline logs   │
-│    /admin/evaluations  VLM evaluation history        │
-│    /admin/test-cases  Backtesting infrastructure     │
-│    /admin/feedback  User satisfaction ratings        │
-│    /dev/*       Dev tools (existing, move behind auth)│
+│  Auth Gate (at conversion, not before):               │
+│    "Go Live" ($12/mo) → Clerk login → Stripe        │
+│    "$99 Export"  → Clerk login → Stripe one-time     │
+│    Save/persist → Clerk login (free account)         │
+│                                                      │
+│  Admin Routes (Clerk admin role):                     │
+│    /docs, /admin/*, /dev/*                           │
 │                                                      │
 │  Auth Flow:                                          │
 │    ClerkProvider wraps app in layout.tsx              │
 │    Middleware protects /admin/* and /docs routes      │
-│    Admin role checked via Clerk metadata              │
+│    Subscription status via Clerk metadata            │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Admin Dashboard Features
+### Billing Flow (BD-003-01)
 
-| Feature          | Data Source                  | Purpose                                                                  |
-| ---------------- | ---------------------------- | ------------------------------------------------------------------------ |
-| Session Browser  | `siteSpecs` + `pipelineLogs` | Browse all generation sessions, see intake data, spec output, AI prompts |
-| Pipeline Trace   | `pipelineLogs`               | Full prompt → response → validation → timing for each generation         |
-| VLM Evaluations  | `vlmEvaluations`             | Score history, dimension breakdowns, applied adjustments                 |
-| Feedback Summary | `feedback`                   | Satisfaction ratings with dimension breakdowns                           |
-| Test Cases       | `testCases`                  | Named test cases with run history                                        |
-| System Health    | Aggregated queries           | Generation success rate, avg scores, API usage, error rates              |
+1. User completes intake → preview → customization (all free, no auth)
+2. "Make It Yours" modal offers: Go Live ($12/mo) | Download ($99) | Free Preview (with badge)
+3. "Go Live" or "Download" → Clerk signup/login → Stripe Checkout → redirect back
+4. Subscription status stored in Clerk metadata, checked via `useSubscription()` hook
+5. Vercel deployment triggered for Starter/Pro subscribers
 
-### Implementation Plan
+### Delight Champion Conditions (ELEVATED, BD-003-01)
 
-1. **Install Clerk** — `npm install @clerk/nextjs`, configure environment variables
-2. **ClerkProvider** — Wrap app in `layout.tsx` (alongside ConvexClientProvider)
-3. **Middleware** — Protect `/admin/*` and `/docs` routes with `clerkMiddleware()`
-4. **Admin role** — Set admin metadata in Clerk dashboard (not self-service)
-5. **Admin layout** — Shared sidebar navigation for admin pages
-6. **Session browser** — Query `siteSpecs` + `pipelineLogs`, display in searchable table
-7. **Pipeline viewer** — Detailed view of a single generation session
-8. **Replace /docs redirect** — Check Clerk auth instead of unconditional redirect
-9. **Move /dev/\* behind auth** — Existing dev tools become admin-only
-
-### Integration with Convex
-
-Clerk + Convex integration uses Clerk's JWT tokens verified by Convex:
-
-- Convex `auth.config.ts` configured with Clerk issuer URL
-- Protected Convex functions use `ctx.auth.getUserIdentity()` to verify admin role
-- Public functions (getSiteSpec, saveSiteSpec) remain unauthenticated for the demo flow
+- Auth gate appears AFTER customization, never before reveal
+- Free tier remains complete — nothing removed, ever
+- "Go Live" framing (gain frame), not "Upgrade" (loss frame)
+- No flow-interrupting modals or popups
+- Cancel/downgrade must be trivially easy
 
 ---
 
-## One More Thing: The "Fun" Factor
+## The "Delight" Factor (P0: People Must Love It)
 
-You mentioned wanting the process to be interactive and fun. Right now it's functional but feels like a form. Here are specific things that make it feel more like a creative collaboration:
+> The game design principle: if the game isn't fun, nobody plays. If nobody plays, nothing else matters.
 
-1. **Micro-animations between steps** — The transition from one intake step to the next should feel like progress, not like clicking "Next" on a form. A brief visual transformation, a personality visualization growing, something that rewards completion.
+What makes users LOVE the experience:
 
-2. **Real-time preview hints** — As the user adjusts personality sliders, show a tiny preview thumbnail updating in real-time. "See what's happening" as they make choices.
+1. ✅ **Micro-animations between steps** — framer-motion transitions with horizontal slide, staggered card entry in emotion/archetype steps. SHIPPED.
 
-3. **The refinement chat IS the fun part** — When someone types "make it more moody" and the preview darkens in real-time, that's magical. That's the moment where the product feels like a creative partner, not a form processor.
+2. **Real-time preview transformation** — As users answer Brand Discovery questions (BD-004-03), the site visibly transforms. Each answer changes colors, copy, or layout in real-time. The cause-and-effect is the magic. PLANNED.
 
-4. **Progress celebration** — When the site generates, don't just show it. Build anticipation (the loading animation already does this). Then reveal it with a satisfying transition. The moment of "oh wow, that's my website" is the emotional peak of the experience.
+3. **AI Design Chat as creative partner** — "Make it more moody" → preview darkens. "Add a team section" → section appears. This is the moment the product feels alive. PLANNED (BD-003-04).
 
-5. **Shareable preview links** — Let users share their generated preview with a link. "Check out the website I just created!" This is free marketing AND makes the user feel proud of the output.
+4. **Immersive reveal** — Full-screen site preview with celebration moment before controls appear (BD-004-02). The "wow" moment is sacred. PLANNED.
+
+5. ✅ **Shareable preview links** — "Check out the website I just created!" Free marketing + user pride. Foundation SHIPPED, integration PLANNED.
+
+6. **60-second website** — "Just type your business name and it builds a whole website." Word-of-mouth gold (BD-004-01). PLANNED.
