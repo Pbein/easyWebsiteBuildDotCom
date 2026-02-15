@@ -3,7 +3,7 @@
 > Running log of all strategic decisions. Every boardroom session adds entries here.
 > Decisions are reconciled against `STRATEGIC_PRINCIPLES.md` and `docs/STRATEGIC_ROADMAP.md`.
 >
-> Last updated: 2026-02-14 (Session 002)
+> Last updated: 2026-02-15 (Session 003)
 
 ---
 
@@ -99,14 +99,14 @@
 
 ### BD-001-04: Guided Customization as Competitive Positioning
 
-| Field          | Value                                                  |
-| -------------- | ------------------------------------------------------ |
-| **Status**     | ACTIVE                                                 |
-| **Priority**   | Strategic direction (not a shipping item)              |
-| **Champion**   | Product (Amara Okafor) + Competitive (James Whitfield) |
-| **Principles** | P2 (Intelligence Is Moat), P3 (User Owns Feeling)      |
-| **Timeline**   | Ongoing — influences all customization UI decisions    |
-| **Conflicts**  | None                                                   |
+| Field          | Value                                                           |
+| -------------- | --------------------------------------------------------------- |
+| **Status**     | EVOLVED → see BD-004-03 (character capture now post-generation) |
+| **Priority**   | Strategic direction (not a shipping item)                       |
+| **Champion**   | Product (Amara Okafor) + Competitive (James Whitfield)          |
+| **Principles** | P2 (Intelligence Is Moat), P3 (User Owns Feeling)               |
+| **Timeline**   | Ongoing — influences all customization UI decisions             |
+| **Conflicts**  | None                                                            |
 
 **Decision**: Brand our customization as "Guided Design" — every option is curated for the user's brand character. Show "Recommended for your brand" badges. Personality sliders (Phase 4 feature) let users explore design intent, not raw tokens. This is our differentiator vs Wix/Framer raw editors.
 
@@ -313,6 +313,86 @@
 
 ---
 
+## Session 003: Product Simplification — "One Screen, One Button, One Core Action" (2026-02-15)
+
+> Full transcript: `business/boardroom/sessions/2026-02-15-product-simplification.md`
+> Participants: All 10 personas (including Delight Champion)
+> Context: Founder presented Vlad Tenev's (Robinhood CEO) product philosophy: "Get down to the essence — one screen, one button, one core action." Codebase complexity audit revealed 82-122+ user decisions, 4-5 min median time to preview (2-3x slower than competitors).
+
+### BD-004-01: Ship Express Path ("60-Second Website")
+
+| Field          | Value                                                                              |
+| -------------- | ---------------------------------------------------------------------------------- |
+| **Status**     | ACTIVE                                                                             |
+| **Priority**   | P1 (highest — removes primary conversion barrier)                                  |
+| **Champion**   | CEO (Marcus), endorsed by CRO, CMO, Infra, Competitive, UX Psych, Delight Champion |
+| **Principles** | P0 (People Must Love It), P5 (Ship Simplest), P4 (Zero-Marginal-Cost)              |
+| **Timeline**   | Weeks 1-2                                                                          |
+| **Conflicts**  | RESTRUCTURES intake flow; does NOT remove character capture (P2 preserved)         |
+
+**Decision**: Build a 2-step express intake path as the DEFAULT experience:
+
+- Step 1: Site type selection (existing Step 1)
+- Step 2: Business name + description (existing Step 3, combined)
+- Generate immediately using deterministic path ($0 cost, 2-5 seconds)
+- Target: under 90 seconds from first click to preview
+- Full 9-step path remains available as "Deep Brand Capture" mode toggle
+
+**Our ONE core action**: "Describe your business → see your website."
+
+**Quality gate**: Delight Champion holds veto power. If R&D benchmark (BD-003-02) scores fast-path output <6/10 average, express path requires quality improvements before launch.
+
+**Revenue hypothesis**: Matching competitor speed (Wix ADI 60-90s) removes the #1 barrier to conversion. More users reaching preview = more conversions. Deterministic generation costs $0 = infinite margin on free tier.
+
+---
+
+### BD-004-02: Immersive Preview Reveal + Progressive Disclosure
+
+| Field          | Value                                             |
+| -------------- | ------------------------------------------------- |
+| **Status**     | ACTIVE                                            |
+| **Priority**   | P2                                                |
+| **Champion**   | Partnerships (Elena) + Delight Champion           |
+| **Principles** | P0 (People Must Love It), P7 (Journey Is Product) |
+| **Timeline**   | Weeks 2-3                                         |
+| **Conflicts**  | None — enhances existing preview page             |
+
+**Decision**: Restructure the preview page for emotional impact:
+
+- Full-screen immersive site preview on load (sidebar hidden, toolbar minimal)
+- 3-5 second celebration moment before any controls appear
+- Sidebar slides in after celebration with "Customize" label
+- Dev panel hidden by default (Ctrl+Shift+D only)
+- A/B variant toggle moved into sidebar, not toolbar
+- Mobile: same pattern — full-screen → bottom sheet CTA after delay
+
+**Revenue hypothesis**: Extended engagement time on preview page increases emotional attachment (IKEA effect), leading to higher customization engagement and conversion.
+
+---
+
+### BD-004-03: Post-Generation Character Capture (Brand Discovery)
+
+| Field          | Value                                                                            |
+| -------------- | -------------------------------------------------------------------------------- |
+| **Status**     | ACTIVE                                                                           |
+| **Priority**   | P3                                                                               |
+| **Champion**   | Product (Amara) + UX Psych (Dr. Sato)                                            |
+| **Principles** | P2 (Intelligence Is Moat), P3 (User Owns Feeling), P7 (Journey Is Product)       |
+| **Timeline**   | Weeks 3-5                                                                        |
+| **Conflicts**  | EVOLVES BD-001-04 (Guided Customization) — character capture now post-generation |
+
+**Decision**: Move character capture (emotional goals, voice detection, archetype) from pre-generation intake to post-generation customization sidebar as "Brand Discovery":
+
+- New "Discover Your Brand" section in customization sidebar
+- Each selection triggers PostMessage theme/content update to iframe (visible transformation)
+- Emotional goals → color palette shift; Voice → headline/CTA rewrite; Archetype → layout adjustment
+- Progressive UI: sections unlock as user engages
+- AI-powered refinement uses credit system (1 free, unlimited Pro) — aligns with BD-003-01/BD-003-04
+
+**Revenue hypothesis**: Post-generation character capture creates stronger endowment effect (user is enriching THEIR site, not filling out a survey). Visible transformation per answer drives engagement. Credit system creates natural Pro upsell.
+
+---
+
 ## Unresolved Tensions
 
 | ID        | Tension                           | Parties                                              | Status                                                                      | Trigger to Revisit                        |
@@ -323,6 +403,10 @@
 | UT-001-04 | When to require account creation  | CMO (delay) vs Monetization (gate at export)         | Decided: gate at export/save (BD-003-01: gate at "Go Live" or "$99 Export") | Phase 1 export rate data                  |
 | UT-002-01 | Free AI Chat messages count       | Delight Champion (1 free) vs Monetization (0 free)   | Decided: 1 free message. NEEDS_DATA                                         | First 50 user conversion data             |
 | UT-002-02 | Auto-run R&D benchmark?           | Product (auto on pipeline change) vs Infra (manual)  | Decided: manual for now                                                     | When automated deployment pipeline exists |
-| UT-002-03 | Should intake be shortened?       | CRO (5-6 steps) vs Product (9 steps = quality)       | NEEDS_DATA — benchmark shortened vs full intake quality                     | R&D quality benchmark results             |
+| UT-002-03 | Should intake be shortened?       | CRO (5-6 steps) vs Product (9 steps = quality)       | EVOLVING — Session 003 express path IS the shortened intake. NEEDS_DATA     | R&D quality benchmark: fast vs full       |
 | UT-002-04 | Free vs Pro integrations          | Partnerships (forms free) vs Monetization (all Pro)  | Decided: contact forms free, booking/payment Pro                            | Post-launch tier conversion data          |
 | UT-002-05 | Next.js vs HTML/CSS export?       | Competitive (Next.js) vs Infra (more work)           | Decided: HTML/CSS first, Next.js upgrade planned                            | After Vercel deployment pipeline          |
+| UT-003-01 | Character capture free vs Pro     | Monetization (Pro) vs CMO (free UI)                  | Decided: UI free, AI refinement uses credit system. NEEDS_DATA              | Post-launch engagement data               |
+| UT-003-02 | Demo gallery vs direct fast path  | CMO (gallery first) vs CEO (fast path first)         | Decided: fast path first. Gallery deferred. NEEDS_DATA                      | After fast path ships, measure conversion |
+| UT-003-03 | Express path input count          | CRO (2 fields) vs Product (3 fields)                 | Decided: 3 fields (type + name + desc). NEEDS_DATA                          | A/B test completion rates                 |
+| UT-003-04 | Personality slider redesign       | Product (mood picker) vs CRO (remove entirely)       | Decided: available in Deep mode + Brand Discovery. NEEDS_DATA               | R&D benchmark: quality with vs without    |
