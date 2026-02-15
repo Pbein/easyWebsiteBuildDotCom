@@ -185,4 +185,21 @@ export default defineSchema({
     createdAt: v.number(),
     lastLoginAt: v.optional(v.number()),
   }),
+
+  sharedPreviews: defineTable({
+    shareId: v.string(),
+    sessionId: v.string(),
+    customization: v.object({
+      activePresetId: v.union(v.string(), v.null()),
+      primaryColorOverride: v.union(v.string(), v.null()),
+      fontPairingId: v.union(v.string(), v.null()),
+      contentOverrides: v.any(),
+    }),
+    businessName: v.string(),
+    tagline: v.optional(v.string()),
+    siteType: v.string(),
+    primaryColor: v.string(),
+    createdAt: v.float64(),
+    viewCount: v.number(),
+  }).index("by_share_id", ["shareId"]),
 });

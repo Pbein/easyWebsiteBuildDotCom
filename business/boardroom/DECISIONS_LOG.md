@@ -3,7 +3,7 @@
 > Running log of all strategic decisions. Every boardroom session adds entries here.
 > Decisions are reconciled against `STRATEGIC_PRINCIPLES.md` and `docs/STRATEGIC_ROADMAP.md`.
 >
-> Last updated: 2026-02-14
+> Last updated: 2026-02-14 (Session 002)
 
 ---
 
@@ -26,7 +26,7 @@
 
 | Field          | Value                                                               |
 | -------------- | ------------------------------------------------------------------- |
-| **Status**     | ACTIVE                                                              |
+| **Status**     | COMPLETED (shipped 2026-02-14, commit 272ad6e)                      |
 | **Priority**   | P1 (highest)                                                        |
 | **Champion**   | CEO (Marcus Chen), unanimous consensus                              |
 | **Principles** | P3 (User Owns Feeling), P4 (Zero-Marginal-Cost), P5 (Ship Simplest) |
@@ -74,7 +74,7 @@
 
 | Field          | Value                                                  |
 | -------------- | ------------------------------------------------------ |
-| **Status**     | ACTIVE                                                 |
+| **Status**     | EVOLVED → see BD-003-01                                |
 | **Priority**   | P3                                                     |
 | **Champion**   | Monetization (Priya Sharma) + CRO (Diego Morales)      |
 | **Principles** | P1 (Revenue Validates), P4 (Zero-Marginal-Cost gating) |
@@ -195,11 +195,134 @@
 
 ---
 
+## Session 002: R&D Training System & Pricing/Monetization (2026-02-14)
+
+> Full transcript: `business/boardroom/sessions/2026-02-14-rd-training-and-pricing.md`
+> Participants: All 10 personas (including Delight Champion)
+> Context: Phase 6A free customization just shipped. Zero revenue, zero users. Two topics: R&D quality benchmarking and pricing model.
+
+### BD-003-01: Revised Pricing Tiers — Starter $12/mo + Pro $29/mo + $99 Export
+
+| Field          | Value                                                                     |
+| -------------- | ------------------------------------------------------------------------- |
+| **Status**     | ACTIVE                                                                    |
+| **Priority**   | P1 (highest — revenue foundation)                                         |
+| **Champion**   | Monetization (Priya Sharma), endorsed by CRO + CEO                        |
+| **Principles** | P0 (People Must Love It), P1 (Revenue Validates), P4 (Zero-Marginal-Cost) |
+| **Timeline**   | Weeks 1-3                                                                 |
+| **Conflicts**  | EVOLVES BD-001-03 (prices lowered, AI Chat added, $99 export new)         |
+
+**Decision**: Revised tier structure (evolves BD-001-03):
+
+- **Free Demo** ($0, no account): Full intake → generate → preview → customize (7 presets, color, 5 fonts, headlines). Export with "Built with EWB" footer badge. This is the hook.
+- **Starter** ($12/mo): Live site with real URL (Vercel hosting). Clean export (no badge). Working contact form. 1 free AI Design Chat message. Email support.
+- **Pro** ($29/mo): All 14 fonts, full color control, CSS effects. Unlimited AI Design Chat. Booking/payment integrations. Custom domain. Priority support.
+- **Own It** ($99 one-time): Full project export. Zero lock-in. Deployment guide. All dependencies. Available to any tier.
+
+**Why this evolves BD-001-03:**
+
+- Lower prices ($12 vs $19, $29 vs $49) — founder's "not strangling" principle
+- AI Design Chat as the killer premium differentiator (not just more CSS options)
+- $99 export as new anti-lock-in tier ("Build with AI, own forever")
+- Dropped "Agency" tier for now — revisit when scale demands it
+- Framing: "Go Live" (gain frame), not "Upgrade" (loss frame)
+
+**Revenue hypothesis**: $12/mo at 96% gross margin. $99 export is pure profit. AI Chat creates natural paywall between CSS customization and conversational redesign. Anti-lock-in $99 export builds trust and differentiates from Squarespace/Wix/base44.
+
+**Delight Champion conditions (ELEVATED):**
+
+- Free tier remains complete — nothing removed. Ever.
+- Reveal moment never paywalled
+- First AI Chat message is free (taste the magic)
+- No flow-interrupting upgrade modals
+- Badge must be tasteful and themed, not embarrassing
+
+---
+
+### BD-003-02: Lightweight Quality Benchmark (R&D v1)
+
+| Field          | Value                                                              |
+| -------------- | ------------------------------------------------------------------ |
+| **Status**     | ACTIVE                                                             |
+| **Priority**   | P2                                                                 |
+| **Champion**   | Product (Amara Okafor), endorsed by Delight Champion + Competitive |
+| **Principles** | P2 (Intelligence Is Moat), P5 (Ship Simplest)                      |
+| **Timeline**   | Weeks 2-4                                                          |
+| **Conflicts**  | None — no prior R&D decisions                                      |
+
+**Decision**: Build a lightweight quality benchmarking system:
+
+- Curate 20 reference websites (2 per top 10 business types) with metadata (business type, emotional tone, design quality, key patterns)
+- Build dev-only benchmarking page (`/dev/benchmark`)
+- For each reference: reverse-engineer basic intake inputs manually, run our pipeline, screenshot output, compare against reference using Claude Vision
+- Score 6 dimensions: 5 VLM dimensions + emotional resonance
+- Track scores over time in Convex
+- Include Wix ADI comparison for 5 representative sites
+- Monthly benchmark runs (not weekly) — ~$6-10/run
+
+**Revenue hypothesis**: Quality measurement enables quality improvement, which enables pricing justification. "Our AI-generated restaurant sites score 8.5/10 vs Wix ADI's 5.2/10" is both a product metric and a marketing asset.
+
+**Scope constraint (CEO compromise)**: Start with 20 sites in 3 days, not 100 in 3 weeks. Get a number first. If the number reveals actionable gaps, expand. If quality is already high, focus on sales.
+
+---
+
+### BD-003-03: Distribution Foundation — Shares, Homepage Fix, Email Capture
+
+| Field          | Value                                                              |
+| -------------- | ------------------------------------------------------------------ |
+| **Status**     | ACTIVE                                                             |
+| **Priority**   | P3 (parallel with P1)                                              |
+| **Champion**   | CMO (Sierra Washington), endorsed by CRO + UX Psych                |
+| **Principles** | P0 (People Must Love It), P1 (Revenue Validates — via acquisition) |
+| **Timeline**   | Weeks 3-5                                                          |
+| **Conflicts**  | None — complements BD-001-02 (Shareable Preview Links)             |
+
+**Decision**: Build distribution foundation in parallel with monetization:
+
+- Fix homepage: replace fabricated testimonials with real generated examples, correct stats to "24 Components | 7 Presets | 13 Site Types"
+- Build shareable preview links (Phase 6B): Convex `sharedPreviews` table, unique slug, OG meta tags
+- "Built with EWB" footer badge on shared previews and free exports
+- Email capture during loading screen: AFTER wireframe animation completes (~7.5s), BEFORE final polish messages. Framed as value exchange ("Where should we send your editable link?"), with skip option
+- PostHog analytics events for full funnel tracking
+
+**Revenue hypothesis**: Every shared preview is a free acquisition channel at $0 CAC. Email capture enables re-engagement. Homepage fix builds trust for conversion.
+
+---
+
+### BD-003-04: AI Design Chat as Premium Differentiator
+
+| Field          | Value                                             |
+| -------------- | ------------------------------------------------- |
+| **Status**     | ACTIVE                                            |
+| **Priority**   | P4 (after monetization infrastructure)            |
+| **Champion**   | Monetization (Priya) + Product (Amara)            |
+| **Principles** | P2 (Intelligence Is Moat), P3 (User Owns Feeling) |
+| **Timeline**   | Weeks 5-6                                         |
+| **Trigger**    | Stripe Checkout and Vercel deployment operational |
+| **Conflicts**  | None — no prior chat decisions                    |
+
+**Decision**: Build conversational AI refinement as the Pro-tier premium feature:
+
+- Natural language commands: "make the hero darker," "add a team section," "rewrite the about text"
+- Patch types: adjust_theme, rewrite_copy, add_component, remove_component
+- Uses existing Claude SDK infrastructure
+- 1 free message for all users (Delight Champion condition), unlimited for Pro ($29/mo)
+- This is the transition from "CSS customization" (free) to "AI design partner" (paid)
+
+**Competitive positioning**: Free users get knobs and presets. Paid users get a creative partner that understands their brand. Nobody else offers this at this price point.
+
+---
+
 ## Unresolved Tensions
 
-| ID        | Tension                           | Parties                                              | Status                                                             | Trigger to Revisit                    |
-| --------- | --------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------- |
-| UT-001-01 | How many presets should be free?  | CMO (all 7) vs Monetization (3)                      | Decided: all 7 free. NEEDS_DATA from Phase 1 to validate           | Phase 1 gate-click analytics          |
-| UT-001-02 | Inline editing vs sidebar editing | Competitive (inline) vs Product (iframe prevents it) | Decided: sidebar for now. Inline deferred to Phase 9 visual editor | When iframe architecture is revisited |
-| UT-001-03 | Number of free font pairings      | CMO (5-7) vs Monetization (3)                        | Compromised at 5. NEEDS_DATA                                       | Phase 1 font gate-click rate          |
-| UT-001-04 | When to require account creation  | CMO (delay) vs Monetization (gate at export)         | Decided: gate at export/save                                       | Phase 1 export rate data              |
+| ID        | Tension                           | Parties                                              | Status                                                                      | Trigger to Revisit                        |
+| --------- | --------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------- |
+| UT-001-01 | How many presets should be free?  | CMO (all 7) vs Monetization (3)                      | Decided: all 7 free. NEEDS_DATA from Phase 1 to validate                    | Phase 1 gate-click analytics              |
+| UT-001-02 | Inline editing vs sidebar editing | Competitive (inline) vs Product (iframe prevents it) | Decided: sidebar for now. Inline deferred to Phase 9 visual editor          | When iframe architecture is revisited     |
+| UT-001-03 | Number of free font pairings      | CMO (5-7) vs Monetization (3)                        | Compromised at 5. NEEDS_DATA                                                | Phase 1 font gate-click rate              |
+| UT-001-04 | When to require account creation  | CMO (delay) vs Monetization (gate at export)         | Decided: gate at export/save (BD-003-01: gate at "Go Live" or "$99 Export") | Phase 1 export rate data                  |
+| UT-002-01 | Free AI Chat messages count       | Delight Champion (1 free) vs Monetization (0 free)   | Decided: 1 free message. NEEDS_DATA                                         | First 50 user conversion data             |
+| UT-002-02 | Auto-run R&D benchmark?           | Product (auto on pipeline change) vs Infra (manual)  | Decided: manual for now                                                     | When automated deployment pipeline exists |
+| UT-002-03 | Should intake be shortened?       | CRO (5-6 steps) vs Product (9 steps = quality)       | NEEDS_DATA — benchmark shortened vs full intake quality                     | R&D quality benchmark results             |
+| UT-002-04 | Free vs Pro integrations          | Partnerships (forms free) vs Monetization (all Pro)  | Decided: contact forms free, booking/payment Pro                            | Post-launch tier conversion data          |
+| UT-002-05 | Next.js vs HTML/CSS export?       | Competitive (Next.js) vs Infra (more work)           | Decided: HTML/CSS first, Next.js upgrade planned                            | After Vercel deployment pipeline          |
