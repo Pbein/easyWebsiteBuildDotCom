@@ -1,14 +1,19 @@
 # Theme System Specification
 
-> **Implementation Status (as of Feb 2026):** Fully implemented with emotional overrides, VLM feedback loop, and CSS visual system integration.
+> **Implementation Status (as of 2026-02-16):** Fully implemented with emotional overrides, VLM feedback loop, CSS visual system integration, customization sidebar, and Brand Discovery real-time theme updates.
 >
 > - **87 CSS Custom Properties** across 6 categories (colors, typography, spacing, shape, shadows, animation)
 > - **Token map** (`src/lib/theme/token-map.ts`) — camelCase ↔ CSS variable mapping with `tokensToCSSProperties()` and `tokensToCSSString()` converters. Accepts `Partial<ThemeTokens>`.
 > - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation, 14 curated font pairings scored by personality fit + business type, industry color hue shifting, dark/light mode business bias
 > - **Emotional overrides** (`src/lib/theme/emotional-overrides.ts`) — Adjusts spacing, transitions, animation intensity, radius, AND colors based on emotional goals and anti-references
+> - **Primary color derivation** (`src/lib/theme/derive-from-primary.ts`) — `deriveThemeFromPrimaryColor()` generates full palette from single hex using chroma-js
+> - **Font pairings** (`src/lib/theme/font-pairings.ts`) — 14 curated pairings, 5 free (`FREE_FONT_IDS`), `getFontPairingById()` lookup
 > - **ThemeProvider + useTheme** (`src/lib/theme/ThemeProvider.tsx`) — React context that injects tokens as CSS custom properties on a wrapper `<div>`, supports nested overrides
 > - **7 presets built** (`src/lib/theme/presets.ts`): Luxury Dark, Modern Clean, Warm Professional, Bold Creative, Editorial, Tech Forward, Organic Natural — ALL IMPLEMENTED
-> - **Preview page** (`/preview`) — live theme switching across all 18 components with preset selector + custom personality vector sliders
+> - **5-layer theme composition** in preview: base (preset or generated variant) → VLM overrides → emotional overrides (from Brand Discovery or spec) → primary color override → font pairing override
+> - **Preview page** (`/preview`) — live theme switching across all 24 components with preset selector + custom personality vector sliders
+> - **Customization sidebar** (Phase 6A) — 7 presets, color picker, 5/14 fonts, H1/H2 headline editing, reset to AI original
+> - **Brand Discovery** (Phase 6C) — Post-generation character capture (emotions, voice, archetype, anti-refs) in sidebar with real-time theme/content feedback
 > - **VLM feedback** — Claude Vision evaluates screenshots against intent, suggests `Partial<ThemeTokens>` adjustments, merged onto active theme via `useMemo` for instant re-render
 > - **CSS visual system integration** (Phase 5A) — Theme colors flow into CSS patterns (`generatePattern(id, themeColor)`), section dividers (SVG fill from theme tokens), gradient utilities (`generateMeshGradient(primary, secondary, accent)`), and `ImagePlaceholder` variants. Visual vocabulary per business type resolved via `getVisualVocabulary()` with archetype and personality overrides.
 

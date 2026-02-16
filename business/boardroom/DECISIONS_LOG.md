@@ -3,7 +3,7 @@
 > Running log of all strategic decisions. Every boardroom session adds entries here.
 > Decisions are reconciled against `STRATEGIC_PRINCIPLES.md` and `docs/STRATEGIC_ROADMAP.md`.
 >
-> Last updated: 2026-02-15 (Session 003)
+> Last updated: 2026-02-16 (Post-Session 003 audit — BD-004 decisions marked COMPLETED)
 
 ---
 
@@ -57,7 +57,7 @@
 
 | Field          | Value                                                             |
 | -------------- | ----------------------------------------------------------------- |
-| **Status**     | ACTIVE                                                            |
+| **Status**     | COMPLETED (shipped 2026-02-15, commit `927fab5`)                  |
 | **Priority**   | P2                                                                |
 | **Champion**   | CMO (Sierra Washington)                                           |
 | **Principles** | P1 (Revenue Validates — via acquisition), P7 (Journey Is Product) |
@@ -323,7 +323,7 @@
 
 | Field          | Value                                                                              |
 | -------------- | ---------------------------------------------------------------------------------- |
-| **Status**     | ACTIVE                                                                             |
+| **Status**     | COMPLETED (shipped 2026-02-15, commit `f5e64ac`)                                   |
 | **Priority**   | P1 (highest — removes primary conversion barrier)                                  |
 | **Champion**   | CEO (Marcus), endorsed by CRO, CMO, Infra, Competitive, UX Psych, Delight Champion |
 | **Principles** | P0 (People Must Love It), P5 (Ship Simplest), P4 (Zero-Marginal-Cost)              |
@@ -350,7 +350,7 @@
 
 | Field          | Value                                             |
 | -------------- | ------------------------------------------------- |
-| **Status**     | ACTIVE                                            |
+| **Status**     | COMPLETED (shipped 2026-02-15, commit `f5e64ac`)  |
 | **Priority**   | P2                                                |
 | **Champion**   | Partnerships (Elena) + Delight Champion           |
 | **Principles** | P0 (People Must Love It), P7 (Journey Is Product) |
@@ -374,7 +374,7 @@
 
 | Field          | Value                                                                            |
 | -------------- | -------------------------------------------------------------------------------- |
-| **Status**     | ACTIVE                                                                           |
+| **Status**     | COMPLETED (shipped 2026-02-16, commit `82f5ffc`)                                 |
 | **Priority**   | P3                                                                               |
 | **Champion**   | Product (Amara) + UX Psych (Dr. Sato)                                            |
 | **Principles** | P2 (Intelligence Is Moat), P3 (User Owns Feeling), P7 (Journey Is Product)       |

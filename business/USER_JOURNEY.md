@@ -1,8 +1,8 @@
 # EasyWebsiteBuild — User Journey Map
 
-> **Version**: 2.0
-> **Date**: 2026-02-12
-> **Status**: Granular mapping from full codebase analysis. Every UI element, data field, validation rule, and interaction traced from source.
+> **Version**: 3.0
+> **Date**: 2026-02-16
+> **Status**: Updated for Phase 6B/6C — express path, immersive reveal, brand discovery sidebar, shareable preview links. Every UI element, data field, validation rule, and interaction traced from source.
 > **Canonical source**: `/business/USER_JOURNEY.md`
 > **Maintained by**: JourneyBrain agent
 
@@ -11,12 +11,13 @@
 ## Journey Overview
 
 ```
-ACQUIRE → LAND → INTAKE (9 steps) → GENERATE → PREVIEW → [EDIT] → EXPORT → [BILLING] → [RETAIN]
-                                         ↑                                        ↑
-                                    ~10-20 sec wait                          Not built yet
+ACQUIRE → LAND → INTAKE (express 3 / deep 9 steps) → GENERATE → REVEAL → CUSTOMIZE → SHARE/EXPORT → [BILLING] → [RETAIN]
+                                                          ↑          ↑          ↑           ↑                ↑
+                                                     2-5s express  3s immersive  Brand      Share links    Not built yet
+                                                     10-20s deep   full-screen   Discovery  /s/[shareId]
 ```
 
-**Current reality**: The journey stops at Export (ZIP download). Everything after that — editing, deployment, billing, retention — does not exist yet. The funnel is: Homepage → Demo → Preview → Download ZIP → Gone forever. We have no email capture, no accounts, no way to follow up.
+**Current reality**: The journey now includes customization (sidebar + Brand Discovery), shareable preview links, and export. What's missing: billing (Clerk + Stripe), deployment (Vercel hosting), retention (email capture, accounts, project dashboard). The funnel is: Homepage → Demo → Express/Deep Intake → Immersive Reveal → Customize/Brand Discovery → Share or Export ZIP → Gone forever (no accounts yet).
 
 ---
 
@@ -47,7 +48,7 @@ ACQUIRE → LAND → INTAKE (9 steps) → GENERATE → PREVIEW → [EDIT] → EX
 **Current implementation**:
 
 - **Hero**: "Websites Built by Intelligence, Not Templates" + "EasyWebsiteBuild uses AI to understand your brand..." subheadline
-- **Stats row**: "50+ Components | 10 Theme Presets | 13 Site Types" — **INFLATED** (actual: 18 components with variants, 7 presets, 13 site types is correct)
+- **Stats row**: "50+ Components | 10 Theme Presets | 13 Site Types" — **INFLATED** (actual: 24 components with variants, 7 presets, 13 site types). Needs correction per BD-003-03.
 - **Primary CTA**: "Try the Demo" → `/demo`
 - **Secondary CTA**: "Sample Site Preview" → `/preview`
 - **How It Works**: 4-step visual cards:

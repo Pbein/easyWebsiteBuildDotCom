@@ -1,12 +1,13 @@
 # Architecture Documentation — EasyWebsiteBuild
 
-> **Implementation Status (as of Feb 2026):**
+> **Implementation Status (as of 2026-02-16):**
 >
-> - Layer 1 (Intent Capture): **Fully implemented** — 9-step intake flow with AI-powered discovery questions (Claude Sonnet) and deterministic fallback. Zustand state management with localStorage persistence. Fingerprint-based staleness detection (`questionsInputKey`) + review mode UI for returning users. Brand character capture (emotional goals, voice tone, brand archetype, anti-references) in Steps 5-7.
-> - Layer 2 (Component Assembly): **Fully implemented** — 18 components across 8 categories (4 refactored to shared.tsx + variants/ pattern), assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 18 components supported), live preview at `/demo/preview` with responsive viewport controls. Export pipeline generates downloadable ZIP (HTML/CSS/README). **Phase 5A** added CSS visual foundation: `VisualConfig` on `ComponentPlacement`, section dividers, CSS patterns, image placeholders, parallax scroll effects.
-> - Layer 3 (Theming): **Fully implemented** — 87 tokens, 7 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook, dynamic Google Font loading.
-> - Layer 4 (Knowledge Base): Schema tables created (`intentPaths`, `recipes`, `components`, `themes`, `assets`). Embedding/similarity matching system not yet built (Phase 5).
-> - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview pages). Homepage and Docs pages converted to Server Components (Pre-Phase 5).
+> - Layer 1 (Intent Capture): **Fully implemented** — Dual-mode intake: **Express path** (3-step, <90s, default) and **Deep Brand Capture** (9-step, ~3min). Express uses neutral personality + deterministic generation ($0). Deep path includes AI-powered discovery questions (Claude Sonnet) with deterministic fallback. Zustand state management with `expressMode` flag + localStorage persistence. Brand character capture (emotional goals, voice tone, brand archetype, anti-references) available both in-flow (Steps 5-7, deep mode) and post-generation (Brand Discovery sidebar).
+> - Layer 2 (Component Assembly): **Fully implemented** — 24 components across 8 categories (4 refactored to shared.tsx + variants/ pattern), assembly engine with `COMPONENT_REGISTRY`, `AssemblyRenderer` (spec → live site), AI-driven + deterministic spec generation (all 24 components supported), live preview at `/demo/preview` with responsive viewport controls + 3-second immersive reveal. Export pipeline generates downloadable ZIP (HTML/CSS/README). CSS visual foundation: `VisualConfig` on `ComponentPlacement`, section dividers, CSS patterns, image placeholders, parallax scroll effects. 8 CSS effects. Stock photo integration (Unsplash/Pexels/Pixabay).
+> - Layer 3 (Theming): **Fully implemented** — 87 tokens, 7 presets, `generateThemeFromVector()`, ThemeProvider + useTheme hook, dynamic Google Font loading. **5-layer theme composition**: base → VLM → emotional → color → font. Post-generation customization sidebar with Brand Discovery (real-time theme/content feedback). `deriveThemeFromPrimaryColor()` for single-hex palette derivation.
+> - Layer 4 (Knowledge Base): Schema tables created (`intentPaths`, `recipes`, `components`, `themes`, `assets`). Embedding/similarity matching system not yet built.
+> - Layer 5 (Distribution): **Partially implemented** — Shareable preview links (`/s/[shareId]`) with customization snapshot persistence, "Built with EWB" badge, `sharedPreviews` Convex table. Share button with Web Share API (mobile). OG meta and social templates pending.
+> - Platform website: Complete (Homepage, Demo, Docs, Preview, Demo Preview, Share pages). Homepage and Docs pages converted to Server Components.
 
 ## System Overview
 

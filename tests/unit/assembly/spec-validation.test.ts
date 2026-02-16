@@ -18,11 +18,11 @@ describe("SiteIntentDocument validation", () => {
     expect(spec.metadata.method).toBe("deterministic");
   });
 
-  it("full spec contains all 18 component types", () => {
+  it("full spec contains all 24 component types", () => {
     const spec = createFullSpec();
     const componentIds = spec.pages[0].components.map((c) => c.componentId);
     const uniqueIds = new Set(componentIds);
-    expect(uniqueIds.size).toBe(18);
+    expect(uniqueIds.size).toBe(24);
   });
 
   it("all components in minimal spec are registered", () => {

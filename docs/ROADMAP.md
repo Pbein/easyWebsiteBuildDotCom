@@ -323,49 +323,60 @@ Polishing improvements shipped alongside Phase 5A:
 >
 > **Our ONE core action**: "Describe your business → see your website." (BD-004-01, unanimous)
 
+### Track Status (as of 2026-02-16)
+
+| Track                         | Status                                                        | Key Commit |
+| ----------------------------- | ------------------------------------------------------------- | ---------- |
+| Track 1: Express Path         | **COMPLETE**                                                  | `f5e64ac`  |
+| Track 2: Immersive Reveal     | **COMPLETE**                                                  | `f5e64ac`  |
+| Track 3: Monetization         | **NOT STARTED** — next P1 priority                            | —          |
+| Track 4: Distribution         | **PARTIAL** — share links done, homepage/email/social pending | `927fab5`  |
+| Track 5: R&D Benchmark        | **NOT STARTED**                                               | —          |
+| Post-Revenue: Brand Discovery | **COMPLETE** (shipped early)                                  | `82f5ffc`  |
+| Post-Revenue: AI Design Chat  | **NOT STARTED**                                               | —          |
+
 ---
 
-## Track 1: Express Path — "60-Second Website" (Weeks 1-2)
+## Track 1: Express Path — "60-Second Website" ✅ COMPLETE
 
-> BD-004-01 | Priority: P1 (highest) | Removes #1 conversion barrier
+> BD-004-01 | Shipped in commit `f5e64ac` (2026-02-15)
 
 **Goal**: Reduce time-to-preview from 4-5 minutes to under 90 seconds. Match Wix ADI speed.
 
-**Why**: Codebase complexity audit found 82-122+ user decisions, 4-5 min median time. Competitors do 60-90 seconds. The 9-step intake IS our moat, but nobody experiences the moat because they drop off before the preview.
-
 ### Deliverables
 
-- [ ] **2-step express intake flow** (default experience):
-  - Step 1: Site type selection (existing Step 1)
-  - Step 2: Business name + description (existing Step 3, combined into one screen)
-  - Generate immediately using deterministic path ($0 cost, 2-5 seconds)
-- [ ] **Mode toggle**: "Quick Build (60s)" vs "Deep Brand Capture (3 min)" at start of intake
-- [ ] **Shortened loading screen** for deterministic generation (2-5 seconds vs 10-20)
-- [ ] **Express-mode store support** in `useIntakeStore` — skip Steps 4-8
+- [x] **3-step express intake flow** (default experience):
+  - Step 0: Mode selector — "Express Build (60s)" vs "Deep Brand Capture (3 min)"
+  - Step 1: Site type selection (12 categories)
+  - Step 2: Primary goal (context-aware per site type)
+  - Step 3: Business name + description (min 10 chars)
+  - Generate immediately using deterministic path with neutral personality `[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]` ($0 cost, 2-5 seconds)
+- [x] **Mode toggle** at start of intake — `expressMode` flag in Zustand store, persisted to localStorage
+- [x] **Shortened loading screen** — 4 building steps (3.2s total) vs 11 steps (16.4s) for deep path; logarithmic progress curve with express decay 3000ms
+- [x] **Express wireframe assembly** — 4 blocks (Nav, Hero, Content, Footer) vs 7 blocks for deep path
+- [x] **Express-mode store support** — `bridgeToStore()` with neutral personality, jumps Step 3 → Step 9
+- [x] **PostHog events** — `express_mode_selected`, `express_generation_started`, `express_generation_completed`
 
-**Quality gate**: Delight Champion veto if R&D benchmark (BD-003-02) scores fast-path output <6/10 average.
-
-**Files**: `src/app/demo/page.tsx`, `src/lib/stores/intake-store.ts`, `convex/ai/generateSiteSpec.ts`
+**Files**: `src/app/demo/page.tsx`, `src/lib/stores/intake-store.ts`, `src/components/platform/intake/Step6Loading.tsx`
 
 ---
 
-## Track 2: Immersive Preview Reveal (Weeks 2-3)
+## Track 2: Immersive Preview Reveal ✅ COMPLETE
 
-> BD-004-02 | Priority: P2
+> BD-004-02 | Shipped in commit `f5e64ac` (2026-02-15)
 
 **Goal**: Make the first preview experience emotionally impactful, not overwhelming.
 
-**Why**: Preview page currently shows 39+ controls on desktop. The "wow" moment is buried under toolbar buttons and sidebar metadata. Robinhood principle: show the portfolio value in big numbers first, order book later.
-
 ### Deliverables
 
-- [ ] **Full-screen immersive preview** on load — sidebar hidden, toolbar minimal
-- [ ] **3-5 second celebration moment** — subtle animation + "Your website is ready" overlay before controls appear
-- [ ] **Sidebar slides in** after celebration with "Customize" label
-- [ ] **Progressive disclosure** — dev panel hidden by default (Ctrl+Shift+D only), A/B toggle moved to sidebar
-- [ ] **Mobile**: same pattern — full-screen → bottom sheet CTA after delay
+- [x] **Full-screen immersive preview** on load — sidebar starts closed, toolbar minimal
+- [x] **3-second reveal moment** — site renders full-screen for 3 seconds before controls appear; click anywhere to skip
+- [x] **Sidebar slides in** after reveal on desktop; mobile tab bar fades in
+- [x] **Progressive disclosure** — dev panel hidden by default (Ctrl+Shift+D only)
+- [x] **Mobile**: same pattern — full-screen → bottom sheet CTA after delay
+- [x] **PostHog event** — `reveal_completed` (skipped: boolean)
 
-**Files**: `src/app/demo/preview/page.tsx`, `src/components/platform/preview/PreviewToolbar.tsx`, `src/components/platform/preview/CustomizationSidebar.tsx`
+**Files**: `src/app/demo/preview/page.tsx`
 
 ---
 
@@ -398,7 +409,7 @@ Polishing improvements shipped alongside Phase 5A:
 
 ---
 
-## Track 4: Distribution Foundation (Weeks 3-5)
+## Track 4: Distribution Foundation (Weeks 3-5) — PARTIAL
 
 > BD-003-03 | Priority: P3 (parallel with monetization)
 
@@ -408,13 +419,16 @@ Polishing improvements shipped alongside Phase 5A:
 
 - [ ] **Fix homepage** — replace fabricated testimonials with real generated examples; correct stats to "24 Components | 7 Presets | 13 Site Types"; single primary CTA
 - [ ] **Email capture during loading screen** — AFTER wireframe animation (~7.5s), BEFORE final polish; "Where should we send your editable link?"; skip option
-- [ ] **Shareable preview links** (Phase 6B foundation already committed):
-  - [x] Convex `sharedPreviews` table + mutations
-  - [x] OG image generation API route (`/api/og`)
-  - [x] Share page route (`/s/[shareId]`)
-  - [x] "Built with EWB" footer badge component
-  - [ ] Share button in PreviewToolbar with copy-to-clipboard
+- **Shareable preview links** ✅ COMPLETE (Phase 6B, commit `927fab5`):
+  - [x] Convex `sharedPreviews` table + mutations (`convex/sharedPreviews.ts`)
+  - [x] Cryptographic share ID generator (`src/lib/share/generate-share-id.ts`)
+  - [x] Share page route (`/s/[shareId]`) with `SharedPreviewClient`
+  - [x] "Built with EWB" footer badge component (`src/components/platform/BuiltWithBadge.tsx`)
+  - [x] Share button in PreviewToolbar with copy-to-clipboard + Web Share API (mobile)
+  - [x] Customization snapshot persistence (theme, fonts, colors, brand character)
+  - [x] PostHog events: `share_link_generated`, `share_link_copied`, `shared_preview_viewed`
   - [ ] Twitter/LinkedIn share templates
+  - [ ] OG image generation API route (`/api/og`)
 - [ ] **PostHog analytics events** — full funnel tracking throughout
 
 ---
@@ -442,18 +456,24 @@ Polishing improvements shipped alongside Phase 5A:
 
 > These ship AFTER monetization infrastructure is operational.
 
-### Post-Generation Brand Discovery (BD-004-03, Weeks 5-7)
+### Post-Generation Brand Discovery (BD-004-03) ✅ COMPLETE
+
+> Shipped in commit `82f5ffc` (2026-02-16). Shipped ahead of schedule — before monetization, as it enhances free-tier engagement.
 
 **Goal**: Move character capture from pre-generation intake to post-generation customization sidebar.
 
-- [ ] **"Discover Your Brand" sidebar section** — emotional goals, voice detection, archetype picker
-- [ ] **Progressive personalization** — each selection triggers PostMessage theme/content update to iframe
-  - Emotional goals → color palette shift (visible immediately)
-  - Voice selection → headline/CTA rewrite (visible immediately)
-  - Archetype → layout/component adjustments (visible with transition)
-- [ ] **Credit system** — AI-powered refinement uses 1 credit (free users get 1, Pro unlimited)
+- [x] **"Discover Your Brand" accordion** in CustomizationSidebar — opens by default for express path users, collapsed for deep path
+- [x] **Emotion picker** — 5x2 grid (10 emotions), max 2 selections, instant theme color shift
+- [x] **Voice picker** — 3 cards (warm/polished/direct) with live headline preview via `getVoiceKeyedHeadline()`
+- [x] **Archetype picker** — 2x3 grid (6 archetypes), single selection, layout/font adjustments
+- [x] **Anti-reference pills** — toggle pills + industry-specific anti-refs from `INDUSTRY_ANTI_REFERENCES`
+- [x] **5-layer theme composition** — base → VLM → emotional → color → font (real-time)
+- [x] **Voice-keyed content** — `src/lib/content/voice-keyed.ts` — deterministic headline/CTA templates per voice tone ($0 cost)
+- [x] **Customization store extended** — `emotionalGoals`, `voiceProfile`, `brandArchetype`, `antiReferences` fields
+- [x] **PostHog events** — `brand_discovery_emotion_selected`, `brand_discovery_voice_changed`, `brand_discovery_archetype_selected`, `brand_discovery_antiref_toggled`
+- [ ] **Credit system** — AI-powered refinement uses credits (deferred until monetization ships)
 
-**Files**: New `BrandDiscovery.tsx`, modified `preview/page.tsx`, `render/page.tsx`, `generateSiteSpec.ts`
+**Files**: `src/components/platform/preview/CustomizationSidebar.tsx`, `src/lib/stores/customization-store.ts`, `src/lib/content/voice-keyed.ts`, `src/app/demo/preview/page.tsx`
 
 ### AI Design Chat (BD-003-04, Weeks 6-8)
 

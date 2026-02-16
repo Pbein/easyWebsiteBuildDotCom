@@ -59,7 +59,13 @@
       "Bash(node -e:*)",
       "Bash(git check-ignore:*)",
       "WebFetch(domain:www.startuparchive.org)",
-      "WebFetch(domain:tremendous.blog)"
+      "WebFetch(domain:tremendous.blog)",
+      "Bash(npx:*)",
+      "Bash(npm view:*)",
+      "Bash(find:*)",
+      "Bash(xargs:*)",
+      "Bash(comm:*)",
+      "Bash(cat:*)"
     ]
   }
 }

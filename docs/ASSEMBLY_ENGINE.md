@@ -1,23 +1,25 @@
 # Assembly Engine Documentation
 
-> **Implementation Status (as of Feb 2026):** Core assembly engine implemented in Phase 3, expanded in Phase 4B, enhanced with CSS visual system in Phase 5A.
+> **Implementation Status (as of 2026-02-16):** Core assembly engine implemented in Phase 3, expanded through Phase 6C. Full pipeline operational.
 >
 > **Implemented:**
 >
 > - `SiteIntentDocument` type system (`src/lib/assembly/spec.types.ts`) — sessionId, pages with ComponentPlacement (+ `VisualConfig`), personality vector, metadata
-> - `COMPONENT_REGISTRY` (`src/lib/assembly/component-registry.ts`) — maps 18 componentId strings to React components, `UNWRAPPED_COMPONENTS` set for nav/footer
-> - `AssemblyRenderer` (`src/lib/assembly/AssemblyRenderer.tsx`) — client component that generates theme from personality vector, applies emotional overrides, loads fonts, sorts components by order, resolves `VisualConfig` into Section props (patterns, dividers), applies alternating backgrounds, renders inside ThemeProvider
+> - `COMPONENT_REGISTRY` (`src/lib/assembly/component-registry.ts`) — maps 24 componentId strings to React components, `UNWRAPPED_COMPONENTS` set for nav/footer
+> - `AssemblyRenderer` (`src/lib/assembly/AssemblyRenderer.tsx`) — client component that generates theme from personality vector, applies 5-layer theme composition (base → VLM → emotional → color → font), loads fonts, sorts components by order, resolves `VisualConfig` into Section props (patterns, dividers), applies alternating backgrounds, renders inside ThemeProvider
 > - `font-loader` (`src/lib/assembly/font-loader.ts`) — runtime Google Fonts injection with deduplication
 > - Theme resolution — `generateThemeFromVector()` maps personality vectors to complete token sets (fully working)
-> - CSS visual system (`src/lib/visuals/`) — 14 CSS patterns, 4 section dividers (wave/angle/curve/zigzag), visual vocabulary per business type, ImagePlaceholder component, parallax scroll hook
-> - Component library — 18 components with manifest descriptors, personality fit ranges, and variant metadata; `hero-split` and `content-split` images optional with CSS gradient fallback
+> - CSS visual system (`src/lib/visuals/`) — 14 CSS patterns, 4 section dividers (wave/angle/curve/zigzag), visual vocabulary per business type, ImagePlaceholder component, parallax scroll hook, 8 CSS effects
+> - Component library — 24 components with manifest descriptors, personality fit ranges, and variant metadata; `hero-split` and `content-split` images optional with CSS gradient fallback
+> - Stock photo integration — Multi-provider (Unsplash/Pexels/Pixabay), context-aware keyword builder, 24hr caching, color filtering
 > - Manifest index — `getManifestById()`, `getManifestsByCategory()`, `getManifestsBySiteType()` lookup utilities
-> - AI spec generation — Claude Sonnet generates complete SiteIntentDocument from intake data (`convex/ai/generateSiteSpec.ts`) with full support for all 18 components + `visualConfig` output
-> - Deterministic fallback — personality-driven variant selection, content generation for all 11 site types, conditional component inclusion based on site type, visual config per component (patterns + dividers from industry defaults)
-> - Live preview — `/demo/preview` page with responsive viewport switcher (iframe-based), metadata sidebar, toolbar
-> - Export pipeline — `src/lib/export/` generates static HTML/CSS project, bundles as ZIP via JSZip, triggers browser download
+> - AI spec generation — Claude Sonnet generates complete SiteIntentDocument from intake data (`convex/ai/generateSiteSpec.ts`) with full support for all 24 components + `visualConfig` output
+> - Deterministic fallback — personality-driven variant selection, content generation for all 13 site types, conditional component inclusion based on site type, visual config per component (patterns + dividers from industry defaults). Express path uses neutral personality `[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]` for $0-cost generation
+> - Live preview — `/demo/preview` with 3-second immersive reveal, responsive viewport switcher (iframe-based), customization sidebar, Brand Discovery, toolbar
+> - Shareable preview — `/s/[shareId]` loads customization snapshot from Convex, renders with 5-layer theme composition + BuiltWithBadge
+> - Export pipeline — `src/lib/export/` generates static HTML/CSS project, bundles as ZIP via JSZip, triggers browser download. `includeBadge` option for free-tier exports.
 >
-> **Not yet built:** Stock photo integration (Phase 5B), AI image generation (Phase 5C), AI copy generation for refining content, full Next.js project generation, Vercel deployment pipeline, visual editor, preview approval/change request flow, preview sharing.
+> **Not yet built:** AI image generation (Phase 5C), AI copy generation via chat (BD-003-04), full Next.js project generation, Vercel deployment pipeline, visual editor, Clerk auth + Stripe billing (Track 3).
 
 ## Overview
 

@@ -102,6 +102,8 @@ easywebsitebuild/
 │   │   │   └── preview/
 │   │   │       ├── page.tsx     # Demo preview — assembled site with viewport controls + export
 │   │   │       └── render/page.tsx # Isolated iframe renderer for true responsive preview
+│   │   ├── s/[shareId]/         # Shared preview page (public, reads from sharedPreviews)
+│   │   │   └── SharedPreviewClient.tsx # Client component: loads snapshot, renders with customizations
 │   │   ├── docs/page.tsx        # Documentation — (temporarily redirects to /, will be admin-only with Clerk)
 │   │   ├── api/screenshot/route.ts # Playwright server-side screenshot API
 │   │   ├── dev/
@@ -154,11 +156,15 @@ easywebsitebuild/
 │       │   ├── generate-project.ts    # SiteIntentDocument → static HTML/CSS files
 │       │   ├── create-zip.ts          # JSZip bundling + browser download
 │       │   └── index.ts               # Barrel export
+│       ├── content/
+│       │   └── voice-keyed.ts # Voice-appropriate headline/CTA templates (warm/polished/direct)
+│       ├── share/
+│       │   └── generate-share-id.ts # Cryptographic URL-safe share ID generator
 │       ├── hooks/
 │       │   └── use-is-mobile.ts # Mobile detection hook with debounced resize listener
 │       ├── stores/
-│       │   ├── intake-store.ts  # Zustand store with localStorage persistence (9-step flow)
-│       │   └── customization-store.ts # Zustand store for post-generation customizations (presets, colors, fonts, content)
+│       │   ├── intake-store.ts  # Zustand store with localStorage persistence (9-step + express mode)
+│       │   └── customization-store.ts # Zustand store for post-generation customizations (presets, colors, fonts, content, brand character)
 │       ├── theme/               # Theme system
 │       │   ├── theme.types.ts   # ThemeTokens interface (87 tokens, 6 categories)
 │       │   ├── token-map.ts     # Token → CSS property mapping
@@ -190,8 +196,9 @@ easywebsitebuild/
 │       └── types/               # Shared type definitions
 │           └── brand-character.ts # Brand character types + display constants
 ├── convex/                      # Convex backend (excluded from tsconfig)
-│   ├── schema.ts                # Database schema (9 tables)
+│   ├── schema.ts                # Database schema (10 tables)
 │   ├── siteSpecs.ts             # Site spec CRUD (saveSiteSpec, getSiteSpec)
+│   ├── sharedPreviews.ts        # Share link CRUD (createShareLink, getByShareId, incrementViewCount)
 │   ├── vlmEvaluations.ts         # VLM evaluation save/query
 │   ├── pipelineLogs.ts           # Pipeline session logging
 │   ├── feedback.ts               # User satisfaction ratings
@@ -244,7 +251,7 @@ easywebsitebuild/
 
 ## Current Status
 
-**All phases through 6A are COMPLETE.** See `docs/ROADMAP.md` for full history.
+**All phases through 6C are COMPLETE.** See `docs/ROADMAP.md` for full history and `docs/INDEX.md` for documentation map.
 
 | Phase   | What shipped                                                                                                                     |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -261,23 +268,26 @@ easywebsitebuild/
 | 5B      | Stock photo integration (Unsplash/Pexels/Pixabay, context-aware, cached)                                                         |
 | UI      | Iframe viewport switcher, wireframe loading animation, mobile bottom sheets                                                      |
 | 6A      | Free Customization MVP: sidebar panel, 7 presets, color picker, 5/14 fonts, headline editing, reset, Zustand customization store |
+| 6B      | Shareable preview links, "Built with EWB" badge, customization snapshot persistence, share button + Web Share API                |
+| 6C      | Express path (3-step, <90s), immersive 3s reveal, brand discovery sidebar with real-time theme/content feedback                  |
 
-### Next: Revenue Foundation (Parallel Tracks)
+### Next: Monetization (P1)
 
-> Boardroom Sessions: BD-001 (Customization), BD-003 (Pricing/Monetization), BD-004 (Product Simplification)
+> Boardroom Sessions: BD-003 (Pricing/Monetization)
 > See `docs/ROADMAP.md` for full details and `business/boardroom/DECISIONS_LOG.md` for decision context.
 
-**Critical Path (all run in parallel, ~6 weeks to "people can pay us"):**
+**Revenue Foundation — remaining tracks:**
 
-| Track          | What                                                                                             | Key Decision |
-| -------------- | ------------------------------------------------------------------------------------------------ | ------------ |
-| Express Path   | 2-step intake (site type + business name/description), deterministic generation, <90s to preview | BD-004-01    |
-| Preview Reveal | Full-screen immersive reveal, 3-5s celebration, progressive disclosure of controls               | BD-004-02    |
-| Monetization   | Clerk auth + Stripe billing — Free ($0) → Starter ($12/mo) → Pro ($29/mo) → Own It ($99 export)  | BD-003-01    |
-| Distribution   | Shareable preview links, "Built with EWB" badge, OG meta                                         | BD-003-03    |
-| R&D Benchmark  | Curated reference sites, screenshot analysis, pipeline comparison scoring                        | BD-003-02    |
+| Track           | Status        | What                                                                                            | Key Decision |
+| --------------- | ------------- | ----------------------------------------------------------------------------------------------- | ------------ |
+| Express Path    | **DONE**      | 3-step intake, deterministic generation, <90s to preview                                        | BD-004-01    |
+| Preview Reveal  | **DONE**      | Full-screen immersive 3s reveal, progressive disclosure of controls                             | BD-004-02    |
+| Brand Discovery | **DONE**      | Post-gen character capture in sidebar, real-time theme/content feedback                         | BD-004-03    |
+| Distribution    | **PARTIAL**   | Share links done; homepage fix, email capture, social templates pending                         | BD-003-03    |
+| Monetization    | **NEXT (P1)** | Clerk auth + Stripe billing — Free ($0) → Starter ($12/mo) → Pro ($29/mo) → Own It ($99 export) | BD-003-01    |
+| R&D Benchmark   | NOT STARTED   | Curated reference sites, screenshot analysis, pipeline comparison scoring                       | BD-003-02    |
+| AI Design Chat  | NOT STARTED   | Conversational AI refinement as Pro-tier killer feature                                         | BD-003-04    |
 
-**Post-Revenue:** Brand Discovery in sidebar (BD-004-03), AI Design Chat (Pro), advanced customization (fonts, effects, variants)
 **Future:** Multi-page, Next.js export, WCAG audit, integrations, visual editor
 
 ## Component Library (24 Components)
@@ -341,19 +351,30 @@ easywebsitebuild/
 
 ### Core Architecture
 
-- **Bridge pattern**: Steps 1-4 use local React state, `bridgeToStore()` syncs to Zustand at Step 4→5
+- **Express path**: Default 3-step flow (type → goal → name/description) with `expressMode` flag in Zustand; bridges with neutral personality `[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]`, jumps Step 3 → Step 9
+- **Deep path**: Full 9-step flow (Steps 1-4 setup, 5-7 brand character, 8-9 discovery + generation)
+- **Bridge pattern**: Steps 1-4 use local React state, `bridgeToStore()` syncs to Zustand at Step 4→5 (deep) or Step 3→9 (express)
 - **Dual-path generation**: AI-first with deterministic fallback in both `generateQuestions` and `generateSiteSpec`
 - **COMPONENT_REGISTRY**: Maps componentId strings → React components; `UNWRAPPED_COMPONENTS` for nav/footer
 - **AssemblyRenderer**: personalityVector → theme (+ emotional overrides) → Google Fonts → ThemeProvider → component tree
-- **ConditionalLayout**: Hides platform Navbar/Footer on `/preview` and `/demo/preview` routes
+- **5-layer theme composition**: base (preset or variant) → VLM overrides → emotional overrides → primary color → font pairing
+- **Immersive reveal**: 3-second full-screen preview on load, sidebar hidden, click-to-skip, then sidebar slides in
+- **ConditionalLayout**: Hides platform Navbar/Footer on `/preview`, `/demo/preview`, and `/s/[shareId]` routes
 - **ConvexClientProvider**: Wraps entire app in `layout.tsx` — required for `useQuery`/`useAction` hooks
 - **Iframe preview**: `/demo/preview/render` in isolated iframe; `postMessage` with `ewb:` prefix
 
 ### Content & Brand Character
 
-- **Voice-keyed content**: Deterministic fallback produces different headlines/CTAs per voice mode (warm/polished/direct), with anti-reference constraints
+- **Voice-keyed content**: `getVoiceKeyedHeadline()` in `src/lib/content/voice-keyed.ts` produces different headlines/CTAs per voice mode (warm/polished/direct) — $0 cost, deterministic
+- **Brand Discovery sidebar**: Post-generation character capture (emotions, voice, archetype, anti-refs) in CustomizationSidebar with real-time theme/content feedback
 - **Emotional overrides**: `applyEmotionalOverrides()` adjusts spacing/transitions/radius based on goals + anti-references
 - **Step 8 staleness**: `questionsInputKey` fingerprint from siteType|goal|businessName|description|emotionalGoals|voiceProfile|brandArchetype
+
+### Share & Distribution
+
+- **Share links**: `generateShareId()` creates cryptographic 10-char alphanumeric IDs; `sharedPreviews` Convex table stores full customization snapshot
+- **Share page**: `/s/[shareId]` loads snapshot, replays 5-layer theme composition, renders with BuiltWithBadge
+- **Built with EWB badge**: Themed footer badge on shared previews and free-tier exports
 
 ### Visual System
 

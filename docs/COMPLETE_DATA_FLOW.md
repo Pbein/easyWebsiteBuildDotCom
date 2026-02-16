@@ -15,37 +15,39 @@ The system operates as a 6-phase pipeline. Each phase feeds the next.
   (Deterministic)    (Reaction-Based)   (AI + Fallback)    (Automated)     (AI Chat)         or Deploy
 ```
 
-### What Exists Today (Phases 1-4 + Export + VLM Feedback Loop)
+### What Exists Today (as of 2026-02-16)
 
+✅ **Dual-mode Intake**: Express path (3-step, <90s) + Deep Brand Capture (9-step, ~3min)
 ✅ Structured Input (Steps 1-4)
-✅ Character Capture (Steps 5-7: emotional goals, brand voice, archetype, anti-references) — Phase 4C
-✅ AI Processing (Steps 8-9)
-✅ Assembly (AssemblyRenderer + ThemeProvider + emotional overrides)
-✅ Export (HTML/CSS ZIP)
+✅ Character Capture — in-flow (Steps 5-7, deep mode) + post-generation (Brand Discovery sidebar)
+✅ AI Processing (Steps 8-9, deep mode) + Deterministic-only (express mode, $0 cost)
+✅ Assembly (AssemblyRenderer + ThemeProvider + 5-layer theme composition)
+✅ **Customization**: sidebar panel with 7 presets, color picker, 5/14 fonts, headline editing, reset
+✅ **Brand Discovery**: post-generation character capture with real-time theme/content feedback
+✅ **Immersive Reveal**: 3-second full-screen preview before controls appear
+✅ Export (HTML/CSS ZIP, with optional "Built with EWB" badge)
+✅ **Shareable Preview Links** (`/s/[shareId]`) with customization snapshot persistence
 ✅ VLM Design Feedback Loop (screenshot → Claude Vision evaluation → theme adjustments)
 ✅ Dev Tooling (DevPanel with 6 tabs, named test cases, side-by-side comparison)
 ✅ User Satisfaction Capture (feedback banner + pipeline session logging)
-
-### What's Added in Phase 5A (CSS Visual Foundation) ✅
-
-✅ CSS visual system (`src/lib/visuals/`) — 14 patterns, 4 dividers, visual vocabulary, ImagePlaceholder, parallax hook
+✅ CSS visual system — 14 patterns, 4 dividers, 8 CSS effects, visual vocabulary, ImagePlaceholder, parallax
+✅ Stock photo integration — Multi-provider (Unsplash/Pexels/Pixabay), context-aware, 24hr caching
 ✅ `VisualConfig` on `ComponentPlacement` — patterns and dividers flow through the spec pipeline
-✅ `hero-split` and `content-split` images optional — CSS gradient fallbacks
-✅ Section component extended with divider/pattern props
-✅ AssemblyRenderer resolves `visualConfig` into Section props using theme colors
+✅ Section component extended with divider/pattern/overlay props
 
-### What's Missing (Phase 5B+)
+### What's Missing (Next Priorities)
 
-🔲 Stock photo integration (Unsplash/Pexels/Pixabay — Phase 5B)
-🔲 AI image generation (convex-nano-banana — Phase 5C)
-🔲 Advanced scroll effects (CSS scroll-timeline, depth scrolling — Phase 5D)
-🔲 Refinement Loop (conversational chat for post-generation adjustments)
-🔲 Visual Mood Board system (reaction-based image/reference selection) — deferred
+🔲 **Monetization** (P1) — Clerk auth + Stripe billing ($12/$29/$99 tiers) (BD-003-01)
+🔲 **Distribution** (partial) — Homepage fix, email capture, social share templates (BD-003-03)
+🔲 **R&D Quality Benchmark** — 20 reference sites, Claude Vision scoring, Wix comparison (BD-003-02)
+🔲 **AI Design Chat** — Conversational refinement as Pro-tier feature (BD-003-04)
+🔲 AI image generation (Gemini — Phase 5C)
+🔲 Advanced scroll effects (CSS scroll-timeline — Phase 5D)
 🔲 Multi-page management (add/remove/reorder pages post-generation)
 🔲 Component-level editing (swap, configure, reorder sections)
 🔲 Deploy pipeline (Vercel API, custom domains, hosting)
 🔲 WCAG contrast enforcement (chroma.contrast() validation in theme generation)
-🔲 Authentication (Clerk) + Admin Dashboard
+🔲 Full Next.js project export (replacing static HTML/CSS)
 
 ---
 

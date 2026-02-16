@@ -159,6 +159,36 @@ function RenderContent(): React.ReactElement {
     return () => window.removeEventListener("message", handleMessage);
   }, [handleScreenshotRequest]);
 
+  // Intercept link clicks to prevent iframe navigation
+  useEffect(() => {
+    const container = renderRef.current;
+    if (!container) return;
+
+    function handleLinkClick(e: MouseEvent): void {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      // Allow hash links for in-page scrolling
+      if (href.startsWith("#")) return;
+
+      // External links: open in new tab (not inside iframe)
+      if (href.startsWith("http://") || href.startsWith("https://")) {
+        e.preventDefault();
+        window.open(href, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      // Internal navigation (/, /about, etc.): prevent, scroll to top
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    container.addEventListener("click", handleLinkClick);
+    return () => container.removeEventListener("click", handleLinkClick);
+  }, [spec]);
+
   // Apply content overrides to spec (deep clone + patch)
   // Must be called before early returns to satisfy React hook rules
   const effectiveSpec = useMemo((): SiteIntentDocument | null => {

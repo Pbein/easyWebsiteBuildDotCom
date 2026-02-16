@@ -89,14 +89,14 @@ export function createMinimalSpec(overrides: Partial<SiteIntentDocument> = {}): 
   };
 }
 
-/** Create a spec with all 18 component types */
+/** Create a spec with all 24 component types */
 export function createFullSpec(): SiteIntentDocument {
   return createMinimalSpec({
     pages: [
       {
         slug: "/",
         title: "Home",
-        purpose: "Full demo page",
+        purpose: "Full demo page with all 24 components",
         components: [
           {
             componentId: "nav-sticky",
@@ -125,9 +125,18 @@ export function createFullSpec(): SiteIntentDocument {
             },
           },
           {
+            componentId: "hero-video",
+            variant: "embedded",
+            order: 3,
+            content: {
+              headline: "Video Hero",
+              subheadline: "Watch our story",
+            },
+          },
+          {
             componentId: "content-features",
             variant: "icon-cards",
-            order: 3,
+            order: 4,
             content: {
               headline: "Features",
               features: [{ icon: "Target", title: "Feature 1", description: "Desc" }],
@@ -136,12 +145,11 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "content-split",
             variant: "alternating",
-            order: 4,
+            order: 5,
             content: {
-              headline: "Split Content",
-              rows: [
+              sections: [
                 {
-                  title: "Row 1",
+                  headline: "Section 1",
                   body: "Body",
                   image: { src: "https://example.com/img.jpg", alt: "test" },
                 },
@@ -151,25 +159,25 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "content-text",
             variant: "centered",
-            order: 5,
+            order: 6,
             content: { headline: "Text Section", body: "<p>Body text</p>" },
           },
           {
             componentId: "content-stats",
             variant: "cards",
-            order: 6,
+            order: 7,
             content: { headline: "Stats", stats: [{ value: 100, label: "Users", suffix: "+" }] },
           },
           {
             componentId: "content-accordion",
             variant: "single-open",
-            order: 7,
+            order: 8,
             content: { headline: "FAQ", items: [{ question: "Q?", answer: "A." }] },
           },
           {
             componentId: "content-timeline",
             variant: "vertical",
-            order: 8,
+            order: 9,
             content: {
               headline: "Timeline",
               items: [{ date: "2024", title: "Event", description: "Desc" }],
@@ -178,13 +186,72 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "content-logos",
             variant: "grid",
-            order: 9,
+            order: 10,
             content: { headline: "Trusted By", logos: [{ name: "Company A" }] },
+          },
+          {
+            componentId: "content-steps",
+            variant: "numbered",
+            order: 11,
+            content: {
+              headline: "How It Works",
+              steps: [{ title: "Step 1", description: "Do this first" }],
+            },
+          },
+          {
+            componentId: "content-comparison",
+            variant: "table",
+            order: 12,
+            content: {
+              headline: "Compare",
+              columns: [{ name: "Free" }, { name: "Pro" }],
+              rows: [{ feature: "Support", values: ["Email", "Priority"] }],
+            },
+          },
+          {
+            componentId: "content-map",
+            variant: "split-with-info",
+            order: 13,
+            content: {
+              headline: "Find Us",
+              contactInfo: {
+                address: "123 Main St",
+                phone: "(555) 123-4567",
+                email: "hello@example.com",
+              },
+            },
+          },
+          {
+            componentId: "blog-preview",
+            variant: "card-grid",
+            order: 14,
+            content: {
+              headline: "Blog",
+              posts: [
+                { title: "Post 1", excerpt: "Excerpt", date: "2026-01-01", author: "Author" },
+              ],
+            },
+          },
+          {
+            componentId: "pricing-table",
+            variant: "simple",
+            order: 15,
+            content: {
+              headline: "Pricing",
+              plans: [
+                {
+                  name: "Starter",
+                  price: "$12",
+                  period: "/mo",
+                  features: [{ text: "1 site", included: true }],
+                },
+              ],
+            },
           },
           {
             componentId: "cta-banner",
             variant: "full-width",
-            order: 10,
+            order: 16,
             content: {
               headline: "CTA",
               subheadline: "Act now",
@@ -194,7 +261,7 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "form-contact",
             variant: "simple",
-            order: 11,
+            order: 17,
             content: {
               headline: "Contact",
               fields: [{ name: "email", label: "Email", type: "email", required: true }],
@@ -204,7 +271,7 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "proof-testimonials",
             variant: "carousel",
-            order: 12,
+            order: 18,
             content: {
               headline: "Testimonials",
               testimonials: [{ quote: "Great!", name: "Jane", role: "CEO", rating: 5 }],
@@ -213,14 +280,13 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "proof-beforeafter",
             variant: "side-by-side",
-            order: 13,
+            order: 19,
             content: {
               headline: "Before & After",
               comparisons: [
                 {
-                  before: { src: "a.jpg", alt: "before" },
-                  after: { src: "b.jpg", alt: "after" },
-                  label: "Transformation",
+                  beforeImage: { src: "a.jpg", alt: "before" },
+                  afterImage: { src: "b.jpg", alt: "after" },
                 },
               ],
             },
@@ -228,16 +294,16 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "team-grid",
             variant: "cards",
-            order: 14,
+            order: 20,
             content: {
               headline: "Team",
-              members: [{ name: "John", role: "CEO", image: "https://example.com/john.jpg" }],
+              members: [{ name: "John", role: "CEO" }],
             },
           },
           {
             componentId: "commerce-services",
             variant: "card-grid",
-            order: 15,
+            order: 21,
             content: {
               headline: "Services",
               services: [{ name: "Service A", description: "Desc", price: "$99" }],
@@ -246,7 +312,7 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "media-gallery",
             variant: "grid",
-            order: 16,
+            order: 22,
             content: {
               headline: "Gallery",
               images: [{ src: "https://example.com/img.jpg", alt: "photo" }],
@@ -255,7 +321,7 @@ export function createFullSpec(): SiteIntentDocument {
           {
             componentId: "footer-standard",
             variant: "multi-column",
-            order: 17,
+            order: 23,
             content: {
               logoText: "Full Demo",
               copyright: "\u00a9 2026",

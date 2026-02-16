@@ -1,6 +1,8 @@
 # Component Library Specification
 
-> **Implementation Status (as of Feb 2026):** 18 components built across 8 categories (Phase 1 MVP + Phase 4B expansion + Phase 5A visual foundation). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all 18 components is available at `/preview` with the "Meridian Studio" sample site. All 18 components are registered in the assembly engine (`COMPONENT_REGISTRY`) and supported by both AI and deterministic spec generation.
+> **Implementation Status (as of 2026-02-16):** 24 components built across 8 categories (Phase 1 MVP + Phase 4B expansion + Phase 5A visual foundation + Wave 1). All are fully functional with theme token consumption, responsive design, and manifest descriptors. A live preview of all components is available at `/preview` with the "Meridian Studio" sample site. All 24 components are registered in the assembly engine (`COMPONENT_REGISTRY`) and supported by both AI and deterministic spec generation.
+>
+> **Wave 1 additions (6 components):** PricingTable, ContentSteps, ContentComparison, HeroVideo, BlogPreview, ContentMap. CSS effects system with 8 effects. See CLAUDE.md for component table with all variants.
 >
 > **Phase 5A additions:** `hero-split` and `content-split` images are now optional — render `ImagePlaceholder` (gradient/pattern/shimmer) when absent. `section` wrapper extended with `dividerTop`, `dividerBottom`, `pattern`, `patternSize`, `patternPosition`, `patternOpacity` props for CSS-driven visual richness. `VisualConfig` on `ComponentPlacement` flows patterns and dividers through the spec pipeline.
 

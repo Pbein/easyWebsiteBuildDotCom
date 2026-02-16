@@ -1,20 +1,30 @@
 # Intake Flow Design — Intent Capture System
 
-> **Implementation Status (as of Feb 2026):** Fully implemented in Phase 3, enhanced in Phase 4B + 4C.
+> **Implementation Status (as of 2026-02-16):** Fully implemented in Phase 3, enhanced through Phase 6C.
 >
-> - **Full 9-step intake flow** at `/demo`:
->   - **Steps 1-4 (Setup)** — Site type → goal → description → personality A/B comparisons (local React state)
->   - **Step 5 (Emotional Goals)** — Select 1-2 emotional outcomes from 10 cards (safe, luxury, curious, energized, calm, inspired, belonging, sophisticated, playful, authoritative)
->   - **Step 6 (Voice & Narrative)** — 3 A/B/C voice comparisons (warm/polished/direct) + 3 optional narrative prompts
->   - **Step 7 (Culture & Anti-References)** — 6 brand archetype cards + 10 anti-reference trade-off chips + industry-specific anti-refs
->   - **Step 8 (AI Discovery)** — `Step5Discovery` component calls `generateQuestions` Convex action (Claude Sonnet), 4 personalized questions, comprehensive fallback bank for 11 site types, fingerprint-based staleness detection (`questionsInputKey`), review mode
->   - **Step 9 (Generation)** — `Step6Loading` with 5-phase animated progress, calls `generateSiteSpec` action, auto-redirects to `/demo/preview`
-> - **Bridge pattern** — Steps 1-4 use local React state, `bridgeToStore()` syncs to Zustand at Step 4→5 transition
-> - **Brand character** — emotionalGoals, voiceProfile, brandArchetype, antiReferences, narrativePrompts stored in Zustand + Convex (all optional, backward compatible)
-> - **Segmented progress** — 3-segment progress bar: Setup (1-4) | Character (5-7) | Discovery (8-9)
-> - **State management** — Zustand store (`useIntakeStore`) with localStorage persistence
+> - **Dual-mode intake** at `/demo`:
+>   - **Express Path** (default, 3 steps, <90 seconds):
+>     - Step 0: Mode selector — "Express Build (60s)" vs "Deep Brand Capture (3 min)"
+>     - Step 1: Site type (12 categories)
+>     - Step 2: Primary goal (context-aware per site type)
+>     - Step 3: Business name + description (min 10 chars)
+>     - → Deterministic generation with neutral personality `[0.5, 0.5, 0.5, 0.5, 0.5, 0.5]` ($0 cost)
+>   - **Deep Brand Capture** (9 steps, ~3 minutes):
+>     - Steps 1-4 (Setup) — Site type → goal → description → personality A/B comparisons (local React state)
+>     - Step 5 (Emotional Goals) — Select 1-2 emotional outcomes from 10 cards
+>     - Step 6 (Voice & Narrative) — 3 A/B/C voice comparisons (warm/polished/direct) + 3 optional narrative prompts
+>     - Step 7 (Culture & Anti-References) — 6 brand archetype cards + 10 anti-reference trade-off chips + industry-specific anti-refs
+>     - Step 8 (AI Discovery) — `Step5Discovery` component calls `generateQuestions` Convex action (Claude Sonnet), 4 personalized questions, comprehensive fallback bank for 11 site types, fingerprint-based staleness detection (`questionsInputKey`), review mode
+>     - Step 9 (Generation) — `Step6Loading` with animated wireframe assembly, calls `generateSiteSpec` action, auto-redirects to `/demo/preview`
+> - **Express loading screen** — 4 building steps (3.2s), 4 wireframe blocks, logarithmic progress (decay 3000ms)
+> - **Deep loading screen** — 11 building steps (16.4s), 7 wireframe blocks, logarithmic progress (decay 8000ms)
+> - **Bridge pattern** — Steps 1-4 use local React state, `bridgeToStore()` syncs to Zustand at Step 4→5 (deep) or Step 3→9 (express) transition
+> - **Brand character** — emotionalGoals, voiceProfile, brandArchetype, antiReferences, narrativePrompts stored in Zustand + Convex (all optional, backward compatible). Also available post-generation via Brand Discovery sidebar.
+> - **Progress bar** — Express: single smooth bar (step/3). Deep: 3-segment bar: Setup (1-4) | Character (5-7) | Discovery (8-9)
+> - **State management** — Zustand store (`useIntakeStore`) with `expressMode` flag + localStorage persistence
 > - **Convex storage** — `siteSpecs` table with `saveSiteSpec` mutation and `getSiteSpec` query; `intakeResponses` table with `by_session` index
-> - **Live preview** — `/demo/preview` page renders assembled site with responsive viewport controls, metadata sidebar, DevPanel, toolbar with screenshot capture, VLM evaluation, A/B theme variants, and export button (ZIP download)
+> - **Live preview** — `/demo/preview` page with 3-second immersive reveal, customization sidebar with Brand Discovery, DevPanel (Ctrl+Shift+D), toolbar with screenshot capture, VLM evaluation, share button, and export button (ZIP download)
+> - **PostHog events** — `express_mode_selected`, `express_generation_started`, `express_generation_completed`, `reveal_completed`
 
 ## Overview
 
