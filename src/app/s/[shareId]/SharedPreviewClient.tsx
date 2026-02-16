@@ -96,7 +96,7 @@ function SharedPreviewContent({ shareId }: { shareId: string }): React.ReactElem
     const pv = spec.personalityVector as PersonalityVector;
     const cust = sharedPreview.customization;
 
-    // Layer 1: preset or generated theme
+    // Layer 1: preset or clean base variant (no emotional overrides baked in)
     let theme: ThemeTokens;
     if (cust.activePresetId) {
       const preset = getPresetById(cust.activePresetId);
@@ -104,28 +104,29 @@ function SharedPreviewContent({ shareId }: { shareId: string }): React.ReactElem
         theme = preset.tokens;
       } else {
         const variants = generateThemeVariants(pv, { businessType: spec.siteType });
-        theme = spec.emotionalGoals?.length
-          ? applyEmotionalOverrides(
-              variants.variantA,
-              spec.emotionalGoals,
-              spec.antiReferences || []
-            )
-          : variants.variantA;
+        theme = variants.variantA;
       }
     } else {
       const variants = generateThemeVariants(pv, { businessType: spec.siteType });
-      theme = spec.emotionalGoals?.length
-        ? applyEmotionalOverrides(variants.variantA, spec.emotionalGoals, spec.antiReferences || [])
-        : variants.variantA;
+      theme = variants.variantA;
     }
 
-    // Layer 2: primary color override
+    // Layer 2: emotional overrides — customization values → spec fallback
+    const effectiveEmotionalGoals =
+      (cust.emotionalGoals as string[] | null | undefined) ?? spec.emotionalGoals ?? [];
+    const effectiveAntiRefs =
+      (cust.antiReferences as string[] | null | undefined) ?? spec.antiReferences ?? [];
+    if (effectiveEmotionalGoals.length > 0 || effectiveAntiRefs.length > 0) {
+      theme = applyEmotionalOverrides(theme, effectiveEmotionalGoals, effectiveAntiRefs);
+    }
+
+    // Layer 3: primary color override
     if (cust.primaryColorOverride) {
       const colorTokens = deriveThemeFromPrimaryColor(cust.primaryColorOverride, pv, spec.siteType);
       theme = { ...theme, ...colorTokens };
     }
 
-    // Layer 3: font pairing override
+    // Layer 4: font pairing override
     if (cust.fontPairingId) {
       const pairing = getFontPairingById(cust.fontPairingId);
       if (pairing) {

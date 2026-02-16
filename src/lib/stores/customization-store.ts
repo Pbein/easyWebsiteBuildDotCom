@@ -22,6 +22,14 @@ export interface CustomizationState {
   fontPairingId: string | null;
   /** Content overrides: componentIndex → { field: value } */
   contentOverrides: Record<number, Record<string, string>>;
+  /** Emotional goals — null = use spec values, [] = user cleared */
+  emotionalGoals: string[] | null;
+  /** Voice profile — null = use spec value */
+  voiceProfile: string | null;
+  /** Brand archetype — null = use spec value */
+  brandArchetype: string | null;
+  /** Anti-references — null = use spec values, [] = user cleared */
+  antiReferences: string[] | null;
 }
 
 export interface CustomizationActions {
@@ -35,6 +43,14 @@ export interface CustomizationActions {
   setFontPairing: (fontPairingId: string | null) => void;
   /** Set a content field override for a component */
   setContentOverride: (componentIndex: number, field: string, value: string) => void;
+  /** Set emotional goals override */
+  setEmotionalGoals: (goals: string[] | null) => void;
+  /** Set voice profile override */
+  setVoiceProfile: (voice: string | null) => void;
+  /** Set brand archetype override */
+  setBrandArchetype: (archetype: string | null) => void;
+  /** Set anti-references override */
+  setAntiReferences: (refs: string[] | null) => void;
   /** Clear all customizations back to AI original */
   resetAll: () => void;
 }
@@ -44,7 +60,11 @@ function hasChanges(state: CustomizationState): boolean {
     state.activePresetId !== null ||
     state.primaryColorOverride !== null ||
     state.fontPairingId !== null ||
-    Object.keys(state.contentOverrides).length > 0
+    Object.keys(state.contentOverrides).length > 0 ||
+    state.emotionalGoals !== null ||
+    state.voiceProfile !== null ||
+    state.brandArchetype !== null ||
+    state.antiReferences !== null
   );
 }
 
@@ -54,6 +74,10 @@ const initialState: CustomizationState = {
   primaryColorOverride: null,
   fontPairingId: null,
   contentOverrides: {},
+  emotionalGoals: null,
+  voiceProfile: null,
+  brandArchetype: null,
+  antiReferences: null,
 };
 
 export const useCustomizationStore = create<
@@ -105,6 +129,30 @@ export const useCustomizationStore = create<
           return { ...next, hasChanges: hasChanges({ ...state, ...next }) };
         }),
 
+      setEmotionalGoals: (goals: string[] | null) =>
+        set((state) => {
+          const next = { emotionalGoals: goals };
+          return { ...next, hasChanges: hasChanges({ ...state, ...next }) };
+        }),
+
+      setVoiceProfile: (voice: string | null) =>
+        set((state) => {
+          const next = { voiceProfile: voice };
+          return { ...next, hasChanges: hasChanges({ ...state, ...next }) };
+        }),
+
+      setBrandArchetype: (archetype: string | null) =>
+        set((state) => {
+          const next = { brandArchetype: archetype };
+          return { ...next, hasChanges: hasChanges({ ...state, ...next }) };
+        }),
+
+      setAntiReferences: (refs: string[] | null) =>
+        set((state) => {
+          const next = { antiReferences: refs };
+          return { ...next, hasChanges: hasChanges({ ...state, ...next }) };
+        }),
+
       resetAll: () =>
         set((state) => ({
           ...initialState,
@@ -120,6 +168,10 @@ export const useCustomizationStore = create<
         primaryColorOverride: state.primaryColorOverride,
         fontPairingId: state.fontPairingId,
         contentOverrides: state.contentOverrides,
+        emotionalGoals: state.emotionalGoals,
+        voiceProfile: state.voiceProfile,
+        brandArchetype: state.brandArchetype,
+        antiReferences: state.antiReferences,
       }),
     }
   )

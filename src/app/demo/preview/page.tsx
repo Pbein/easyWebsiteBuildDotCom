@@ -25,6 +25,13 @@ import {
 } from "@/lib/theme";
 import type { PersonalityVector, ThemeTokens } from "@/lib/theme";
 import { mapAdjustmentsToTokenOverrides } from "@/lib/vlm";
+import { getVoiceKeyedHeadline, getVoiceKeyedCtaText } from "@/lib/content";
+import {
+  EMOTIONAL_OUTCOMES,
+  VOICE_TONE_CARDS,
+  ANTI_REFERENCES,
+  INDUSTRY_ANTI_REFERENCES,
+} from "@/lib/types/brand-character";
 import { CustomizationSidebar } from "@/components/platform/preview/CustomizationSidebar";
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
@@ -266,6 +273,7 @@ function PreviewContent(): React.ReactElement {
       isRevealing={isRevealing}
       setIsRevealing={setIsRevealing}
       revealCompleted={revealCompleted}
+      expressMode={expressMode}
     />
   );
 }
@@ -631,6 +639,7 @@ function PreviewLayout({
   isRevealing,
   setIsRevealing,
   revealCompleted,
+  expressMode,
 }: {
   spec: SiteIntentDocument;
   viewport: "desktop" | "tablet" | "mobile";
@@ -656,6 +665,7 @@ function PreviewLayout({
   isRevealing: boolean;
   setIsRevealing: (v: boolean) => void;
   revealCompleted: React.MutableRefObject<boolean>;
+  expressMode: boolean;
 }): React.ReactElement {
   const isMobile = useIsMobile();
   const router = useRouter();
@@ -670,12 +680,20 @@ function PreviewLayout({
     primaryColorOverride,
     fontPairingId,
     contentOverrides,
+    emotionalGoals: custEmotionalGoals,
+    voiceProfile: custVoiceProfile,
+    brandArchetype: custBrandArchetype,
+    antiReferences: custAntiReferences,
     hasChanges: custHasChanges,
     initSession: custInitSession,
     setPreset: custSetPreset,
     setPrimaryColor: custSetPrimaryColor,
     setFontPairing: custSetFontPairing,
     setContentOverride: custSetContentOverride,
+    setEmotionalGoals: custSetEmotionalGoals,
+    setVoiceProfile: custSetVoiceProfile,
+    setBrandArchetype: custSetBrandArchetype,
+    setAntiReferences: custSetAntiReferences,
     resetAll: custResetAll,
   } = custStore;
 
@@ -692,25 +710,22 @@ function PreviewLayout({
     [pv, spec.siteType]
   );
 
+  // Clean base variants — emotional overrides applied as a separate layer
   const themeVariants = useMemo(() => {
-    const variants = generateThemeVariants(pv, { businessType: spec.siteType });
-    if (spec.emotionalGoals?.length) {
-      return {
-        ...variants,
-        variantA: applyEmotionalOverrides(
-          variants.variantA,
-          spec.emotionalGoals,
-          spec.antiReferences || []
-        ),
-        variantB: applyEmotionalOverrides(
-          variants.variantB,
-          spec.emotionalGoals,
-          spec.antiReferences || []
-        ),
-      };
-    }
-    return variants;
-  }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
+    return generateThemeVariants(pv, { businessType: spec.siteType });
+  }, [pv, spec.siteType]);
+
+  // Resolved brand character: sidebar overrides → spec fallback → empty
+  const effectiveEmotionalGoals = useMemo(
+    () => custEmotionalGoals ?? spec.emotionalGoals ?? [],
+    [custEmotionalGoals, spec.emotionalGoals]
+  );
+  const effectiveAntiRefs = useMemo(
+    () => custAntiReferences ?? spec.antiReferences ?? [],
+    [custAntiReferences, spec.antiReferences]
+  );
+  const effectiveVoiceProfile = custVoiceProfile ?? spec.voiceProfile ?? null;
+  const effectiveBrandArchetype = custBrandArchetype ?? spec.brandArchetype ?? null;
 
   const [vlmOverrides, setVlmOverrides] = useState<Partial<ThemeTokens> | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("preview");
@@ -774,11 +789,12 @@ function PreviewLayout({
   }, [custHasChanges, sessionId]);
 
   /**
-   * 4-layer theme priority:
+   * 5-layer theme priority:
    *   Layer 1: base variant (A/B) OR preset tokens
    *   Layer 2: + VLM overrides
-   *   Layer 3: + primary color override (derive full palette)
-   *   Layer 4: + font pairing override
+   *   Layer 3: + emotional overrides (from sidebar or spec)
+   *   Layer 4: + primary color override (derive full palette)
+   *   Layer 5: + font pairing override
    */
   const activeTheme = useMemo(() => {
     // Layer 1: base or preset
@@ -799,13 +815,18 @@ function PreviewLayout({
       theme = { ...theme, ...vlmOverrides };
     }
 
-    // Layer 3: primary color override
+    // Layer 3: emotional overrides
+    if (effectiveEmotionalGoals.length > 0 || effectiveAntiRefs.length > 0) {
+      theme = applyEmotionalOverrides(theme, effectiveEmotionalGoals, effectiveAntiRefs);
+    }
+
+    // Layer 4: primary color override
     if (primaryColorOverride) {
       const colorTokens = deriveThemeFromPrimaryColor(primaryColorOverride, pv, spec.siteType);
       theme = { ...theme, ...colorTokens };
     }
 
-    // Layer 4: font pairing override
+    // Layer 5: font pairing override
     if (fontPairingId) {
       const pairing = getFontPairingById(fontPairingId);
       if (pairing) {
@@ -823,6 +844,8 @@ function PreviewLayout({
     activeVariant,
     themeVariants,
     vlmOverrides,
+    effectiveEmotionalGoals,
+    effectiveAntiRefs,
     activePresetId,
     primaryColorOverride,
     fontPairingId,
@@ -1009,6 +1032,10 @@ function PreviewLayout({
           primaryColorOverride: primaryColorOverride ?? null,
           fontPairingId: fontPairingId ?? null,
           contentOverrides: contentOverrides,
+          emotionalGoals: custEmotionalGoals,
+          voiceProfile: custVoiceProfile,
+          brandArchetype: custBrandArchetype,
+          antiReferences: custAntiReferences,
         },
         businessName: spec.businessName,
         tagline: spec.tagline || undefined,
@@ -1052,6 +1079,10 @@ function PreviewLayout({
     primaryColorOverride,
     fontPairingId,
     contentOverrides,
+    custEmotionalGoals,
+    custVoiceProfile,
+    custBrandArchetype,
+    custAntiReferences,
     spec,
     activeTheme,
     custHasChanges,
@@ -1125,6 +1156,84 @@ function PreviewLayout({
     postToIframe({ type: "ewb:reset-content" });
     posthog.capture("reset_to_original", { session_id: sessionId });
   }, [custResetAll, postToIframe, sessionId]);
+
+  // Brand discovery callbacks
+  const handleEmotionChange = useCallback(
+    (goals: string[]): void => {
+      custSetEmotionalGoals(goals.length > 0 ? goals : null);
+      posthog.capture("brand_emotion_changed", {
+        session_id: sessionId,
+        emotions: goals,
+        source: "sidebar",
+      });
+    },
+    [custSetEmotionalGoals, sessionId]
+  );
+
+  const handleVoiceChange = useCallback(
+    (voice: string | null): void => {
+      custSetVoiceProfile(voice);
+      posthog.capture("brand_voice_changed", {
+        session_id: sessionId,
+        voice,
+        source: "sidebar",
+      });
+    },
+    [custSetVoiceProfile, sessionId]
+  );
+
+  const handleArchetypeChange = useCallback(
+    (archetype: string | null): void => {
+      custSetBrandArchetype(archetype);
+      posthog.capture("brand_archetype_changed", {
+        session_id: sessionId,
+        archetype,
+        source: "sidebar",
+      });
+    },
+    [custSetBrandArchetype, sessionId]
+  );
+
+  const handleAntiRefChange = useCallback(
+    (refs: string[]): void => {
+      custSetAntiReferences(refs.length > 0 ? refs : null);
+      posthog.capture("brand_antiref_changed", {
+        session_id: sessionId,
+        anti_refs: refs,
+        source: "sidebar",
+      });
+    },
+    [custSetAntiReferences, sessionId]
+  );
+
+  // Voice-keyed content: auto-update hero + CTA headlines when voice changes
+  useEffect(() => {
+    if (!effectiveVoiceProfile) return;
+    const pageSpec = spec.pages.find((p) => p.slug === activePage) ?? spec.pages[0];
+    if (!pageSpec) return;
+    const sorted = [...pageSpec.components].sort((a, b) => a.order - b.order);
+
+    const heroIdx = sorted.findIndex((c) => c.componentId.startsWith("hero-"));
+    if (heroIdx >= 0) {
+      const headline = getVoiceKeyedHeadline(
+        spec.businessName,
+        spec.siteType,
+        effectiveVoiceProfile as "warm" | "polished" | "direct"
+      );
+      custSetContentOverride(heroIdx, "headline", headline);
+    }
+
+    const ctaIdx = sorted.findIndex((c) => c.componentId === "cta-banner");
+    if (ctaIdx >= 0) {
+      const ctaText = getVoiceKeyedCtaText(
+        spec.conversionGoal,
+        effectiveVoiceProfile as "warm" | "polished" | "direct",
+        effectiveAntiRefs
+      );
+      custSetContentOverride(ctaIdx, "headline", ctaText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveVoiceProfile, effectiveAntiRefs, spec, activePage]);
 
   /* ── Mobile layout ─────────────────────────────────── */
   if (isMobile) {
@@ -1281,6 +1390,95 @@ function PreviewLayout({
                   </div>
                 </div>
 
+                {/* Brand character — emotion pills */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Emotion
+                  </span>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {EMOTIONAL_OUTCOMES.map((e) => {
+                      const isActive = effectiveEmotionalGoals.includes(e.id);
+                      return (
+                        <button
+                          key={e.id}
+                          onClick={() => {
+                            const next = isActive
+                              ? effectiveEmotionalGoals.filter((g) => g !== e.id)
+                              : effectiveEmotionalGoals.length < 2
+                                ? [...effectiveEmotionalGoals, e.id]
+                                : [effectiveEmotionalGoals[1], e.id];
+                            handleEmotionChange(next);
+                          }}
+                          className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                            isActive
+                              ? "border-[#e8a849]/40 bg-[#e8a849]/10 text-[#e8a849]"
+                              : "border-[rgba(255,255,255,0.08)] text-[#9496a8]"
+                          }`}
+                        >
+                          {e.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Voice tone pills */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Voice
+                  </span>
+                  <div className="flex gap-2">
+                    {VOICE_TONE_CARDS.map((v) => {
+                      const isActive = effectiveVoiceProfile === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          onClick={() => handleVoiceChange(isActive ? null : v.id)}
+                          className={`flex-1 rounded-lg border px-3 py-2 text-center text-[11px] font-medium transition-colors ${
+                            isActive
+                              ? "border-[#e8a849]/40 bg-[#e8a849]/10 text-[#e8a849]"
+                              : "border-[rgba(255,255,255,0.08)] text-[#9496a8]"
+                          }`}
+                        >
+                          {v.label.split(" ")[0]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Anti-reference pills */}
+                <div>
+                  <span className="mb-2 block text-[10px] font-semibold tracking-wider text-[#6b6d80] uppercase">
+                    Avoid
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[...ANTI_REFERENCES, ...(INDUSTRY_ANTI_REFERENCES[spec.siteType] ?? [])].map(
+                      (ref) => {
+                        const isActive = effectiveAntiRefs.includes(ref.id);
+                        return (
+                          <button
+                            key={ref.id}
+                            onClick={() => {
+                              const next = isActive
+                                ? effectiveAntiRefs.filter((r) => r !== ref.id)
+                                : [...effectiveAntiRefs, ref.id];
+                              handleAntiRefChange(next);
+                            }}
+                            className={`rounded-full border px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                              isActive
+                                ? "border-red-500/30 bg-red-500/8 text-red-400/80"
+                                : "border-[rgba(255,255,255,0.08)] text-[#6b6d80]"
+                            }`}
+                          >
+                            {ref.label}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+
                 {/* Reset button */}
                 {custHasChanges && (
                   <button
@@ -1411,6 +1609,16 @@ function PreviewLayout({
             onContentChange={handleContentChange}
             onReset={handleResetCustomization}
             onClose={() => setSidebarOpen(false)}
+            emotionalGoals={effectiveEmotionalGoals}
+            voiceProfile={effectiveVoiceProfile}
+            brandArchetype={effectiveBrandArchetype}
+            antiReferences={effectiveAntiRefs}
+            siteType={spec.siteType}
+            expressMode={expressMode}
+            onEmotionChange={handleEmotionChange}
+            onVoiceChange={handleVoiceChange}
+            onArchetypeChange={handleArchetypeChange}
+            onAntiRefChange={handleAntiRefChange}
           />
         )}
 

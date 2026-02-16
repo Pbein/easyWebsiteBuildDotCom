@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import * as LucideIcons from "lucide-react";
 import {
   X,
   RotateCcw,
@@ -18,6 +19,14 @@ import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ThemeTokens } from "@/lib/theme";
 import { THEME_PRESETS, FONT_PAIRINGS, FREE_FONT_IDS } from "@/lib/theme";
 import type { FontPairing } from "@/lib/theme";
+import {
+  EMOTIONAL_OUTCOMES,
+  VOICE_TONE_CARDS,
+  BRAND_ARCHETYPES,
+  ANTI_REFERENCES,
+  INDUSTRY_ANTI_REFERENCES,
+} from "@/lib/types/brand-character";
+import { getVoiceKeyedHeadline } from "@/lib/content";
 
 /* ────────────────────────────────────────────────────────────
  * Types
@@ -40,6 +49,17 @@ interface CustomizationSidebarProps {
   onContentChange: (componentIndex: number, field: string, value: string) => void;
   onReset: () => void;
   onClose: () => void;
+  /** Brand Discovery props */
+  emotionalGoals: string[];
+  voiceProfile: string | null;
+  brandArchetype: string | null;
+  antiReferences: string[];
+  siteType: string;
+  expressMode: boolean;
+  onEmotionChange: (goals: string[]) => void;
+  onVoiceChange: (voice: string | null) => void;
+  onArchetypeChange: (archetype: string | null) => void;
+  onAntiRefChange: (refs: string[]) => void;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -387,6 +407,221 @@ function HeadlineEditor({
 }
 
 /* ────────────────────────────────────────────────────────────
+ * Brand Discovery
+ * ──────────────────────────────────────────────────────────── */
+
+function getLucideIcon(name: string): React.ComponentType<{ className?: string }> {
+  const icon = (LucideIcons as Record<string, unknown>)[name];
+  return (icon as React.ComponentType<{ className?: string }>) ?? LucideIcons.Circle;
+}
+
+function BrandDiscovery({
+  emotionalGoals,
+  voiceProfile,
+  brandArchetype,
+  antiReferences,
+  siteType,
+  businessName,
+  expressMode,
+  onEmotionChange,
+  onVoiceChange,
+  onArchetypeChange,
+  onAntiRefChange,
+}: {
+  emotionalGoals: string[];
+  voiceProfile: string | null;
+  brandArchetype: string | null;
+  antiReferences: string[];
+  siteType: string;
+  businessName: string;
+  expressMode: boolean;
+  onEmotionChange: (goals: string[]) => void;
+  onVoiceChange: (voice: string | null) => void;
+  onArchetypeChange: (archetype: string | null) => void;
+  onAntiRefChange: (refs: string[]) => void;
+}): React.ReactElement {
+  const [isOpen, setIsOpen] = useState(expressMode);
+  const hasBrandCharacter =
+    emotionalGoals.length > 0 || voiceProfile || brandArchetype || antiReferences.length > 0;
+
+  const allAntiRefs = [...ANTI_REFERENCES, ...(INDUSTRY_ANTI_REFERENCES[siteType] ?? [])];
+
+  return (
+    <div className="border-b border-[rgba(255,255,255,0.06)]">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.02)]"
+      >
+        <div className="flex items-center gap-2">
+          <Heart className="h-3.5 w-3.5 text-[#e8a849]" />
+          <span className="text-[11px] font-semibold tracking-wider text-[#9496a8] uppercase">
+            Brand Character
+          </span>
+          {!isOpen && hasBrandCharacter && (
+            <span className="h-1.5 w-1.5 rounded-full bg-[#e8a849]" />
+          )}
+        </div>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-[#6b6d80] transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="space-y-4 px-4 pb-4">
+          {expressMode && !hasBrandCharacter && (
+            <p className="text-[10px] leading-relaxed text-[#6b6d80]">
+              Discover your brand&apos;s personality — changes apply instantly
+            </p>
+          )}
+
+          {/* a) Emotion Picker — 5x2 grid, max 2 */}
+          <div>
+            <span className="mb-2 block text-[10px] font-medium text-[#6b6d80]">
+              How should visitors feel? <span className="text-[#4a4c5c]">(pick up to 2)</span>
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {EMOTIONAL_OUTCOMES.map((e) => {
+                const isActive = emotionalGoals.includes(e.id);
+                const Icon = getLucideIcon(e.icon);
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => {
+                      const next = isActive
+                        ? emotionalGoals.filter((g) => g !== e.id)
+                        : emotionalGoals.length < 2
+                          ? [...emotionalGoals, e.id]
+                          : [emotionalGoals[1], e.id];
+                      onEmotionChange(next);
+                    }}
+                    className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-left transition-all ${
+                      isActive
+                        ? "border-[#e8a849]/40 bg-[#e8a849]/8"
+                        : "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.12)]"
+                    }`}
+                  >
+                    <Icon
+                      className={`h-3 w-3 shrink-0 ${isActive ? "text-[#e8a849]" : "text-[#6b6d80]"}`}
+                    />
+                    <span
+                      className={`text-[10px] font-medium ${isActive ? "text-[#e8a849]" : "text-[#c0c1cc]"}`}
+                    >
+                      {e.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* b) Voice Picker — 3 cards with headline preview */}
+          <div>
+            <span className="mb-2 block text-[10px] font-medium text-[#6b6d80]">Voice tone</span>
+            <div className="space-y-1.5">
+              {VOICE_TONE_CARDS.map((v) => {
+                const isActive = voiceProfile === v.id;
+                const Icon = getLucideIcon(v.icon);
+                const preview = getVoiceKeyedHeadline(businessName, siteType, v.id);
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => onVoiceChange(isActive ? null : v.id)}
+                    className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2 text-left transition-all ${
+                      isActive
+                        ? "border-[#e8a849]/40 bg-[#e8a849]/8"
+                        : "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.12)]"
+                    }`}
+                  >
+                    <Icon
+                      className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${isActive ? "text-[#e8a849]" : "text-[#6b6d80]"}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={`block text-[11px] font-semibold ${isActive ? "text-[#e8a849]" : "text-[#c0c1cc]"}`}
+                      >
+                        {v.label}
+                      </span>
+                      <span className="block truncate text-[9px] text-[#4a4c5c] italic">
+                        &ldquo;{preview}&rdquo;
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* c) Archetype Picker — 2x3 grid */}
+          <div>
+            <span className="mb-2 block text-[10px] font-medium text-[#6b6d80]">
+              Brand archetype
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {BRAND_ARCHETYPES.map((a) => {
+                const isActive = brandArchetype === a.id;
+                const Icon = getLucideIcon(a.icon);
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => onArchetypeChange(isActive ? null : a.id)}
+                    className={`flex flex-col items-start gap-1 rounded-lg border px-2.5 py-2 text-left transition-all ${
+                      isActive
+                        ? "border-[#e8a849]/40 bg-[#e8a849]/8"
+                        : "border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.12)]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Icon
+                        className={`h-3 w-3 shrink-0 ${isActive ? "text-[#e8a849]" : "text-[#6b6d80]"}`}
+                      />
+                      <span
+                        className={`text-[10px] font-semibold ${isActive ? "text-[#e8a849]" : "text-[#c0c1cc]"}`}
+                      >
+                        {a.label}
+                      </span>
+                    </div>
+                    <span className="text-[9px] leading-tight text-[#4a4c5c]">{a.tagline}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* d) Anti-Reference Pills */}
+          <div>
+            <span className="mb-2 block text-[10px] font-medium text-[#6b6d80]">NOT like this</span>
+            <div className="flex flex-wrap gap-1.5">
+              {allAntiRefs.map((ref) => {
+                const isActive = antiReferences.includes(ref.id);
+                return (
+                  <button
+                    key={ref.id}
+                    onClick={() => {
+                      const next = isActive
+                        ? antiReferences.filter((r) => r !== ref.id)
+                        : [...antiReferences, ref.id];
+                      onAntiRefChange(next);
+                    }}
+                    className={`rounded-full border px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                      isActive
+                        ? "border-red-500/30 bg-red-500/8 text-red-400/80"
+                        : "border-[rgba(255,255,255,0.08)] text-[#6b6d80] hover:border-[rgba(255,255,255,0.15)]"
+                    }`}
+                    title={ref.description}
+                  >
+                    {ref.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
  * Site Info Accordion (metadata from old PreviewSidebar)
  * ──────────────────────────────────────────────────────────── */
 
@@ -603,6 +838,16 @@ export function CustomizationSidebar({
   onContentChange,
   onReset,
   onClose,
+  emotionalGoals,
+  voiceProfile,
+  brandArchetype,
+  antiReferences,
+  siteType,
+  expressMode,
+  onEmotionChange,
+  onVoiceChange,
+  onArchetypeChange,
+  onAntiRefChange,
 }: CustomizationSidebarProps): React.ReactElement {
   // Build editable headlines from spec
   const headlines: EditableHeadline[] = [];
@@ -676,10 +921,25 @@ export function CustomizationSidebar({
           onFontChange={onFontChange}
         />
 
-        {/* 4. Headline Editor */}
+        {/* 4. Brand Discovery */}
+        <BrandDiscovery
+          emotionalGoals={emotionalGoals}
+          voiceProfile={voiceProfile}
+          brandArchetype={brandArchetype}
+          antiReferences={antiReferences}
+          siteType={siteType}
+          businessName={spec.businessName}
+          expressMode={expressMode}
+          onEmotionChange={onEmotionChange}
+          onVoiceChange={onVoiceChange}
+          onArchetypeChange={onArchetypeChange}
+          onAntiRefChange={onAntiRefChange}
+        />
+
+        {/* 5. Headline Editor */}
         <HeadlineEditor headlines={headlines} onContentChange={onContentChange} />
 
-        {/* 5. Site Info Accordion */}
+        {/* 6. Site Info Accordion */}
         <SiteInfoAccordion
           spec={spec}
           activeTheme={activeTheme}
