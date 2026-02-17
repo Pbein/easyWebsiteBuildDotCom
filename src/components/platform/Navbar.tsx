@@ -15,6 +15,8 @@ const navLinks = [
   // { href: "/docs", label: "Docs" }, // Temporarily hidden — will be gated behind Clerk admin auth
 ];
 
+const authNavLinks = [{ href: "/dashboard", label: "Dashboard" }];
+
 export function Navbar(): React.ReactElement {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -96,7 +98,23 @@ export function Navbar(): React.ReactElement {
                   </SignInButton>
                 </SignedOut>
                 <SignedIn>
-                  <div className="hidden md:flex">
+                  <div className="hidden items-center gap-1 md:flex">
+                    {authNavLinks.map((link) => {
+                      const isActive = pathname === link.href;
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                            isActive
+                              ? "text-[var(--color-accent)]"
+                              : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                          }`}
+                        >
+                          {link.label}
+                        </Link>
+                      );
+                    })}
                     <UserButton
                       appearance={{
                         elements: {
@@ -166,6 +184,23 @@ export function Navbar(): React.ReactElement {
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
+                    {authNavLinks.map((link) => {
+                      const isActive = pathname === link.href;
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={`rounded-lg px-4 py-3 text-lg font-medium transition-colors ${
+                            isActive
+                              ? "bg-[var(--color-accent-glow)] text-[var(--color-accent)]"
+                              : "text-[var(--color-text-secondary)]"
+                          }`}
+                        >
+                          {link.label}
+                        </Link>
+                      );
+                    })}
                     <div className="mt-2 px-4 py-3">
                       <UserButton
                         appearance={{

@@ -22,7 +22,12 @@ import {
   MessageSquare,
   Palette,
   Rocket,
+  Check,
+  Crown,
+  Download,
+  Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import {
   AnimatedSection,
   StaggerContainer,
@@ -543,6 +548,201 @@ function CTASection(): React.ReactElement {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Pricing Section                                                     */
+/* ------------------------------------------------------------------ */
+
+const PRICING_TIERS = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "",
+    description: "Try it out — no credit card required",
+    features: [
+      "Full AI-powered generation",
+      "Customization sidebar",
+      "7 theme presets",
+      "Share preview links",
+      "ZIP export (with badge)",
+    ],
+    cta: "Start Free",
+    ctaHref: "/demo",
+    icon: Sparkles as LucideIcon,
+    accentColor: "var(--color-text-secondary)",
+    highlighted: false,
+  },
+  {
+    name: "Starter",
+    price: "$12",
+    period: "/mo",
+    description: "Go live with your own custom domain",
+    features: [
+      "Everything in Free",
+      "Custom domain hosting",
+      "Clean export (no badge)",
+      "Working contact form",
+      "Email support",
+    ],
+    cta: "Go Live",
+    ctaHref: "/demo",
+    icon: Globe as LucideIcon,
+    accentColor: "#3ecfb4",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: "$29",
+    period: "/mo",
+    description: "Full creative control with AI assistance",
+    features: [
+      "Everything in Starter",
+      "AI Design Chat (unlimited)",
+      "All 14 font pairings",
+      "Full color palette control",
+      "CSS effects library",
+      "Priority support",
+    ],
+    cta: "Go Pro",
+    ctaHref: "/demo",
+    icon: Crown as LucideIcon,
+    accentColor: "var(--color-accent)",
+    highlighted: true,
+  },
+  {
+    name: "Own It",
+    price: "$99",
+    period: "once",
+    description: "Full source code — deploy anywhere forever",
+    features: [
+      "All Pro features",
+      "Full source code export",
+      "Deploy guide included",
+      "No monthly fees",
+      "Self-host anywhere",
+    ],
+    cta: "Own Your Site",
+    ctaHref: "/demo",
+    icon: Download as LucideIcon,
+    accentColor: "#c084fc",
+    highlighted: false,
+  },
+];
+
+function PricingSection(): React.ReactElement {
+  return (
+    <section className="relative overflow-hidden py-32">
+      <div className="absolute inset-0 bg-[var(--gradient-section)]" />
+      <div className="relative z-10 mx-auto max-w-6xl px-6">
+        <AnimatedSection className="mb-16 text-center">
+          <span
+            className="mb-4 inline-block text-xs font-bold tracking-[0.2em] text-[var(--color-accent)] uppercase"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Simple Pricing
+          </span>
+          <h2
+            className="mb-4 text-4xl font-bold text-[var(--color-text-primary)] md:text-5xl"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Start free, go live when ready
+          </h2>
+          <p className="mx-auto max-w-xl text-base text-[var(--color-text-secondary)]">
+            Every plan includes full AI-powered site generation. Upgrade when you want a real
+            domain.
+          </p>
+        </AnimatedSection>
+
+        <StaggerContainer className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {PRICING_TIERS.map((tier) => {
+            const Icon = tier.icon;
+            return (
+              <StaggerItem
+                key={tier.name}
+                className={`relative flex flex-col rounded-2xl border p-6 transition-colors ${
+                  tier.highlighted
+                    ? "border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5"
+                    : "border-[var(--color-border)] bg-[var(--color-bg-card)]"
+                }`}
+              >
+                {tier.highlighted && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--color-accent)] px-3 py-0.5 text-[10px] font-bold tracking-wider text-[var(--color-bg-primary)] uppercase">
+                    Most Popular
+                  </span>
+                )}
+
+                <div className="mb-4 flex items-center gap-2.5">
+                  <div
+                    className="flex h-9 w-9 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: `color-mix(in srgb, ${tier.accentColor} 12%, transparent)`,
+                    }}
+                  >
+                    <Icon className="h-[18px] w-[18px]" style={{ color: tier.accentColor }} />
+                  </div>
+                  <span
+                    className="text-sm font-bold text-[var(--color-text-primary)]"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    {tier.name}
+                  </span>
+                </div>
+
+                <div className="mb-3">
+                  <span
+                    className="text-3xl font-bold text-[var(--color-text-primary)]"
+                    style={{ fontFamily: "var(--font-heading)" }}
+                  >
+                    {tier.price}
+                  </span>
+                  {tier.period && (
+                    <span className="text-sm text-[var(--color-text-tertiary)]">{tier.period}</span>
+                  )}
+                </div>
+
+                <p className="mb-5 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+                  {tier.description}
+                </p>
+
+                <ul className="mb-6 flex-1 space-y-2.5">
+                  {tier.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-xs text-[var(--color-text-secondary)]"
+                    >
+                      <Check
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                        style={{ color: tier.accentColor }}
+                      />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <TrackedLink
+                  href={tier.ctaHref}
+                  eventName="cta_click"
+                  eventProperties={{
+                    cta_type: "pricing",
+                    cta_text: tier.cta,
+                    tier: tier.name,
+                  }}
+                  className={`block rounded-xl py-2.5 text-center text-sm font-semibold transition-all ${
+                    tier.highlighted
+                      ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] text-[var(--color-bg-primary)] hover:scale-[1.02] hover:shadow-[var(--shadow-glow)]"
+                      : "border border-[var(--color-border)] text-[var(--color-text-primary)] hover:border-[var(--color-border-accent)]"
+                  }`}
+                >
+                  {tier.cta}
+                </TrackedLink>
+              </StaggerItem>
+            );
+          })}
+        </StaggerContainer>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Page Export                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -553,6 +753,7 @@ export default function HomePage(): React.ReactElement {
       <HowItWorksSection />
       <DifferentiatorsSection />
       <SiteTypesSection />
+      <PricingSection />
       <SocialProofSection />
       <CTASection />
     </>

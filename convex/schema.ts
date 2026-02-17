@@ -15,9 +15,23 @@ export default defineSchema({
     ),
     siteIntentDocument: v.optional(v.any()),
     userId: v.optional(v.string()),
+    /** Session ID linking to siteSpecs table */
+    sessionId: v.optional(v.string()),
+    /** Customization snapshot from customization store */
+    customization: v.optional(v.any()),
+    /** Custom domain when published */
+    publishedDomain: v.optional(v.string()),
+    /** Publish lifecycle status */
+    publishStatus: v.optional(
+      v.union(v.literal("draft"), v.literal("published"), v.literal("suspended"))
+    ),
+    /** Tagline for display on dashboard cards */
+    tagline: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }),
+  })
+    .index("by_user", ["userId"])
+    .index("by_session", ["sessionId"]),
 
   siteSpecs: defineTable({
     sessionId: v.string(),
@@ -176,15 +190,63 @@ export default defineSchema({
   }).index("by_query", ["queryHash"]),
 
   users: defineTable({
+    clerkId: v.string(),
     email: v.optional(v.string()),
     name: v.optional(v.string()),
-    plan: v.optional(
-      v.union(v.literal("free"), v.literal("starter"), v.literal("pro"), v.literal("enterprise"))
+    plan: v.union(v.literal("free"), v.literal("starter"), v.literal("pro")),
+    stripeCustomerId: v.optional(v.string()),
+    subscriptionId: v.optional(v.string()),
+    subscriptionStatus: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("past_due"),
+        v.literal("canceled"),
+        v.literal("incomplete"),
+        v.literal("trialing")
+      )
     ),
+    currentPeriodEnd: v.optional(v.number()),
+    /** One-time purchase: "own_it" tier was purchased */
+    ownItPurchased: v.optional(v.boolean()),
     projectIds: v.optional(v.array(v.id("projects"))),
     createdAt: v.number(),
     lastLoginAt: v.optional(v.number()),
-  }),
+  })
+    .index("by_clerk_id", ["clerkId"])
+    .index("by_stripe_customer", ["stripeCustomerId"]),
+
+  domains: defineTable({
+    /** Full domain name, e.g. "highclassspa.com" */
+    domain: v.string(),
+    projectId: v.id("projects"),
+    /** Clerk userId of owner */
+    userId: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("failed"),
+      v.literal("expired")
+    ),
+    /** How domain was obtained */
+    registrar: v.union(v.literal("vercel"), v.literal("external")),
+    /** Vercel API reference ID */
+    vercelDomainId: v.optional(v.string()),
+    sslStatus: v.optional(v.string()),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+  })
+    .index("by_domain", ["domain"])
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"]),
+
+  chatCredits: defineTable({
+    /** Clerk userId */
+    userId: v.string(),
+    /** Messages used this billing period */
+    messagesUsed: v.number(),
+    /** When this period started (reset on subscription renewal) */
+    periodStart: v.number(),
+  }).index("by_user", ["userId"]),
 
   sharedPreviews: defineTable({
     shareId: v.string(),

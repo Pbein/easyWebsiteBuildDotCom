@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import posthog from "posthog-js";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { generateShareId } from "@/lib/share";
 import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
@@ -40,6 +42,7 @@ import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { useIntakeStore } from "@/lib/stores/intake-store";
 import { useCustomizationStore } from "@/lib/stores/customization-store";
 import { useRouter } from "next/navigation";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import {
   Loader2,
   Eye,
@@ -57,6 +60,8 @@ import {
   X,
   FileText,
   Share2,
+  Save,
+  Check,
 } from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
@@ -677,6 +682,22 @@ function PreviewLayout({
   const resetStore = useIntakeStore((s) => s.reset);
   const pv = spec.personalityVector as PersonalityVector;
   const createShareLink = useMutation(api.sharedPreviews.createShareLink);
+  const createProject = useMutation(api.projects.createProject);
+  const existingProject = useQuery(
+    api.projects.getProjectBySession,
+    sessionId ? { sessionId } : "skip"
+  );
+  const { isSignedIn } = useUser();
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedProjectId, setSavedProjectId] = useState<Id<"projects"> | null>(null);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+
+  // Track if project is already saved
+  useEffect(() => {
+    if (existingProject) {
+      setSavedProjectId(existingProject._id);
+    }
+  }, [existingProject]);
 
   // Customization store
   const custStore = useCustomizationStore();
@@ -708,6 +729,60 @@ function PreviewLayout({
       custInitSession(sessionId);
     }
   }, [sessionId, custInitSession]);
+
+  const handleSaveProject = useCallback(async (): Promise<void> => {
+    if (!sessionId || isSaving || savedProjectId) return;
+    setIsSaving(true);
+    try {
+      const id = await createProject({
+        sessionId,
+        name: spec.businessName,
+        siteType: spec.siteType,
+        tagline: spec.tagline || undefined,
+        customization: custHasChanges
+          ? {
+              activePresetId: activePresetId ?? null,
+              primaryColorOverride: primaryColorOverride ?? null,
+              fontPairingId: fontPairingId ?? null,
+              contentOverrides,
+              emotionalGoals: custEmotionalGoals,
+              voiceProfile: custVoiceProfile,
+              brandArchetype: custBrandArchetype,
+              antiReferences: custAntiReferences,
+            }
+          : undefined,
+      });
+      setSavedProjectId(id);
+      setShowSavePrompt(false);
+      posthog.capture("project_saved", {
+        session_id: sessionId,
+        site_type: spec.siteType,
+        business_name: spec.businessName,
+      });
+    } catch (err) {
+      posthog.capture("project_save_failed", {
+        session_id: sessionId,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    sessionId,
+    isSaving,
+    savedProjectId,
+    createProject,
+    spec,
+    custHasChanges,
+    activePresetId,
+    primaryColorOverride,
+    fontPairingId,
+    contentOverrides,
+    custEmotionalGoals,
+    custVoiceProfile,
+    custBrandArchetype,
+    custAntiReferences,
+  ]);
 
   // Detect AI-selected font pairing
   const aiFontPairingId = useMemo(
@@ -1511,6 +1586,32 @@ function PreviewLayout({
           {!isRevealing && mobileTab === "actions" && (
             <MobileBottomSheet title="Actions" onClose={() => setMobileTab("preview")}>
               <div className="flex flex-col gap-1 py-2">
+                {/* Save project */}
+                {!savedProjectId && (
+                  <button
+                    onClick={() => {
+                      if (isSignedIn) {
+                        void handleSaveProject();
+                      } else {
+                        setShowSavePrompt(true);
+                      }
+                    }}
+                    disabled={isSaving}
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                  >
+                    <Save className="h-5 w-5 text-[#e8a849]" />
+                    {isSaving ? "Saving..." : "Save to My Projects"}
+                  </button>
+                )}
+                {savedProjectId && (
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#3ecfb4]"
+                  >
+                    <Check className="h-5 w-5" />
+                    Saved — View in Dashboard
+                  </Link>
+                )}
                 <button
                   onClick={() => void handleShare()}
                   disabled={isGeneratingShareLink}
@@ -1707,6 +1808,101 @@ function PreviewLayout({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Save Project floating prompt — shows after reveal, before save */}
+      <AnimatePresence>
+        {!isRevealing && !savedProjectId && !showSavePrompt && existingProject === null && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.4, delay: 1.5 }}
+            className="absolute bottom-20 left-1/2 z-30 -translate-x-1/2"
+          >
+            <button
+              onClick={() => {
+                if (isSignedIn) {
+                  void handleSaveProject();
+                } else {
+                  setShowSavePrompt(true);
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border-accent)] bg-[var(--color-bg-elevated)] px-5 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] shadow-xl transition-all hover:border-[var(--color-accent)] hover:shadow-[var(--shadow-glow)]"
+            >
+              <Save className="h-4 w-4 text-[var(--color-accent)]" />
+              Save to My Projects
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Save confirmation badge — shows after successful save */}
+      <AnimatePresence>
+        {savedProjectId && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute bottom-20 left-1/2 z-30 -translate-x-1/2"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#3ecfb4]/15 px-4 py-2 text-sm font-medium text-[#3ecfb4]">
+              <Check className="h-4 w-4" />
+              Saved!
+              <Link
+                href="/dashboard"
+                className="ml-1 underline underline-offset-2 hover:no-underline"
+              >
+                View in Dashboard
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sign-in prompt for save */}
+      <AnimatePresence>
+        {showSavePrompt && !isSignedIn && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowSavePrompt(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="mx-4 max-w-sm rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 shadow-2xl"
+            >
+              <h3
+                className="mb-2 text-lg font-bold text-[var(--color-text-primary)]"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                Sign in to save
+              </h3>
+              <p className="mb-5 text-sm text-[var(--color-text-secondary)]">
+                Create a free account to save your website and return to edit it anytime.
+              </p>
+              <div className="flex gap-3">
+                <SignInButton mode="modal">
+                  <button className="flex-1 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform hover:scale-[1.02]">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <button
+                  onClick={() => setShowSavePrompt(false)}
+                  className="rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+                >
+                  Later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dev Panel — bottom drawer */}
       {devPanelOpen && sessionId && (

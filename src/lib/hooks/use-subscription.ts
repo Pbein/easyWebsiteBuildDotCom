@@ -1,22 +1,63 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
-type Plan = "free" | "starter" | "pro";
+export type Plan = "free" | "starter" | "pro";
 
-interface SubscriptionStatus {
+export interface SubscriptionStatus {
   plan: Plan;
   isLoaded: boolean;
+  isActive: boolean;
+  ownItPurchased: boolean;
+  currentPeriodEnd: number | null;
+  subscriptionStatus: string | null;
 }
 
 /**
- * Subscription status hook — reads plan from Clerk user metadata.
- * Will be wired to Stripe via Clerk user metadata in Priority 2 (BD-003-01).
- * For now, all authenticated users are "free" tier.
+ * Subscription status hook — reads plan from Convex users table.
+ * Wired to Stripe via Convex webhook handler.
  */
 export function useSubscription(): SubscriptionStatus {
-  const { isLoaded } = useUser();
+  const { isLoaded: clerkLoaded, isSignedIn } = useUser();
+  const user = useQuery(api.users.getCurrentUser);
 
-  // Will be wired to Stripe via Clerk publicMetadata.plan in Priority 2
-  return { plan: "free", isLoaded };
+  // Not loaded yet
+  if (!clerkLoaded || (isSignedIn && user === undefined)) {
+    return {
+      plan: "free",
+      isLoaded: false,
+      isActive: false,
+      ownItPurchased: false,
+      currentPeriodEnd: null,
+      subscriptionStatus: null,
+    };
+  }
+
+  // Not signed in
+  if (!isSignedIn || !user) {
+    return {
+      plan: "free",
+      isLoaded: true,
+      isActive: false,
+      ownItPurchased: false,
+      currentPeriodEnd: null,
+      subscriptionStatus: null,
+    };
+  }
+
+  const plan = (user.plan ?? "free") as Plan;
+  const isActive =
+    plan !== "free" &&
+    (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing");
+
+  return {
+    plan,
+    isLoaded: true,
+    isActive,
+    ownItPurchased: user.ownItPurchased ?? false,
+    currentPeriodEnd: user.currentPeriodEnd ?? null,
+    subscriptionStatus: user.subscriptionStatus ?? null,
+  };
 }

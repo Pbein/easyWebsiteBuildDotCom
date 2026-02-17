@@ -13,7 +13,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://pixabay.com https://cdn.pixabay.com https://img.clerk.com",
-      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://us.i.posthog.com https://us-assets.i.posthog.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
+      "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://us.i.posthog.com https://us-assets.i.posthog.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://checkout.stripe.com https://api.stripe.com https://api.vercel.com",
       "frame-src 'self' https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev",
       "frame-ancestors 'self'",
     ].join("; "),
