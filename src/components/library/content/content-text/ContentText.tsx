@@ -38,7 +38,7 @@ export function ContentText({
   textAlign = "center",
   maxWidth = "narrow",
   eyebrow,
-}: ContentTextProps) {
+}: ContentTextProps): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 

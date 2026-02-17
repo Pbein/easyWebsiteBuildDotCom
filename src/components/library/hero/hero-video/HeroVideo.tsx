@@ -192,7 +192,9 @@ function BackgroundVideoVariant({
           animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div
+          <button
+            type="button"
+            aria-label="Play video"
             className="flex items-center justify-center transition-transform hover:scale-110"
             style={{
               width: "80px",
@@ -202,6 +204,7 @@ function BackgroundVideoVariant({
               boxShadow: "var(--shadow-xl)",
               transitionDuration: "var(--transition-fast)",
               cursor: "pointer",
+              border: "none",
             }}
           >
             <Play
@@ -209,7 +212,7 @@ function BackgroundVideoVariant({
               fill="var(--color-text-on-primary)"
               style={{ color: "var(--color-text-on-primary)", marginLeft: "4px" }}
             />
-          </div>
+          </button>
         </motion.div>
 
         {/* Headline */}

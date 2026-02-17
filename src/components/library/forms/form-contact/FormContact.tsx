@@ -78,7 +78,7 @@ export function FormContact({
   fields,
   submitText = "Send Message",
   successMessage = "Thank you! We'll get back to you soon.",
-}: FormContactProps) {
+}: FormContactProps): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [submitted, setSubmitted] = useState(false);

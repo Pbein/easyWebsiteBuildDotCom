@@ -136,7 +136,7 @@ export function ProofTestimonials({
   headline,
   testimonials,
   showRating = false,
-}: ProofTestimonialsProps) {
+}: ProofTestimonialsProps): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [page, setPage] = useState(0);

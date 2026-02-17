@@ -120,7 +120,8 @@ export function TieredItem({
         {/* CTA */}
         {service.ctaText && (
           <a
-            href={service.ctaLink ?? "#"}
+            href={service.ctaLink || undefined}
+            role={service.ctaLink ? undefined : "button"}
             className="mt-6 inline-flex w-full items-center justify-center px-6 py-3"
             style={{
               backgroundColor: isFeatured ? "var(--color-primary)" : "transparent",

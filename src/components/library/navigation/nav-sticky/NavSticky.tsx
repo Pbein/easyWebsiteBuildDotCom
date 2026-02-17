@@ -28,7 +28,7 @@ export function NavSticky({
   cta,
   variant = "transparent",
   sticky = true,
-}: NavStickyProps) {
+}: NavStickyProps): React.ReactElement {
   const scrolledPastThreshold = useSyncExternalStore(
     (callback) => {
       window.addEventListener("scroll", callback, { passive: true });

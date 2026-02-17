@@ -87,7 +87,8 @@ export function ListItem({
         )}
         {service.ctaText && (
           <a
-            href={service.ctaLink ?? "#"}
+            href={service.ctaLink || undefined}
+            role={service.ctaLink ? undefined : "button"}
             className="inline-flex items-center justify-center px-4 py-2 whitespace-nowrap"
             style={{
               backgroundColor: "var(--color-primary)",

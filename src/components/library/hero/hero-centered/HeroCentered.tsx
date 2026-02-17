@@ -32,7 +32,7 @@ export function HeroCentered({
   textAlign = "center",
   badge,
   variant = "with-bg-image",
-}: HeroCenteredProps) {
+}: HeroCenteredProps): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 

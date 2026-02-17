@@ -59,7 +59,7 @@ export function Section({
   patternPosition,
   patternOpacity = 0.06,
   children,
-}: SectionProps) {
+}: SectionProps): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 

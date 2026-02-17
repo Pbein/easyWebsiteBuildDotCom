@@ -38,7 +38,7 @@ export function ContentSplit({
   sections,
   imageStyle = "rounded",
   ...rest
-}: ContentSplitProps & Record<string, unknown>) {
+}: ContentSplitProps & Record<string, unknown>): React.ReactElement | null {
   // Defensive: AI may send "rows" instead of "sections"
   const resolvedSections =
     sections ?? (rest as { rows?: ContentSplitProps["sections"] }).rows ?? [];

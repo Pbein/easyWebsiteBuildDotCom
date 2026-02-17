@@ -78,7 +78,7 @@ export function FooterStandard({
   socialLinks,
   copyright,
   bottomLinks,
-}: FooterStandardProps) {
+}: FooterStandardProps): React.ReactElement {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 

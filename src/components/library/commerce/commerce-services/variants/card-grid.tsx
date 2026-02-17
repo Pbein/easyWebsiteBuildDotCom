@@ -157,7 +157,8 @@ export function CardGridItem({
         {/* CTA */}
         {service.ctaText && (
           <a
-            href={service.ctaLink ?? "#"}
+            href={service.ctaLink || undefined}
+            role={service.ctaLink ? undefined : "button"}
             className="mt-4 inline-flex items-center justify-center px-5 py-2.5 text-center"
             style={{
               backgroundColor: "var(--color-primary)",
