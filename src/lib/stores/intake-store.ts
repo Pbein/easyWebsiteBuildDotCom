@@ -174,6 +174,7 @@ export const useIntakeStore = create<IntakeState & IntakeActions>()(
         aiResponses: state.aiResponses,
         questionsGeneratedAt: state.questionsGeneratedAt,
         questionsInputKey: state.questionsInputKey,
+        specId: state.specId,
       }),
     }
   )

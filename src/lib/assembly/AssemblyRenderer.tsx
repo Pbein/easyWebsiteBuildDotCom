@@ -97,12 +97,18 @@ export function AssemblyRenderer({
 }: AssemblyRendererProps): React.ReactElement {
   const pv = spec.personalityVector as PersonalityVector;
 
+  // Stringify array deps to avoid infinite memo invalidation from new references
+  const pvKey = JSON.stringify(pv);
+  const emotionalGoalsKey = JSON.stringify(spec.emotionalGoals ?? []);
+  const antiRefsKey = JSON.stringify(spec.antiReferences ?? []);
+
   const generatedTheme = useMemo(() => {
     const baseTheme = generateThemeFromVector(pv, { businessType: spec.siteType });
     return spec.emotionalGoals?.length
       ? applyEmotionalOverrides(baseTheme, spec.emotionalGoals, spec.antiReferences || [])
       : baseTheme;
-  }, [pv, spec.siteType, spec.emotionalGoals, spec.antiReferences]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pvKey, spec.siteType, emotionalGoalsKey, antiRefsKey]);
 
   const theme = themeOverride ?? generatedTheme;
 

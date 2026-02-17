@@ -45,8 +45,8 @@ function generatePalette(pv: PersonalityVector, seedHue?: number, businessType?:
   // Saturation: playful + rich = high saturation; serious + minimal = low
   const baseSaturation = lerp(0.35, 0.75, (1 - pv[1] + minRich) / 2);
 
-  // Lightness of the primary
-  const primaryLightness = lerp(0.45, 0.55, 0.5);
+  // Lightness of the primary: bold personalities get slightly deeper primaries
+  const primaryLightness = lerp(0.45, 0.55, 1 - lightBold);
 
   const primary = chroma.hsl(hue, baseSaturation, primaryLightness);
   const primaryLight = primary.brighten(1.2);

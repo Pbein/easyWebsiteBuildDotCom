@@ -41,9 +41,14 @@ interface ThemeProviderProps {
  * Nest ThemeProviders for section-level overrides.
  */
 export function ThemeProvider({ tokens, overrides, children }: ThemeProviderProps) {
+  // Stable keys to avoid infinite memo invalidation from new object references
+  const tokensKey = JSON.stringify(tokens);
+  const overridesKey = JSON.stringify(overrides ?? null);
+
   const merged = useMemo<ThemeTokens>(
     () => (overrides ? { ...tokens, ...overrides } : tokens),
-    [tokens, overrides]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tokensKey, overridesKey]
   );
 
   const cssVars = useMemo(() => tokensToCSSProperties(merged) as React.CSSProperties, [merged]);

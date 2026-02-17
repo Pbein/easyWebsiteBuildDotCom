@@ -6,6 +6,9 @@ import type { ThemeTokens } from "./theme.types";
  * based on emotional goals and anti-references.
  * Now includes COLOR overrides alongside spacing/animation/shape.
  *
+ * Values are clamped to prevent compound overrides from producing
+ * extreme results (e.g., luxury + calm + anti-cheap stacking spacing).
+ *
  * Returns a new ThemeTokens object — does not mutate the input.
  */
 export function applyEmotionalOverrides(
@@ -15,20 +18,22 @@ export function applyEmotionalOverrides(
 ): ThemeTokens {
   const tokens = { ...baseTokens };
 
-  // Helper to scale a CSS value like "96px" by a multiplier
+  // Helper to scale a CSS value like "96px" by a multiplier, clamped to ±40% of original
   const scaleValue = (value: string, multiplier: number): string => {
     const match = value.match(/^([\d.]+)(px|rem|em|%)$/);
     if (!match) return value;
-    const num = parseFloat(match[1]) * multiplier;
-    return `${Math.round(num * 100) / 100}${match[2]}`;
+    const original = parseFloat(match[1]);
+    const clamped = Math.max(original * 0.6, Math.min(original * 1.4, original * multiplier));
+    return `${Math.round(clamped * 100) / 100}${match[2]}`;
   };
 
-  // Helper to scale a transition value like "200ms"
+  // Helper to scale a transition value like "200ms", clamped to ±50% of original
   const scaleTransition = (value: string, multiplier: number): string => {
     const match = value.match(/^([\d.]+)(ms|s)$/);
     if (!match) return value;
-    const num = parseFloat(match[1]) * multiplier;
-    return `${Math.round(num)}${match[2]}`;
+    const original = parseFloat(match[1]);
+    const clamped = Math.max(original * 0.5, Math.min(original * 1.5, original * multiplier));
+    return `${Math.round(clamped)}${match[2]}`;
   };
 
   // Helper to safely adjust a hex color

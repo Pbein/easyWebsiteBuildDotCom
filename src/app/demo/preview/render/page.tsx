@@ -134,7 +134,7 @@ function RenderContent(): React.ReactElement {
     if (!spec) return null;
     if (Object.keys(contentOverrides).length === 0) return spec;
 
-    const cloned: SiteIntentDocument = JSON.parse(JSON.stringify(spec));
+    const cloned: SiteIntentDocument = structuredClone(spec);
     for (const page of cloned.pages) {
       const sorted = [...page.components].sort((a, b) => a.order - b.order);
       for (const [indexStr, fields] of Object.entries(contentOverrides)) {

@@ -172,6 +172,7 @@ export const useCustomizationStore = create<
         voiceProfile: state.voiceProfile,
         brandArchetype: state.brandArchetype,
         antiReferences: state.antiReferences,
+        hasChanges: state.hasChanges,
       }),
     }
   )

@@ -71,7 +71,7 @@ function SharedPreviewContent({ shareId }: { shareId: string }): React.ReactElem
         Record<string, string>
       >;
       if (Object.keys(overrides).length > 0) {
-        const cloned: SiteIntentDocument = JSON.parse(JSON.stringify(base));
+        const cloned: SiteIntentDocument = structuredClone(base);
         for (const page of cloned.pages) {
           const sorted = [...page.components].sort((a, b) => a.order - b.order);
           for (const [indexStr, fields] of Object.entries(overrides)) {
