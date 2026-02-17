@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import posthog from "posthog-js";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send,
@@ -113,7 +114,9 @@ export function Step5Discovery({ onComplete }: Step5DiscoveryProps): React.React
         }
       })
       .catch((err) => {
-        console.error("Failed to generate questions:", err);
+        posthog.capture("question_generation_failed", {
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
         if (!cancelled) setIsLoading(false);
       });
 

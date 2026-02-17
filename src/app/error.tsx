@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import posthog from "posthog-js";
 
 export default function Error({
   error,
@@ -10,7 +11,10 @@ export default function Error({
   reset: () => void;
 }): React.ReactElement {
   useEffect(() => {
-    console.error("Route error:", error);
+    posthog.capture("route_error", {
+      error_message: error.message,
+      error_digest: error.digest,
+    });
   }, [error]);
 
   return (
@@ -26,6 +30,7 @@ export default function Error({
           An unexpected error occurred. Please try again.
         </p>
         <button
+          type="button"
           onClick={reset}
           className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-6 py-2.5 text-sm font-semibold text-[var(--color-bg-primary)] transition-colors hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-primary)] focus-visible:outline-none"
         >

@@ -222,7 +222,10 @@ export function Step6Loading(): React.ReactElement {
       // Navigate to preview on success
       router.push(`/demo/preview?session=${encodeURIComponent(sessionId)}`);
     } catch (err) {
-      console.error("Failed to generate site spec:", err);
+      posthog.capture("site_spec_generation_failed", {
+        session_id: sessionId,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
       setError(
         err instanceof Error
           ? err.message

@@ -159,8 +159,10 @@ function PreviewContent(): React.ReactElement {
           include_badge: true,
         });
       } catch (err) {
-        console.error("Export failed:", err);
-        posthog.captureException(err);
+        posthog.capture("export_failed", {
+          session_id: sessionId,
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
       } finally {
         setIsExporting(false);
       }
@@ -984,8 +986,11 @@ function PreviewLayout({
           height: result.height,
         });
       } catch (err) {
-        console.error("Screenshot capture failed:", err);
-        posthog.captureException(err);
+        posthog.capture("screenshot_capture_failed", {
+          session_id: sessionId,
+          viewport: "mobile",
+          error: err instanceof Error ? err.message : "Unknown error",
+        });
       } finally {
         setIsCapturing(false);
       }
@@ -995,15 +1000,16 @@ function PreviewLayout({
     // Desktop path: capture via iframe postMessage
     setIsCapturing(true);
     const requestId = `screenshot-${Date.now()}`;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const result = await Promise.race([
         new Promise<ScreenshotResult>((resolve, reject) => {
           screenshotResolveRef.current = { resolve, reject };
           postToIframe({ type: "ewb:request-screenshot", requestId });
         }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Screenshot timeout (10s)")), 10000)
-        ),
+        new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("Screenshot timeout (10s)")), 10000);
+        }),
       ]);
       setLastScreenshot(result);
       // Track screenshot captured
@@ -1014,10 +1020,13 @@ function PreviewLayout({
         height: result.height,
       });
     } catch (err) {
-      console.error("Screenshot capture failed:", err);
-      posthog.captureException(err);
+      posthog.capture("screenshot_capture_failed", {
+        session_id: sessionId,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
       screenshotResolveRef.current = null;
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setIsCapturing(false);
     }
   }, [isCapturing, setIsCapturing, setLastScreenshot, isMobile, postToIframe, sessionId, viewport]);
@@ -1069,8 +1078,10 @@ function PreviewLayout({
         }
       }
     } catch (err) {
-      console.error("Share link generation failed:", err);
-      posthog.captureException(err);
+      posthog.capture("share_link_failed", {
+        session_id: sessionId,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
     } finally {
       setIsGeneratingShareLink(false);
     }

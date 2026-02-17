@@ -105,8 +105,10 @@ export function FeedbackBanner({
       });
       setJustSubmitted(true);
     } catch (err) {
-      console.error("Failed to save feedback:", err);
-      posthog.captureException(err);
+      posthog.capture("feedback_save_failed", {
+        session_id: sessionId,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
     }
   }, [selectedRating, selectedDimensions, freeText, sessionId, saveFeedback]);
 

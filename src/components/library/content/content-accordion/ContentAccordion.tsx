@@ -71,6 +71,8 @@ function AccordionItemRow({
         type="button"
         onClick={() => onToggle(index)}
         aria-expanded={isOpen}
+        aria-controls={`accordion-panel-${index}`}
+        id={`accordion-header-${index}`}
         className={cn(
           "flex w-full items-center justify-between text-left",
           isBordered ? "px-6 py-5" : "py-5"
@@ -119,6 +121,9 @@ function AccordionItemRow({
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={`accordion-panel-${index}`}
+            role="region"
+            aria-labelledby={`accordion-header-${index}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}

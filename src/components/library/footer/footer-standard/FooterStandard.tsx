@@ -183,8 +183,9 @@ export function FooterStandard({
 
           {/* Link columns */}
           {columns.map((col, i) => (
-            <div
+            <nav
               key={i}
+              aria-label={col.title}
               className={cn(
                 columns.length <= 2 ? "lg:col-span-4" : "lg:col-span-2",
                 i === 0 && columns.length <= 2 ? "lg:col-start-7" : ""
@@ -228,7 +229,7 @@ export function FooterStandard({
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
 
