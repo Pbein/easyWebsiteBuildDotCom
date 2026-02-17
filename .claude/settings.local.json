@@ -65,7 +65,10 @@
       "Bash(find:*)",
       "Bash(xargs:*)",
       "Bash(comm:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git -C /c/Users/phili/OneDrive/Desktop/Code/NextJS Apps/easyWebsiteBuildDotCom log --oneline -30)",
+      "WebFetch(domain:clerk.com)",
+      "Bash(npm test:*)"
     ]
   }
 }

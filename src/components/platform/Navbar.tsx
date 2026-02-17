@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles } from "lucide-react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+
+const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -81,8 +84,30 @@ export function Navbar(): React.ReactElement {
             })}
           </div>
 
-          {/* CTA + Mobile toggle */}
+          {/* Auth + CTA + Mobile toggle */}
           <div className="flex items-center gap-3">
+            {hasClerk && (
+              <>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="hidden cursor-pointer rounded-lg px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] transition-colors duration-200 hover:text-[var(--color-text-primary)] md:inline-flex">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <div className="hidden md:flex">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: "h-8 w-8",
+                        },
+                      }}
+                    />
+                  </div>
+                </SignedIn>
+              </>
+            )}
             <Link
               href="/demo"
               className="hidden items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-dim)] px-5 py-2 text-sm font-semibold text-[var(--color-bg-primary)] transition-transform duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-glow)] md:inline-flex"
@@ -128,6 +153,31 @@ export function Navbar(): React.ReactElement {
                   </Link>
                 );
               })}
+              {hasClerk && (
+                <>
+                  <SignedOut>
+                    <SignInButton mode="modal">
+                      <button
+                        onClick={() => setMobileOpen(false)}
+                        className="mt-2 w-full cursor-pointer rounded-lg px-4 py-3 text-left text-lg font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+                      >
+                        Sign In
+                      </button>
+                    </SignInButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="mt-2 px-4 py-3">
+                      <UserButton
+                        appearance={{
+                          elements: {
+                            avatarBox: "h-9 w-9",
+                          },
+                        }}
+                      />
+                    </div>
+                  </SignedIn>
+                </>
+              )}
               <Link
                 href="/demo"
                 onClick={() => setMobileOpen(false)}

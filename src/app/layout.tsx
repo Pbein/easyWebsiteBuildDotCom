@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { ClerkProvider } from "@clerk/nextjs";
 import { ConditionalLayout } from "@/components/platform/ConditionalLayout";
 import { ConvexClientProvider } from "@/components/platform/ConvexClientProvider";
+
+const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
@@ -56,9 +59,17 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ConvexClientProvider>
-          <ConditionalLayout>{children}</ConditionalLayout>
-        </ConvexClientProvider>
+        {clerkPubKey ? (
+          <ClerkProvider publishableKey={clerkPubKey}>
+            <ConvexClientProvider>
+              <ConditionalLayout>{children}</ConditionalLayout>
+            </ConvexClientProvider>
+          </ClerkProvider>
+        ) : (
+          <ConvexClientProvider>
+            <ConditionalLayout>{children}</ConditionalLayout>
+          </ConvexClientProvider>
+        )}
         <Toaster
           theme="dark"
           position="bottom-right"
