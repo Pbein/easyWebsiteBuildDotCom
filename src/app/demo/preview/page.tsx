@@ -130,7 +130,7 @@ function PreviewContent(): React.ReactElement {
   }, [rawSpec, sessionId, expressMode]);
 
   const handleExport = useCallback(
-    async (specToExport: SiteIntentDocument): Promise<void> => {
+    async (specToExport: SiteIntentDocument, themeTokens?: ThemeTokens): Promise<void> => {
       setIsExporting(true);
       // Track export started
       posthog.capture("export_clicked", {
@@ -143,7 +143,10 @@ function PreviewContent(): React.ReactElement {
           import("@/lib/export/generate-project"),
           import("@/lib/export/create-zip"),
         ]);
-        const result: ExportResult = generateProject(specToExport, { includeBadge: true });
+        const result: ExportResult = generateProject(specToExport, {
+          includeBadge: true,
+          themeTokens,
+        });
         const blob = await createProjectZip(result);
         const filename = `${result.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-website.zip`;
         downloadBlob(blob, filename);
@@ -649,7 +652,7 @@ function PreviewLayout({
   activePage: string;
   setActivePage: (v: string) => void;
   isExporting: boolean;
-  handleExport: (spec: SiteIntentDocument) => Promise<void>;
+  handleExport: (spec: SiteIntentDocument, themeTokens?: ThemeTokens) => Promise<void>;
   activeVariant: "A" | "B";
   setActiveVariant: (v: "A" | "B") => void;
   isCapturing: boolean;
@@ -1514,7 +1517,7 @@ function PreviewLayout({
                   {isCapturing ? "Capturing..." : "Take Screenshot"}
                 </button>
                 <button
-                  onClick={() => void handleExport(spec)}
+                  onClick={() => void handleExport(mobileEffectiveSpec, activeTheme)}
                   disabled={isExporting}
                   className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
                 >
@@ -1576,7 +1579,7 @@ function PreviewLayout({
           businessName={spec.businessName}
           viewport={viewport}
           onViewportChange={setViewport}
-          onExport={() => handleExport(spec)}
+          onExport={() => handleExport(mobileEffectiveSpec, activeTheme)}
           isExporting={isExporting}
           onScreenshot={() => void handleScreenshot()}
           isCapturing={isCapturing}

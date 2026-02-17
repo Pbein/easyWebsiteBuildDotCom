@@ -137,9 +137,9 @@ export const FONT_PAIRINGS: FontPairing[] = [
   {
     id: "creative-agency",
     displayName: "Creative Agency",
-    heading: "'Clash Display', sans-serif",
-    body: "'Satoshi', sans-serif",
-    accent: "'Clash Display', sans-serif",
+    heading: "'Bricolage Grotesque', sans-serif",
+    body: "'Plus Jakarta Sans', sans-serif",
+    accent: "'Bricolage Grotesque', sans-serif",
     seriousness: [0.0, 0.5],
     era: [0.7, 1.0],
     businessTypes: ["portfolio", "photography"],

@@ -6,7 +6,8 @@
 import type { SiteIntentDocument, ComponentPlacement } from "../assembly/spec.types";
 import { generateThemeFromVector } from "../theme/generate-theme";
 import { tokensToCSSProperties } from "../theme/token-map";
-import type { PersonalityVector } from "../theme/theme.types";
+import { sanitizeHtml } from "../sanitize";
+import type { ThemeTokens, PersonalityVector } from "../theme/theme.types";
 
 export interface ExportFile {
   path: string;
@@ -21,6 +22,8 @@ export interface ExportResult {
 export interface GenerateProjectOptions {
   /** Include "Built with EasyWebsiteBuild" badge in HTML output (default: true) */
   includeBadge?: boolean;
+  /** Pre-composed theme tokens (from 5-layer composition). When provided, skips raw vector generation. */
+  themeTokens?: ThemeTokens;
 }
 
 /**
@@ -30,10 +33,12 @@ export function generateProject(
   spec: SiteIntentDocument,
   options: GenerateProjectOptions = {}
 ): ExportResult {
-  const { includeBadge = true } = options;
-  const tokens = generateThemeFromVector(spec.personalityVector as PersonalityVector, {
-    businessType: spec.siteType,
-  });
+  const { includeBadge = true, themeTokens } = options;
+  const tokens =
+    themeTokens ??
+    generateThemeFromVector(spec.personalityVector as PersonalityVector, {
+      businessType: spec.siteType,
+    });
   const cssVars = tokensToCSSProperties(tokens);
 
   const cssContent = generateCSS(cssVars);
@@ -469,7 +474,7 @@ function generateHTML(
   const fontsUrl =
     fontFamilies.size > 0
       ? `https://fonts.googleapis.com/css2?${Array.from(fontFamilies)
-          .map((f) => `family=${f.replace(/\s+/g, "+")}:wght@400;500;600;700`)
+          .map((f) => `family=${f.replace(/\s+/g, "+")}:wght@300;400;500;600;700;800`)
           .join("&")}&display=swap`
       : "";
 
@@ -540,6 +545,14 @@ function renderComponent(c: ComponentPlacement, businessName: string): string {
       return renderBlogPreview(content);
     case "content-map":
       return renderMap(content);
+    case "content-split":
+      return renderSplit(content);
+    case "content-timeline":
+      return renderTimeline(content);
+    case "media-gallery":
+      return renderGallery(content);
+    case "proof-beforeafter":
+      return renderBeforeAfter(content);
     default:
       return `<!-- Component: ${c.componentId} (not yet supported in export) -->`;
   }
@@ -615,7 +628,7 @@ function renderTextBlock(content: Record<string, unknown>): string {
       <div class="section-header">
         ${eyebrow ? `<p class="section-header__eyebrow">${escapeHtml(eyebrow)}</p>` : ""}
         <h2 class="section-header__headline">${escapeHtml(headline)}</h2>
-        <div class="section-header__subheadline">${body}</div>
+        <div class="section-header__subheadline">${sanitizeHtml(body)}</div>
       </div>
     </div>
   </section>`;
@@ -624,8 +637,12 @@ function renderTextBlock(content: Record<string, unknown>): string {
 function renderStats(content: Record<string, unknown>): string {
   const headline = (content.headline as string) || "";
   const stats =
-    (content.stats as Array<{ value: string; label: string; suffix?: string; prefix?: string }>) ||
-    [];
+    (content.stats as Array<{
+      value: string | number;
+      label: string;
+      suffix?: string;
+      prefix?: string;
+    }>) || [];
 
   return `  <section class="section">
     <div class="container">
@@ -634,7 +651,7 @@ function renderStats(content: Record<string, unknown>): string {
         ${stats
           .map(
             (s) => `<div class="feature-card" style="text-align: center;">
-          <div style="font-family: var(--font-heading); font-size: clamp(2rem, 4vw, 3rem); font-weight: var(--weight-bold); color: var(--color-primary);">${escapeHtml(s.prefix || "")}${escapeHtml(s.value)}${escapeHtml(s.suffix || "")}</div>
+          <div style="font-family: var(--font-heading); font-size: clamp(2rem, 4vw, 3rem); font-weight: var(--weight-bold); color: var(--color-primary);">${escapeHtml(s.prefix || "")}${escapeHtml(String(s.value))}${escapeHtml(s.suffix || "")}</div>
           <p class="feature-card__description">${escapeHtml(s.label)}</p>
         </div>`
           )
@@ -762,7 +779,7 @@ function renderServices(content: Record<string, unknown>): string {
   const subheadline = (content.subheadline as string) || "";
   const services =
     (content.services as Array<{
-      title: string;
+      name: string;
       description: string;
       price?: string;
       featured?: boolean;
@@ -781,7 +798,7 @@ function renderServices(content: Record<string, unknown>): string {
               s
             ) => `<div class="feature-card"${s.featured ? ' style="border-color: var(--color-primary);"' : ""}>
           ${s.price ? `<div style="font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--color-primary); margin-bottom: 0.5rem;">${escapeHtml(s.price)}</div>` : ""}
-          <h3 class="feature-card__title">${escapeHtml(s.title)}</h3>
+          <h3 class="feature-card__title">${escapeHtml(s.name)}</h3>
           <p class="feature-card__description">${escapeHtml(s.description)}</p>
         </div>`
           )
@@ -834,7 +851,7 @@ function renderAccordion(content: Record<string, unknown>): string {
               item
             ) => `<details style="border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: 0.75rem; overflow: hidden;">
           <summary style="padding: 1.25rem 1.5rem; cursor: pointer; font-weight: var(--weight-semibold); color: var(--color-text); background: var(--color-surface);">${escapeHtml(item.question)}</summary>
-          <div style="padding: 1rem 1.5rem; color: var(--color-text-secondary); line-height: var(--leading-relaxed);">${item.answer}</div>
+          <div style="padding: 1rem 1.5rem; color: var(--color-text-secondary); line-height: var(--leading-relaxed);">${sanitizeHtml(item.answer)}</div>
         </details>`
           )
           .join("\n        ")}
@@ -1018,6 +1035,126 @@ function renderMap(content: Record<string, unknown>): string {
         </div>`
             : ""
         }
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderSplit(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const sections =
+    (content.sections as Array<{
+      headline: string;
+      body: string;
+      ctaText?: string;
+      ctaLink?: string;
+    }>) || [];
+
+  return `  <section class="section">
+    <div class="container">
+      ${headline ? `<div class="section-header"><h2 class="section-header__headline">${escapeHtml(headline)}</h2></div>` : ""}
+      ${sections
+        .map(
+          (
+            s,
+            i
+          ) => `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-bottom: 4rem;${i % 2 === 1 ? " direction: rtl;" : ""}">
+        <div${i % 2 === 1 ? ' style="direction: ltr;"' : ""}>
+          <h3 class="feature-card__title" style="font-size: var(--text-2xl); margin-bottom: 1rem;">${escapeHtml(s.headline)}</h3>
+          <p class="feature-card__description" style="font-size: var(--text-base); line-height: var(--leading-relaxed);">${escapeHtml(s.body)}</p>
+          ${s.ctaText ? `<a href="${escapeHtml(s.ctaLink || "#")}" class="btn-primary" style="margin-top: 1.5rem; display: inline-flex;">${escapeHtml(s.ctaText)}</a>` : ""}
+        </div>
+        <div style="background: linear-gradient(135deg, var(--color-surface), var(--color-primary)); height: 300px; border-radius: var(--radius-lg);${i % 2 === 1 ? " direction: ltr;" : ""}"></div>
+      </div>`
+        )
+        .join("\n      ")}
+    </div>
+  </section>`;
+}
+
+function renderTimeline(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const items =
+    (content.items as Array<{ title: string; description: string; date?: string }>) || [];
+
+  return `  <section class="section section--alt">
+    <div class="container">
+      ${headline ? `<div class="section-header"><h2 class="section-header__headline">${escapeHtml(headline)}</h2></div>` : ""}
+      <div style="max-width: 700px; margin: 0 auto; position: relative; padding-left: 2rem; border-left: 2px solid var(--color-border);">
+        ${items
+          .map(
+            (item) => `<div style="margin-bottom: 2.5rem; position: relative;">
+          <div style="position: absolute; left: -2.55rem; top: 0.25rem; width: 12px; height: 12px; border-radius: 50%; background: var(--color-primary);"></div>
+          ${item.date ? `<p style="font-size: var(--text-sm); color: var(--color-primary); font-weight: var(--weight-semibold); margin-bottom: 0.25rem;">${escapeHtml(item.date)}</p>` : ""}
+          <h3 class="feature-card__title">${escapeHtml(item.title)}</h3>
+          <p class="feature-card__description">${escapeHtml(item.description)}</p>
+        </div>`
+          )
+          .join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderGallery(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const subheadline = (content.subheadline as string) || "";
+  const images = (content.images as Array<{ src: string; alt: string; caption?: string }>) || [];
+
+  return `  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        ${headline ? `<h2 class="section-header__headline">${escapeHtml(headline)}</h2>` : ""}
+        ${subheadline ? `<p class="section-header__subheadline">${escapeHtml(subheadline)}</p>` : ""}
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+        ${images
+          .map(
+            (img) => `<div style="border-radius: var(--radius-lg); overflow: hidden;">
+          <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt)}" style="width: 100%; height: 240px; object-fit: cover;">
+          ${img.caption ? `<p style="padding: 0.75rem; font-size: var(--text-sm); color: var(--color-text-secondary);">${escapeHtml(img.caption)}</p>` : ""}
+        </div>`
+          )
+          .join("\n        ")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function renderBeforeAfter(content: Record<string, unknown>): string {
+  const headline = (content.headline as string) || "";
+  const subheadline = (content.subheadline as string) || "";
+  const comparisons =
+    (content.comparisons as Array<{
+      beforeLabel?: string;
+      afterLabel?: string;
+      caption?: string;
+    }>) || [];
+
+  return `  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header">
+        ${headline ? `<h2 class="section-header__headline">${escapeHtml(headline)}</h2>` : ""}
+        ${subheadline ? `<p class="section-header__subheadline">${escapeHtml(subheadline)}</p>` : ""}
+      </div>
+      <div class="features-grid">
+        ${comparisons
+          .map(
+            (c) => `<div class="feature-card">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <div style="background: var(--color-surface); height: 200px; border-radius: var(--radius-md); margin-bottom: 0.5rem;"></div>
+              <p style="text-align: center; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-secondary);">${escapeHtml(c.beforeLabel || "Before")}</p>
+            </div>
+            <div>
+              <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-surface)); height: 200px; border-radius: var(--radius-md); margin-bottom: 0.5rem;"></div>
+              <p style="text-align: center; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-text-secondary);">${escapeHtml(c.afterLabel || "After")}</p>
+            </div>
+          </div>
+          ${c.caption ? `<p style="text-align: center; margin-top: 1rem; font-size: var(--text-sm); color: var(--color-text-secondary);">${escapeHtml(c.caption)}</p>` : ""}
+        </div>`
+          )
+          .join("\n        ")}
       </div>
     </div>
   </section>`;

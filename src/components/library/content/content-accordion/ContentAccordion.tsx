@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { sanitizeHtml } from "@/lib/sanitize";
 import type { ContentAccordionProps, AccordionItem } from "./content-accordion.types";
 
 const SPACING_MAP = {
@@ -133,7 +134,7 @@ function AccordionItemRow({
                 color: "var(--color-text-secondary)",
               }}
             >
-              <div dangerouslySetInnerHTML={{ __html: item.answer }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.answer) }} />
             </div>
           </motion.div>
         )}

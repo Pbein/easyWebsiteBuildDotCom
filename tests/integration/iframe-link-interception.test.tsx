@@ -10,47 +10,27 @@
  *   - Internal links (/, /about)    -> preventDefault + scrollTo top
  *   - Non-anchor / no-href clicks   -> ignored (not prevented)
  *
- * Since the full page relies on Convex hooks and Next.js dynamic imports,
- * we recreate the exact handleLinkClick function in isolation and test it
- * against a real jsdom container with simulated click events.
+ * @requirements
+ * - [REQ-1]: Iframe must never navigate away from the preview (Source: CLAUDE.md iframe preview)
+ * - [REQ-2]: Hash links allowed for in-page scrolling (Source: page.tsx link interceptor spec)
+ * - [REQ-3]: External links open in new tab (Source: page.tsx link interceptor spec)
+ * - [REQ-4]: Internal links prevented + scroll to top (Source: page.tsx link interceptor spec)
+ *
+ * @tested-module src/lib/iframe/link-interceptor.ts
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { handleLinkClick } from "@/lib/iframe/link-interceptor";
 import {
   createMockAnchor,
   createNestedLink,
   simulateLinkClick,
 } from "../helpers/iframe-test-utils";
 
-/**
- * Exact replica of the handleLinkClick function from the render page.
- * Kept in sync manually -- if the source changes, update this copy.
- */
-function handleLinkClick(e: MouseEvent): void {
-  const anchor = (e.target as HTMLElement).closest("a");
-  if (!anchor) return;
-  const href = anchor.getAttribute("href");
-  if (!href) return;
-
-  // Allow hash links for in-page scrolling
-  if (href.startsWith("#")) return;
-
-  // External links: open in new tab (not inside iframe)
-  if (href.startsWith("http://") || href.startsWith("https://")) {
-    e.preventDefault();
-    window.open(href, "_blank", "noopener,noreferrer");
-    return;
-  }
-
-  // Internal navigation (/, /about, etc.): prevent, scroll to top
-  e.preventDefault();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
 describe("Iframe link interception", () => {
   let container: HTMLDivElement;
-  let openSpy: ReturnType<typeof vi.spyOn>;
-  let scrollToSpy: ReturnType<typeof vi.spyOn>;
+  let openSpy: ReturnType<typeof vi.fn>;
+  let scrollToSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     container = document.createElement("div");
@@ -58,10 +38,10 @@ describe("Iframe link interception", () => {
     container.addEventListener("click", handleLinkClick);
 
     // Mock window.open and window.scrollTo
-    openSpy = vi.fn() as unknown as ReturnType<typeof vi.spyOn>;
+    openSpy = vi.fn();
     window.open = openSpy as unknown as typeof window.open;
 
-    scrollToSpy = vi.fn() as unknown as ReturnType<typeof vi.spyOn>;
+    scrollToSpy = vi.fn();
     window.scrollTo = scrollToSpy as unknown as typeof window.scrollTo;
   });
 

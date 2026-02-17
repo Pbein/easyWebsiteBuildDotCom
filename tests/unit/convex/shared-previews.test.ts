@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createMockCtx, type MockCtx } from "../../helpers/mock-convex-db";
+import { getSourceHash } from "../../helpers/convex-staleness";
 
 // ---------------------------------------------------------------------------
 // Replicated handler logic (mirrors convex/sharedPreviews.ts exactly)
@@ -85,6 +86,12 @@ function makeShareArgs(overrides: Partial<Parameters<typeof createShareLink>[1]>
 // ---------------------------------------------------------------------------
 
 describe("sharedPreviews handlers", () => {
+  // Staleness guard — if this fails, convex/sharedPreviews.ts was modified.
+  // Update the replicated handler logic above to match the source, then update the hash.
+  it("staleness guard — source file unchanged", () => {
+    expect(getSourceHash("convex/sharedPreviews.ts")).toBe("db2e0feedef2f52e");
+  });
+
   let ctx: MockCtx;
 
   beforeEach(() => {

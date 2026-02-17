@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createMockCtx, type MockCtx } from "../../helpers/mock-convex-db";
+import { getSourceHash } from "../../helpers/convex-staleness";
 
 // ---------------------------------------------------------------------------
 // Replicated handler logic (mirrors convex/vlmEvaluations.ts exactly)
@@ -69,6 +70,12 @@ function makeEvalArgs(overrides: Partial<Parameters<typeof saveEvaluationInterna
 // ---------------------------------------------------------------------------
 
 describe("vlmEvaluations handlers", () => {
+  // Staleness guard — if this fails, convex/vlmEvaluations.ts was modified.
+  // Update the replicated handler logic above to match the source, then update the hash.
+  it("staleness guard — source file unchanged", () => {
+    expect(getSourceHash("convex/vlmEvaluations.ts")).toBe("8099a40ee6e22d60");
+  });
+
   let ctx: MockCtx;
 
   beforeEach(() => {

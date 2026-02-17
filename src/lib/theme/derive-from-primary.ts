@@ -15,8 +15,13 @@ export function deriveThemeFromPrimaryColor(
   personalityVector: PersonalityVector,
   businessType?: string
 ): Partial<ThemeTokens> {
-  // Extract hue from the user's chosen color
-  const hue = chroma(hex).get("hsl.h") || 0;
+  // Validate hex input to prevent chroma.js crash on invalid/partial strings
+  let hue: number;
+  try {
+    hue = chroma(hex).get("hsl.h") || 0;
+  } catch {
+    return {};
+  }
 
   // Generate a full theme seeded with this hue
   const base = generateThemeFromVector(personalityVector, {

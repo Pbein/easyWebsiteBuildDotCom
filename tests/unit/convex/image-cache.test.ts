@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createMockCtx, type MockCtx } from "../../helpers/mock-convex-db";
+import { getSourceHash } from "../../helpers/convex-staleness";
 
 // ---------------------------------------------------------------------------
 // Constants (mirrors convex/imageCache.ts)
@@ -88,6 +89,12 @@ function makeCacheArgs(overrides: Partial<Parameters<typeof saveCachedResults>[1
 // ---------------------------------------------------------------------------
 
 describe("imageCache handlers", () => {
+  // Staleness guard — if this fails, convex/imageCache.ts was modified.
+  // Update the replicated handler logic above to match the source, then update the hash.
+  it("staleness guard — source file unchanged", () => {
+    expect(getSourceHash("convex/imageCache.ts")).toBe("73286a212c17fa20");
+  });
+
   let ctx: MockCtx;
 
   beforeEach(() => {

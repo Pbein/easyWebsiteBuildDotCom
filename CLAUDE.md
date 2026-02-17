@@ -429,7 +429,8 @@ Before starting work, always read:
 2. `docs/ARCHITECTURE.md` — for system design context
 3. `docs/ROADMAP.md` — for current priorities (Revenue Foundation parallel tracks)
 4. `docs/EPICS_AND_STORIES.md` — for Output Quality Overhaul tracking (30/33 shipped)
-5. Relevant doc files for the specific area you're working on
+5. `docs/TESTING_METHODOLOGY.md` — **REQUIRED before writing any tests**
+6. Relevant doc files for the specific area you're working on
 
 ## Commands
 
@@ -455,46 +456,123 @@ npx convex deploy    # Deploy Convex functions
 | `/verify`         | Run full verification checklist: build, lint, code quality, component library integrity, security.          |
 | `/deploy-ready`   | Comprehensive pre-deployment checklist covering all pages, components, and git state.                       |
 
-## Testing Philosophy & Failure Protocol
+## Testing Philosophy — Requirements-First Testing
+
+> **Full methodology**: `docs/TESTING_METHODOLOGY.md` — Read this before writing ANY test.
+
+### The #1 Rule: Requirements First, Code Second
+
+**NEVER** read source code and then write tests that confirm what the code does. Instead:
+
+1. **Identify the requirement** — from CLAUDE.md, type interfaces, product specs, or bug reports
+2. **Write the assertion** — what SHOULD the answer be, based on the requirement?
+3. **THEN** read the source code only to understand setup (imports, props, mocks)
+4. **Ask yourself** — "Would this test catch a bug, or would it pass even if the feature were broken?"
+
+If a test's expected value was copied from the source code's return value, it is a **tautological test** and provides zero protection. Fix it.
+
+### Test Classification (every test must fit one)
+
+| Category        | What it tests                                            | Minimum per file                          |
+| --------------- | -------------------------------------------------------- | ----------------------------------------- |
+| **Requirement** | Product/UX behavior users depend on                      | At least 1                                |
+| **Contract**    | API or type interface boundary                           | At least 1                                |
+| **Invariant**   | A rule that must ALWAYS hold (e.g., no hardcoded colors) | Where applicable                          |
+| **Boundary**    | Edge cases, limits, error states                         | At least 1                                |
+| **Regression**  | A specific bug that was fixed                            | When applicable                           |
+| **Smoke**       | Basic "doesn't crash"                                    | OK to include, but NEVER sufficient alone |
+
+A test file with ONLY smoke tests ("renders without crashing") is **incomplete**.
+
+### Required Test Documentation
+
+Every `describe` block must document what requirement it protects:
+
+```typescript
+/**
+ * @requirements
+ * - [REQ-1]: Warm voice produces conversational language (Source: VOICE_TONE_CARDS)
+ * - [REQ-2]: Anti-references actively constrain output (Source: CLAUDE.md brand character)
+ */
+describe("warm voice CTA generation", () => { ... });
+```
+
+### Good vs Bad Test Patterns
+
+```typescript
+// ❌ BAD — Copied expected value from source code (tautological)
+it("warm + contact returns 'Let's chat'", () => {
+  expect(getVoiceKeyedCtaText("contact", "warm", [])).toBe("Let's chat");
+});
+
+// ✅ GOOD — Tests the REQUIREMENT that warm voice is conversational
+it("warm CTAs use approachable, low-pressure language", () => {
+  const cta = getVoiceKeyedCtaText("contact", "warm", []);
+  expect(cta.toLowerCase()).not.toMatch(/buy|purchase|order|subscribe|now!/);
+  expect(cta.length).toBeLessThan(40);
+});
+
+// ❌ BAD — Tests that React renders props (React already guarantees this)
+it("displays the headline", () => {
+  renderWithTheme(<ContentText headline="Hello" body="World" />);
+  expect(screen.getByText("Hello")).toBeTruthy();
+});
+
+// ✅ GOOD — Tests the REQUIREMENT that headlines use semantic HTML
+it("headline renders as a semantic heading element", () => {
+  renderWithTheme(<ContentText headline="Hello" body="World" />);
+  const heading = screen.getByText("Hello");
+  expect(heading.tagName).toMatch(/^H[1-6]$/);
+});
+```
 
 ### Test Failure Protocol
 
 When a test fails, follow this decision tree **IN ORDER**:
 
-1. **Is the test correct?** Read the test carefully. Does it test a real requirement or expected behavior? Check if the test matches the documented spec, the component's type interface, or the function's documented contract.
-2. **If the test IS correct → fix the source code.** The test is telling you something is broken. Find the root cause in the source code and fix it there. Do NOT modify the test to match broken behavior.
-3. **If the test is WRONG → fix the test, but explain why.** If the test was written with incorrect assumptions (wrong expected value, wrong API usage, testing an implementation detail that legitimately changed), fix the test AND add a comment explaining what was wrong with the original test.
-4. **If it's ambiguous → ask.** If you're not sure whether the test or the source code is "right," flag it with a comment and keep moving. Don't silently change either one.
+1. **Is the test correct?** Does it test a real requirement from the spec, type interface, or documented contract?
+2. **If the test IS correct → fix the source code.** The test is telling you something is broken. Do NOT modify the test to match broken behavior.
+3. **If the test is WRONG → fix the test, but explain why.** Add a comment explaining what was wrong with the original test.
+4. **If it's ambiguous → ask.** Don't silently change either one.
 
-### What Counts as a Band-Aid (DO NOT DO THESE)
+### Band-Aids — NEVER DO THESE
 
-- ❌ Changing `expect(result).toBe('Book Now')` to `expect(result).toBe('Shop Now')` because the function returns `'Shop Now'` — if the function is supposed to return `'Book Now'` for a booking site, the function is broken, not the test.
+- ❌ Changing `expect(result).toBe('Book Now')` to `expect(result).toBe('Shop Now')` because the function returns `'Shop Now'` — if the function should return `'Book Now'` for a booking site, the function is broken
 - ❌ Wrapping a failing assertion in try/catch and swallowing the error
-- ❌ Changing `toHaveLength(6)` to `toHaveLength(5)` because one item is missing — find out WHY it's missing
+- ❌ Changing `toHaveLength(6)` to `toHaveLength(5)` without finding out WHY it's missing
 - ❌ Adding `skip` or `todo` to a failing test without explanation
-- ❌ Removing a test entirely because it's "too strict"
-- ❌ Loosening a specific assertion to a vague one (e.g., changing `toContain('Book Now')` to `toBeTruthy()`)
+- ❌ Loosening assertions (e.g., `toContain('Book Now')` → `toBeTruthy()`)
+- ❌ Writing `expect(result).toBe(whatTheCodeReturns)` by reading the source first
 
-### What Counts as a Legitimate Test Fix
+### Legitimate Test Fixes
 
-- ✅ The test used a wrong function signature (the API changed intentionally and the test wasn't updated)
-- ✅ The test hardcoded a value that was never part of the contract (e.g., testing exact hex color output when only "valid hex" matters)
-- ✅ The test is testing an implementation detail that changed, not a behavior (e.g., testing internal state structure instead of public output)
-- ✅ The test has a typo or logic error (wrong variable name, incorrect assertion method)
+- ✅ The test used a wrong function signature (API changed intentionally)
+- ✅ The test hardcoded a value never part of the contract (exact hex when only "valid hex" matters)
+- ✅ The test was testing an implementation detail, not a behavior
+- ✅ The test has a typo or logic error
 
 ### Root Cause Principle
 
-When fixing a bug exposed by a test:
+- Fix bugs at the **DEEPEST level** where the problem originates
+- Component shows wrong data but data comes from a generator? Fix the generator
+- Theme generates wrong colors but the issue is personality-to-hue mapping? Fix the mapping
+- After fixing root cause, verify no other tests break
 
-- Fix it at the **DEEPEST level** where the problem originates
-- If a component shows wrong data, but the data comes from a generator function, fix the generator — not the component
-- If a theme generates wrong colors, but the issue is in the personality-to-hue mapping, fix the mapping function — not the color output post-hoc
-- After fixing the root cause, verify that the fix doesn't break other tests
+### Writing Process
 
-### Writing Good Tests
+1. **Read requirement docs** (CLAUDE.md, component spec, type interfaces) — NOT the source code
+2. **Write test plan as comments** listing requirements to test
+3. **Write `expect()` assertions** for each requirement BEFORE implementing test body
+4. **THEN read source** only for setup (imports, props, mocks)
+5. **Review**: "Would this test catch a bug, or pass even if the feature were broken?"
 
-- **Test behavior, not implementation.** Test "returns a valid hex color" not "calls chroma.hex()". Test "business name appears in nav" not "logoText prop is set".
-- **Test the contract.** If a function's documented purpose is "generate theme from personality vector," test that it returns a valid theme for various vectors — not that it uses a specific internal algorithm.
-- **Use descriptive test names.** Not `test('works')` but `test('generateThemeFromVector returns dark background for luxury preset vector')`.
-- **One assertion per concept.** Multiple `expect()` calls are fine if they test the same concept. Don't test theme generation AND component rendering in the same test.
-- **Edge cases matter.** Test boundary values (all zeros, all ones, empty strings, missing optional fields). These are where bugs live.
+### Test Review Checklist
+
+Before any test file is complete:
+
+- [ ] Every `describe` has a `@requirements` comment documenting what it protects
+- [ ] No assertion was derived by reading the source code's return value
+- [ ] At least one Requirement or Invariant test (not just smoke)
+- [ ] Edge cases: empty inputs, null/undefined, boundary values, max limits
+- [ ] Test names describe expected BEHAVIOR, not implementation
+- [ ] Tests would still be valid if implementation were completely rewritten

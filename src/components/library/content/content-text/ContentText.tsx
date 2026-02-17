@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { sanitizeHtml } from "@/lib/sanitize";
 import type { ContentTextProps } from "./content-text.types";
 
 const SPACING_MAP = {
@@ -107,7 +108,7 @@ export function ContentText({
             lineHeight: "var(--leading-relaxed)",
             color: "var(--color-text-secondary)",
           }}
-          dangerouslySetInnerHTML={{ __html: body }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(body) }}
         />
       </motion.div>
     </section>

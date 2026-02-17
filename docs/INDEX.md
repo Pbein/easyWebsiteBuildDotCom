@@ -19,6 +19,7 @@
 | Business strategy           | `business/HORMOZI_ANALYSIS.md`         |
 | Component library           | `docs/COMPONENT_SPEC.md`               |
 | Adding a component          | `docs/AGENT_PLAYBOOK.md`               |
+| Writing tests               | `docs/TESTING_METHODOLOGY.md`          |
 | Feature-specific plans      | `docs-specific-feature-plans/`         |
 
 ---
@@ -49,6 +50,7 @@
 | **EPICS_AND_STORIES.md**      | Output Quality Overhaul tracking — 30/33 stories shipped                | 2026-02-12 |
 | **STRATEGIC_ROADMAP.md**      | Honest assessment, limitation inventory, competitive analysis           | 2026-02-16 |
 | **AGENT_PLAYBOOK.md**         | Step-by-step guide for adding components or CSS effects                 | 2026-02-12 |
+| **TESTING_METHODOLOGY.md**    | Requirements-first testing process — MUST read before writing tests     | 2026-02-16 |
 
 ---
 

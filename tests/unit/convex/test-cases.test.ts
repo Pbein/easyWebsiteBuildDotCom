@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createMockCtx, type MockCtx } from "../../helpers/mock-convex-db";
+import { getSourceHash } from "../../helpers/convex-staleness";
 
 // ---------------------------------------------------------------------------
 // Replicated handler logic (mirrors convex/testCases.ts exactly)
@@ -71,6 +72,12 @@ function makeTestCaseArgs(overrides: Partial<Parameters<typeof saveTestCase>[1]>
 // ---------------------------------------------------------------------------
 
 describe("testCases handlers", () => {
+  // Staleness guard — if this fails, convex/testCases.ts was modified.
+  // Update the replicated handler logic above to match the source, then update the hash.
+  it("staleness guard — source file unchanged", () => {
+    expect(getSourceHash("convex/testCases.ts")).toBe("e0f5bff6e2b31329");
+  });
+
   let ctx: MockCtx;
 
   beforeEach(() => {

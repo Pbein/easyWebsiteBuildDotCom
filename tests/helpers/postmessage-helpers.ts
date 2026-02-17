@@ -16,6 +16,8 @@
 
 import type { ThemeTokens } from "@/lib/theme/theme.types";
 
+export { isParentMessage as isEwbMessage } from "@/lib/iframe/postmessage-utils";
+
 /**
  * Known EWB PostMessage type strings.
  */
@@ -82,32 +84,4 @@ export function simulateParentMessage(targetWindow: Window, msg: unknown, origin
   });
 
   targetWindow.dispatchEvent(event);
-}
-
-/**
- * Type guard that checks whether `data` is an EWB-prefixed message.
- *
- * A value qualifies if it is a non-null object with a `type` field
- * whose string value starts with `"ewb:"`.
- *
- * @param data - The unknown value to check (typically from `event.data`)
- * @returns `true` if data looks like a valid EWB message
- *
- * @example
- * ```ts
- * window.addEventListener("message", (e) => {
- *   if (isEwbMessage(e.data)) {
- *     // handle EWB message
- *   }
- * });
- * ```
- */
-export function isEwbMessage(data: unknown): boolean {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "type" in data &&
-    typeof (data as { type: unknown }).type === "string" &&
-    (data as { type: string }).type.startsWith("ewb:")
-  );
 }

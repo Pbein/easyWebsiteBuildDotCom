@@ -154,7 +154,11 @@ describe("getVoiceKeyedHeadline", () => {
   it("returns polished headline for polished voice", () => {
     const headline = getVoiceKeyedHeadline("TestBiz", "business", "polished");
     expect(headline).toContain("TestBiz");
-    expect(headline).toContain("Excellence");
+    // Polished voice uses formal vocabulary — title-case words, no contractions
+    const words = headline.split(/\s+/);
+    const hasTitleCaseWord = words.some((w) => w !== "TestBiz" && /^[A-Z][a-z]/.test(w));
+    expect(hasTitleCaseWord).toBe(true);
+    expect(headline).not.toMatch(/\b(n't|'re|'ve|'ll|let's)\b/i);
   });
 
   it("returns direct headline for direct voice", () => {
@@ -170,12 +174,26 @@ describe("getVoiceKeyedHeadline", () => {
 describe("getVoiceKeyedCtaText", () => {
   it("returns warm CTA for contact goal", () => {
     const cta = getVoiceKeyedCtaText("contact", "warm", []);
-    expect(cta).toBe("Let's chat");
+    // Warm CTAs use conversational, approachable language — not formal or sales-heavy
+    expect(cta.length).toBeGreaterThan(0);
+    expect(cta.length).toBeLessThanOrEqual(40);
+    expect(cta).not.toMatch(/\b(buy|purchase|order now|subscribe)\b/i);
+    // Warm voice favors lowercase-style or casual phrasing
+    const hasConversationalTone = /[a-z]/.test(cta.charAt(cta.length - 1)) || cta.includes("'");
+    expect(hasConversationalTone).toBe(true);
   });
 
   it("returns polished CTA for contact goal", () => {
     const cta = getVoiceKeyedCtaText("contact", "polished", []);
-    expect(cta).toBe("Schedule a Consultation");
+    // Polished CTAs use formal, title-case language
+    expect(cta.length).toBeGreaterThan(0);
+    expect(cta.length).toBeLessThanOrEqual(40);
+    // Should have title-case words (first letter capitalized)
+    const words = cta.split(/\s+/);
+    const titleCaseCount = words.filter((w) => /^[A-Z]/.test(w)).length;
+    expect(titleCaseCount).toBeGreaterThanOrEqual(Math.ceil(words.length / 2));
+    // Should not contain contractions (polished = formal)
+    expect(cta).not.toMatch(/\b(n't|'re|'ve|'ll|let's)\b/i);
   });
 
   it("modifies CTA when salesy anti-reference is present", () => {

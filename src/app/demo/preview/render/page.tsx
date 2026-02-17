@@ -9,52 +9,9 @@ import { AssemblyRenderer } from "@/lib/assembly";
 import type { SiteIntentDocument } from "@/lib/assembly";
 import { capturePreviewScreenshot } from "@/lib/screenshot";
 import type { ThemeTokens } from "@/lib/theme";
+import { isParentMessage } from "@/lib/iframe/postmessage-utils";
+import { handleLinkClick } from "@/lib/iframe/link-interceptor";
 import { Loader2 } from "lucide-react";
-
-/**
- * PostMessage types for parent ↔ iframe communication.
- * All messages use `ewb:` prefix to avoid collisions.
- */
-interface SetThemeMessage {
-  type: "ewb:set-theme";
-  theme: ThemeTokens;
-}
-
-interface SetPageMessage {
-  type: "ewb:set-page";
-  activePage: string;
-}
-
-interface RequestScreenshotMessage {
-  type: "ewb:request-screenshot";
-  requestId: string;
-}
-
-interface UpdateContentMessage {
-  type: "ewb:update-content";
-  overrides: Record<number, Record<string, string>>;
-}
-
-interface ResetContentMessage {
-  type: "ewb:reset-content";
-}
-
-type ParentMessage =
-  | SetThemeMessage
-  | SetPageMessage
-  | RequestScreenshotMessage
-  | UpdateContentMessage
-  | ResetContentMessage;
-
-function isParentMessage(data: unknown): data is ParentMessage {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "type" in data &&
-    typeof (data as { type: unknown }).type === "string" &&
-    (data as { type: string }).type.startsWith("ewb:")
-  );
-}
 
 function RenderContent(): React.ReactElement {
   const searchParams = useSearchParams();
@@ -163,27 +120,6 @@ function RenderContent(): React.ReactElement {
   useEffect(() => {
     const container = renderRef.current;
     if (!container) return;
-
-    function handleLinkClick(e: MouseEvent): void {
-      const anchor = (e.target as HTMLElement).closest("a");
-      if (!anchor) return;
-      const href = anchor.getAttribute("href");
-      if (!href) return;
-
-      // Allow hash links for in-page scrolling
-      if (href.startsWith("#")) return;
-
-      // External links: open in new tab (not inside iframe)
-      if (href.startsWith("http://") || href.startsWith("https://")) {
-        e.preventDefault();
-        window.open(href, "_blank", "noopener,noreferrer");
-        return;
-      }
-
-      // Internal navigation (/, /about, etc.): prevent, scroll to top
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
 
     container.addEventListener("click", handleLinkClick);
     return () => container.removeEventListener("click", handleLinkClick);

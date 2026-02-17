@@ -1,25 +1,34 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Preview Page", () => {
-  test("loads the component preview page", async ({ page }) => {
+test.describe("Component Library Preview", () => {
+  test("loads the preview page without errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
     await page.goto("/preview");
     await expect(page).toHaveURL(/\/preview/);
-  });
 
-  test("displays library components", async ({ page }) => {
-    await page.goto("/preview");
     // Wait for components to render
     await page.waitForTimeout(2000);
-    // Should have some visible content
-    const body = page.locator("body");
-    await expect(body).toBeVisible();
+    expect(errors).toHaveLength(0);
   });
 
-  test("theme switching works", async ({ page }) => {
+  test("displays component library content with sections", async ({ page }) => {
     await page.goto("/preview");
     await page.waitForTimeout(2000);
-    // Check for theme-related elements
-    const body = page.locator("body");
-    await expect(body).toBeVisible();
+
+    // Should have rendered at least some sections
+    const sections = page.locator("section");
+    const count = await sections.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test("page is scrollable and has substantial content", async ({ page }) => {
+    await page.goto("/preview");
+    await page.waitForTimeout(2000);
+
+    // The page should have enough content to scroll
+    const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
+    expect(bodyHeight).toBeGreaterThan(1000);
   });
 });

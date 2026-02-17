@@ -90,23 +90,72 @@ test.describe("Deep path flow", () => {
     await expect(page.locator("text=Brand Personality Captured")).toBeVisible();
   });
 
-  test.skip("steps 5-7 brand character are reachable after step 4", async ({ page }) => {
-    // TODO: Requires completing steps 1-4 first (same as above), then clicking
-    // "Continue to Discovery" which bridges to Zustand store and advances to step 5.
-    //
-    // After completing step 4 personality:
-    // 1. Click Continue button to bridge to step 5
-    // 2. Step 5 (Emotion): Should show "First Impression" heading with emotion cards
-    //    - EMOTIONAL_OUTCOMES from brand-character.ts should be selectable
-    //    - User selects 1-2 emotional goals, clicks Continue
-    // 3. Step 6 (Voice): Should show "Brand Voice" heading with voice tone cards
-    //    - warm, polished, direct options
-    //    - Fill-in-the-blank narrative prompts
-    // 4. Step 7 (Culture): Should show "Visual Culture" heading
-    //    - Brand archetype selection
-    //    - Anti-reference selection ("NOT like this")
-    //
-    // Note: Steps 5-7 manage their own navigation (no toolbar Back/Continue).
+  test("steps 5-7 brand character are reachable after step 4", async ({ page }) => {
+    await page.goto("/demo");
+    await page.waitForTimeout(500);
+
+    // Step 0: Select Deep Brand Capture
+    await page.locator("text=Deep Brand Capture").click();
+    await page.waitForTimeout(300);
+
+    // Step 1: Select site type
+    await page.locator("text=Portfolio").click();
+    await page.locator("button", { hasText: "Continue" }).click();
+    await page.waitForTimeout(300);
+
+    // Step 2: Select goal
+    await page.locator("text=Get hired / freelance work").click();
+    await page.locator("button", { hasText: "Continue" }).click();
+    await page.waitForTimeout(300);
+
+    // Step 3: Enter business name + description
+    await page.locator("#business-name").fill("Alex Rivera Design");
+    await page
+      .locator("#description")
+      .fill("A freelance graphic designer specializing in brand identity and packaging design");
+    await page.locator("button", { hasText: "Continue" }).click();
+    await page.waitForTimeout(300);
+
+    // Step 4: Complete all 6 personality axes
+    for (let i = 0; i < 6; i++) {
+      const confirmBtn = page.locator("button", { hasText: "Confirm & Next Axis" });
+      await expect(confirmBtn).toBeVisible();
+      await confirmBtn.click();
+      await page.waitForTimeout(300);
+    }
+
+    // After all 6 axes, "Brand Personality Captured" should show
+    await expect(page.locator("text=Brand Personality Captured")).toBeVisible();
+
+    // Click Continue to bridge to Zustand and advance to step 5
+    const continueBtn = page.locator("button", { hasText: "Continue" });
+    await expect(continueBtn).toBeEnabled();
+    await continueBtn.click();
+    await page.waitForTimeout(500);
+
+    // Step 5 (Emotion): Should show emotional goal selection
+    // The Step5Emotion component renders with emotion-related heading
+    await expect(page.locator("text=Step 5 of 9")).toBeVisible();
+
+    // Should show emotion cards (e.g. "Trust", "Luxury", "Calm")
+    // Select an emotion and continue
+    const emotionCard = page
+      .locator("button")
+      .filter({ hasText: /Trust|Luxury|Calm/ })
+      .first();
+    if (await emotionCard.isVisible()) {
+      await emotionCard.click();
+    }
+
+    // Find the Continue button within Step5Emotion
+    const step5Continue = page.locator("button", { hasText: /Continue/ }).first();
+    if (await step5Continue.isVisible()) {
+      await step5Continue.click();
+      await page.waitForTimeout(500);
+
+      // Step 6 (Voice): Should show voice tone selection
+      await expect(page.locator("text=Step 6 of 9")).toBeVisible();
+    }
   });
 
   test.skip("generation completes and redirects to preview", async ({ page }) => {

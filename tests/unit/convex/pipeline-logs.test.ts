@@ -7,6 +7,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createMockCtx, type MockCtx } from "../../helpers/mock-convex-db";
+import { getSourceHash } from "../../helpers/convex-staleness";
 
 // ---------------------------------------------------------------------------
 // Replicated handler logic (mirrors convex/pipelineLogs.ts exactly)
@@ -63,6 +64,12 @@ function makeLogArgs(overrides: Partial<Parameters<typeof savePipelineLogInterna
 // ---------------------------------------------------------------------------
 
 describe("pipelineLogs handlers", () => {
+  // Staleness guard — if this fails, convex/pipelineLogs.ts was modified.
+  // Update the replicated handler logic above to match the source, then update the hash.
+  it("staleness guard — source file unchanged", () => {
+    expect(getSourceHash("convex/pipelineLogs.ts")).toBe("3bd3e1438e00d200");
+  });
+
   let ctx: MockCtx;
 
   beforeEach(() => {
