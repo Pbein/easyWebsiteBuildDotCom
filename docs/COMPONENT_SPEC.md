@@ -66,6 +66,7 @@ The main `[ComponentName].tsx` becomes a thin dispatcher (~50-70 lines) that han
 **Shared files:**
 
 - `src/components/library/base.types.ts` — `BaseComponentProps`, `ImageSource`, `LinkItem`, `CTAButton`
+- `src/components/library/spacing.ts` — `SPACING_MAP` (uses `--space-component` for md) and `SPACING_MAP_ELEMENT` (uses `--space-element` for md, used by hero/footer/form/content-text). All 24 components import from this shared module.
 - `src/components/library/index.ts` — Barrel export for all components and types
 - `src/components/library/manifest-index.ts` — All manifests + `getManifestById()`, `getManifestsByCategory()`, `getManifestsBySiteType()` lookup utilities
 

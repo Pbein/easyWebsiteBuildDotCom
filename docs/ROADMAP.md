@@ -311,6 +311,50 @@ Polishing improvements shipped alongside Phase 5A:
 
 ---
 
+## Testing & Security Audit ✅ COMPLETE
+
+**Goal**: Comprehensive testing suite + security hardening + code quality audit across the entire codebase.
+
+### Test Suite (989 tests, 64 files)
+
+- [x] Unit tests for all 24 library components (rendering, variants, theme consumption, a11y)
+- [x] Integration tests (assembly engine, theme composition, postmessage protocol, voice-keyed content, export pipeline)
+- [x] Unit tests for CSS visual system (14 patterns, effects registry, keyframe injection)
+- [x] Unit tests for Convex backend (spec generation, share links, feedback, pipeline logs)
+- [x] Unit tests for intake components (emotion picker, voice selector, culture step, discovery)
+- [x] E2E specs (Playwright setup with chromium + mobile Safari)
+- [x] Test helpers: component fixtures for all 24 types, render-with-theme utility, assertion helpers
+
+### Security Fixes (5 commits)
+
+- [x] **HIGH**: XSS sanitization for AI-generated HTML content (DOMPurify with allowlist)
+- [x] **HIGH**: Export pipeline bug fixes (badge rendering, font extraction, escapeHtml)
+- [x] **HIGH**: Non-Google font validation (reject system fonts, ensure Google-loadable)
+- [x] **MEDIUM**: PostMessage origin validation (replaced wildcard `*` with targeted origin)
+- [x] **MEDIUM**: Security headers middleware (CSP, X-Frame-Options, X-Content-Type-Options)
+- [x] **MEDIUM**: Session ID entropy (128-bit crypto.getRandomValues)
+- [x] **MEDIUM**: `useMemo` stabilization across ThemeProvider, generate-theme, font-loader
+- [x] **MEDIUM**: Emotional overrides clamping (±40% spacing, ±50% transitions)
+- [x] **MEDIUM**: SSRF hardening on screenshot API (localhost-only URL validation)
+- [x] **MEDIUM**: AI prompt injection defense (XML boundaries in Convex actions)
+- [x] **MEDIUM**: `structuredClone` for Convex data isolation
+- [x] **MEDIUM**: Zustand store persistence error handling (corrupted localStorage)
+
+### Code Quality (LOW severity)
+
+- [x] Error boundaries and loading states for all routes (`error.tsx` + `loading.tsx`)
+- [x] ARIA improvements: semantic HTML for play buttons, accessible CTA links
+- [x] Explicit return types on all 24 component exports
+- [x] SPACING_MAP deduplication: 24 inline definitions → shared `spacing.ts` module (-258 lines)
+- [x] Voice-keyed function deduplication: canonical source in `src/lib/content/voice-keyed.ts`
+- [x] External link auto-detection in ContentSplit CTA links (`target="_blank"` + `rel="noopener"`)
+- [x] DOMPurify SSR safety: server-side fallback with regex tag stripping
+- [x] PostHog error logging in error boundaries
+
+**Key commits**: `43f16fa` (HIGH), `4ce4a6b` (security), `3535af7` (MEDIUM), `13f0e23` (LOW-1), `0d69a3a` (LOW-2), `50b8066` (LOW-3), `bdff7f9` (SSR fix)
+
+---
+
 # CURRENT PRIORITIES — Revenue Foundation
 
 > **Strategy shift**: Boardroom Sessions 002-003 (Feb 2026) replaced the old sequential Phase 6-9 plan with a parallel-track approach focused on reaching first revenue as fast as possible. "Revenue is the only validation that matters" (P1).

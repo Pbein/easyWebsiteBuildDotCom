@@ -7,7 +7,7 @@
 > - `SiteIntentDocument` type system (`src/lib/assembly/spec.types.ts`) — sessionId, pages with ComponentPlacement (+ `VisualConfig`), personality vector, metadata
 > - `COMPONENT_REGISTRY` (`src/lib/assembly/component-registry.ts`) — maps 24 componentId strings to React components, `UNWRAPPED_COMPONENTS` set for nav/footer
 > - `AssemblyRenderer` (`src/lib/assembly/AssemblyRenderer.tsx`) — client component that generates theme from personality vector, applies 5-layer theme composition (base → VLM → emotional → color → font), loads fonts, sorts components by order, resolves `VisualConfig` into Section props (patterns, dividers), applies alternating backgrounds, renders inside ThemeProvider
-> - `font-loader` (`src/lib/assembly/font-loader.ts`) — runtime Google Fonts injection with deduplication
+> - `font-loader` (`src/lib/assembly/font-loader.ts`) — runtime Google Fonts injection with deduplication, 50-font memory cap, error handling, cleanup on unmount
 > - Theme resolution — `generateThemeFromVector()` maps personality vectors to complete token sets (fully working)
 > - CSS visual system (`src/lib/visuals/`) — 14 CSS patterns, 4 section dividers (wave/angle/curve/zigzag), visual vocabulary per business type, ImagePlaceholder component, parallax scroll hook, 8 CSS effects
 > - Component library — 24 components with manifest descriptors, personality fit ranges, and variant metadata; `hero-split` and `content-split` images optional with CSS gradient fallback
@@ -71,13 +71,14 @@ Process:
 4. All other components are wrapped in Section with alternating backgrounds
 5. Output: Resolved component list with imports and configurations
 
-**Registered Components (18):**
+**Registered Components (24):**
 
 | componentId          | React Component   | Category     |
 | -------------------- | ----------------- | ------------ |
 | `nav-sticky`         | NavSticky         | navigation   |
 | `hero-centered`      | HeroCentered      | hero         |
 | `hero-split`         | HeroSplit         | hero         |
+| `hero-video`         | HeroVideo         | hero         |
 | `content-features`   | ContentFeatures   | content      |
 | `content-split`      | ContentSplit      | content      |
 | `content-text`       | ContentText       | content      |
@@ -85,6 +86,11 @@ Process:
 | `content-accordion`  | ContentAccordion  | content      |
 | `content-timeline`   | ContentTimeline   | content      |
 | `content-logos`      | ContentLogos      | content      |
+| `content-steps`      | ContentSteps      | content      |
+| `content-comparison` | ContentComparison | content      |
+| `content-map`        | ContentMap        | content      |
+| `pricing-table`      | PricingTable      | commerce     |
+| `blog-preview`       | BlogPreview       | commerce     |
 | `cta-banner`         | CtaBanner         | cta          |
 | `form-contact`       | FormContact       | forms        |
 | `proof-testimonials` | ProofTestimonials | social-proof |
@@ -150,7 +156,7 @@ Input: Complete page layouts with content.
 Process:
 
 1. `AssemblyRenderer` generates theme tokens from personality vector via `generateThemeFromVector()`
-2. `font-loader` injects Google Fonts `<link>` tags with deduplication
+2. `font-loader` injects Google Fonts `<link>` tags with deduplication (50-font cap prevents memory leaks from repeated theme switches)
 3. ThemeProvider wraps the entire render tree, injecting CSS Custom Properties
 4. Components are sorted by order, wrapped in Section containers with alternating backgrounds
 5. Preview is rendered in an iframe-like container with viewport controls (desktop/tablet/mobile)

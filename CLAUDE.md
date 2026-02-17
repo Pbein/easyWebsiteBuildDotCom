@@ -97,10 +97,15 @@ easywebsitebuild/
 │   ├── app/                     # Next.js App Router pages
 │   │   ├── page.tsx             # Homepage — product overview
 │   │   ├── layout.tsx           # Root layout (ConvexClientProvider → ConditionalLayout)
+│   │   ├── error.tsx            # Root error boundary (PostHog tracking)
 │   │   ├── demo/
 │   │   │   ├── page.tsx         # Demo — 9-step intake flow experience
+│   │   │   ├── error.tsx        # Demo-specific error boundary
+│   │   │   ├── loading.tsx      # Demo loading spinner
 │   │   │   └── preview/
 │   │   │       ├── page.tsx     # Demo preview — assembled site with viewport controls + export
+│   │   │       ├── error.tsx    # Preview-specific error boundary
+│   │   │       ├── loading.tsx  # Preview loading spinner
 │   │   │       └── render/page.tsx # Isolated iframe renderer for true responsive preview
 │   │   ├── s/[shareId]/         # Shared preview page (public, reads from sharedPreviews)
 │   │   │   └── SharedPreviewClient.tsx # Client component: loads snapshot, renders with customizations
@@ -132,6 +137,7 @@ easywebsitebuild/
 │   │   │       └── FeedbackBanner.tsx  # Quick satisfaction rating banner
 │   │   └── library/             # Component library (24 components)
 │   │       ├── base.types.ts    # BaseComponentProps, ImageSource, LinkItem, CTAButton
+│   │       ├── spacing.ts       # Shared SPACING_MAP + SPACING_MAP_ELEMENT constants
 │   │       ├── index.ts         # Barrel exports for all components
 │   │       ├── manifest-index.ts # All manifests + lookup/filter utilities
 │   │       ├── navigation/      # nav-sticky
@@ -149,15 +155,16 @@ easywebsitebuild/
 │       ├── assembly/            # Assembly engine
 │       │   ├── spec.types.ts    # SiteIntentDocument, PageSpec, ComponentPlacement, VisualConfig
 │       │   ├── component-registry.ts  # componentId → React component mapping (24 components)
-│       │   ├── font-loader.ts   # Runtime Google Fonts loader with deduplication
+│       │   ├── font-loader.ts   # Runtime Google Fonts loader (50-font cap, error handling, cleanup)
 │       │   ├── AssemblyRenderer.tsx    # Spec → live site renderer (+ emotional overrides + visual config)
 │       │   └── index.ts         # Barrel export
 │       ├── export/              # Export pipeline
 │       │   ├── generate-project.ts    # SiteIntentDocument → static HTML/CSS files
 │       │   ├── create-zip.ts          # JSZip bundling + browser download
 │       │   └── index.ts               # Barrel export
+│       ├── sanitize.ts         # DOMPurify HTML sanitizer (SSR-safe, strips tags on server)
 │       ├── content/
-│       │   └── voice-keyed.ts # Voice-appropriate headline/CTA templates (warm/polished/direct)
+│       │   └── voice-keyed.ts # Voice-appropriate headline/CTA templates (canonical source)
 │       ├── share/
 │       │   └── generate-share-id.ts # Cryptographic URL-safe share ID generator
 │       ├── hooks/
@@ -204,8 +211,14 @@ easywebsitebuild/
 │   ├── feedback.ts               # User satisfaction ratings
 │   ├── testCases.ts              # Named test case CRUD
 │   └── ai/                      # AI integration actions
-│       ├── generateQuestions.ts  # Claude-powered discovery questions
-│       └── generateSiteSpec.ts   # Claude-powered site spec generation (24 components)
+│       ├── generateQuestions.ts  # Claude-powered discovery questions (XML prompt boundaries)
+│       └── generateSiteSpec.ts   # Claude-powered site spec generation (XML prompt boundaries)
+├── tests/                       # Test suite (989 tests, 64 files)
+│   ├── setup.ts                 # Global test setup (jsdom, mocks)
+│   ├── helpers/                 # Test utilities (fixtures, assertions, render-with-theme)
+│   ├── unit/                    # Unit tests (components, assembly, theme, visuals, convex)
+│   ├── integration/             # Integration tests (flows, postmessage, theme-to-components)
+│   └── e2e/                     # Playwright E2E specs
 └── public/                      # Static assets
 ```
 
@@ -270,6 +283,7 @@ easywebsitebuild/
 | 6A      | Free Customization MVP: sidebar panel, 7 presets, color picker, 5/14 fonts, headline editing, reset, Zustand customization store |
 | 6B      | Shareable preview links, "Built with EWB" badge, customization snapshot persistence, share button + Web Share API                |
 | 6C      | Express path (3-step, <90s), immersive 3s reveal, brand discovery sidebar with real-time theme/content feedback                  |
+| Audit   | Testing suite (989 tests, 64 files), security hardening, a11y fixes, SPACING_MAP dedup, SSR-safe sanitizer                       |
 
 ### Next: Monetization (P1)
 
@@ -339,7 +353,8 @@ easywebsitebuild/
 - `tokensToCSSProperties` accepts `Partial<ThemeTokens>` for flexible theming
 - Component manifests use `number[]` (not tuple) for `personalityFit` for JSON compatibility
 - ContentFeatures uses `lucide-react` dynamic icon lookup via `* as LucideIcons`
-- ContentText uses `dangerouslySetInnerHTML` for body (supports basic HTML)
+- ContentText uses `dangerouslySetInnerHTML` for body (sanitized via `sanitizeHtml()` — DOMPurify on client, regex strip on server)
+- **Shared spacing**: All components import from `src/components/library/spacing.ts` — `SPACING_MAP` (18 components) or `SPACING_MAP_ELEMENT` (hero/footer/form/content-text)
 - **Mobile-first responsive**: All spacing/padding uses `mobile md:desktop` pattern (e.g., `mb-8 md:mb-16`, `p-5 md:p-8`)
 - **Font clamping**: Large display text uses `clamp()` to prevent overflow on narrow viewports
 - **Responsive behavior**: Components with viewport-dependent layout (carousel perPage, masonry columns) use `useState` + `resize` listener
@@ -367,7 +382,7 @@ easywebsitebuild/
 
 - **Voice-keyed content**: `getVoiceKeyedHeadline()` in `src/lib/content/voice-keyed.ts` produces different headlines/CTAs per voice mode (warm/polished/direct) — $0 cost, deterministic
 - **Brand Discovery sidebar**: Post-generation character capture (emotions, voice, archetype, anti-refs) in CustomizationSidebar with real-time theme/content feedback
-- **Emotional overrides**: `applyEmotionalOverrides()` adjusts spacing/transitions/radius based on goals + anti-references
+- **Emotional overrides**: `applyEmotionalOverrides()` adjusts spacing (±40% clamped)/transitions (±50% clamped)/radius based on goals + anti-references
 - **Step 8 staleness**: `questionsInputKey` fingerprint from siteType|goal|businessName|description|emotionalGoals|voiceProfile|brandArchetype
 
 ### Share & Distribution
@@ -389,6 +404,17 @@ easywebsitebuild/
 - **VLM feedback loop**: Screenshot → Claude Vision 5-dimension scoring → `mapAdjustmentsToTokenOverrides()` → Partial<ThemeTokens>
 - **Screenshot capture**: html2canvas dynamic import, fonts.ready + 300ms settle, 4000px height cap, scale=1
 
+### Security & Quality
+
+- **PostMessage origin validation**: Iframe messages use `ewb:` prefix and validate against expected origin (no wildcard `*`)
+- **Security headers**: CSP, X-Frame-Options, X-Content-Type-Options via Next.js middleware
+- **HTML sanitization**: `sanitizeHtml()` in `src/lib/sanitize.ts` — DOMPurify allowlist on client, regex strip on server (SSR-safe)
+- **Session IDs**: 128-bit entropy via `crypto.getRandomValues`
+- **AI prompt boundaries**: XML `<system>` / `<user-input>` tags in Convex AI actions prevent injection
+- **SSRF protection**: Screenshot API validates localhost-only URLs
+- **Error boundaries**: `error.tsx` + `loading.tsx` at root, `/demo`, and `/demo/preview` routes
+- **Testing**: 989 tests across 64 files (Vitest + Playwright). See `docs/TESTING_METHODOLOGY.md`
+
 ### Platform Notes
 
 - Convex requires `npx convex dev` to generate types — excluded from tsconfig
@@ -397,6 +423,7 @@ easywebsitebuild/
 - AI uses `@anthropic-ai/sdk` — requires `ANTHROPIC_API_KEY`; both actions have deterministic fallbacks
 - Demo preview at `/demo/preview?session=<sessionId>` fetches spec from Convex
 - Export generates static HTML/CSS ZIP via JSZip from PreviewToolbar
+- **Font loader**: 50-font memory cap prevents leaks from repeated theme switching; cleanup on unmount
 - **Boardroom governance**: Strategic decisions go through Virtual Boardroom (9 personas). Read `business/boardroom/PROCESS.md` + `STRATEGIC_PRINCIPLES.md` + `DECISIONS_LOG.md` before sessions.
 - **Document alignment**: `business/`, `docs/`, and `CLAUDE.md` must stay in sync
 
@@ -442,6 +469,11 @@ npx convex dev      # Start Convex dev server (run in parallel)
 # Build & Quality
 npm run build        # Production build
 npm run lint         # Lint check
+
+# Testing (989 tests, 64 files)
+npm test             # Run Vitest unit + integration tests
+npm run test:watch   # Run Vitest in watch mode
+npx playwright test  # Run Playwright E2E tests
 
 # Convex
 npx convex deploy    # Deploy Convex functions

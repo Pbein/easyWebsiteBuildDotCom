@@ -151,7 +151,7 @@ interface ComponentPlacement {
 
 ## Layer 2: Component Assembly Engine
 
-> **Status:** Fully implemented. 18 components built across 8 categories. Assembly engine operational — `AssemblyRenderer` reads a `SiteIntentDocument`, generates a theme from the personality vector, and composes components into a live site via `COMPONENT_REGISTRY`. AI-powered spec generation (Claude Sonnet) with deterministic fallback supports all 18 components. Live preview at `/demo/preview` with responsive viewport controls, metadata sidebar, and toolbar. Export pipeline generates downloadable ZIP files. Component library preview at `/preview` demonstrates all 18 components with live theme switching.
+> **Status:** Fully implemented. 24 components built across 8 categories. Assembly engine operational — `AssemblyRenderer` reads a `SiteIntentDocument`, generates a theme from the personality vector, and composes components into a live site via `COMPONENT_REGISTRY`. AI-powered spec generation (Claude Sonnet) with deterministic fallback supports all 24 components. Live preview at `/demo/preview` with responsive viewport controls, customization sidebar, and toolbar. Export pipeline generates downloadable ZIP files. Component library preview at `/preview` demonstrates all 24 components with live theme switching.
 
 ### Component Library Architecture
 
@@ -201,12 +201,7 @@ interface ComponentManifest {
 
 - ✅ Centered text hero — `hero-centered` (with-bg-image, gradient-bg variants)
 - ✅ Split hero — `hero-split` (image-right, image-left variants; image optional with CSS gradient fallback)
-- Video background hero
-- Parallax hero (layered depth with alpha-masked foreground)
-- Carousel/slider hero
-- Minimal hero (just headline + subheadline)
-- Full-bleed image hero with overlay text
-- Animated/interactive hero
+- ✅ Video hero — `hero-video` (background-video, embedded, split variants; videoUrl + posterImage optional)
 
 **Content Blocks** (✅ = built):
 
@@ -217,8 +212,9 @@ interface ComponentManifest {
 - ✅ Timeline/process steps — `content-timeline` (vertical, alternating variants)
 - ✅ Logo cloud/trust badges — `content-logos` (grid, scroll, fade variants)
 - ✅ FAQ/Accordion — `content-accordion` (single-open, multi-open, bordered variants)
-- Comparison table
-- Card grid (image + content cards)
+- ✅ Steps/process — `content-steps` (numbered, icon-cards, horizontal variants)
+- ✅ Comparison table — `content-comparison` (table, side-by-side, checkmark-matrix variants)
+- ✅ Map/location — `content-map` (full-width, split-with-info, embedded variants)
 
 **Social Proof** (✅ = built):
 
@@ -261,9 +257,8 @@ interface ComponentManifest {
 **Commerce** (✅ = built):
 
 - ✅ Service menu — `commerce-services` (card-grid, list, tiered variants)
-- Product card grid
-- Product detail section
-- Pricing table/comparison
+- ✅ Pricing table — `pricing-table` (simple, featured, comparison variants)
+- ✅ Blog preview — `blog-preview` (card-grid, featured-row, list variants)
 
 ### Assembly Protocol
 
@@ -290,7 +285,7 @@ The export pipeline converts a `SiteIntentDocument` into a downloadable static w
 The exported HTML includes:
 
 - Full CSS with theme variables and responsive design
-- Component-specific styles for all 18 component types
+- Component-specific styles for all 24 component types
 - Google Fonts loading via `<link>` tags
 - Semantic HTML structure matching the component tree
 - XSS-safe content rendering via `escapeHtml()`
@@ -299,7 +294,7 @@ The exported HTML includes:
 
 ## Layer 3: Theming & Style System
 
-> **Status:** Fully implemented. 87 CSS Custom Properties across 6 categories. `generateThemeFromVector()` maps personality vectors to tokens using chroma-js for palette generation and 10 curated font pairings. ThemeProvider + useTheme hook inject tokens as CSS custom properties. 7 presets built. Preview page at `/preview` allows live theme switching across all 18 components.
+> **Status:** Fully implemented. 87 CSS Custom Properties across 6 categories. `generateThemeFromVector()` maps personality vectors to tokens using chroma-js for palette generation and 14 curated font pairings. ThemeProvider + useTheme hook inject tokens as CSS custom properties. 7 presets built. Preview page at `/preview` allows live theme switching across all 24 components. 5-layer theme composition: base → VLM → emotional → color → font.
 
 ### Design Token Architecture
 
@@ -567,7 +562,7 @@ interface ProvenRecipe {
 Claude is called for:
 
 1. **Deep Discovery Questions** — Generating contextual follow-up questions based on intake progress
-2. **Site Spec Generation** — Producing a full `SiteIntentDocument` with page structure, component selection, variant configuration, and content for all 18 components
+2. **Site Spec Generation** — Producing a full `SiteIntentDocument` with page structure, component selection, variant configuration, and content for all 24 components
 3. **Intent Interpretation** — When user gives a novel response that doesn't match known paths
 4. **Copy Generation** — Website copy based on business info and brand personality (planned)
 5. **Theme Fine-tuning** — Adjusting theme tokens based on nuanced brand descriptions (planned)
@@ -637,11 +632,16 @@ easywebsitebuild/
 │   ├── app/
 │   │   ├── layout.tsx                     # Root layout (ConvexClientProvider → ConditionalLayout)
 │   │   ├── page.tsx                       # Homepage
+│   │   ├── error.tsx                      # Root error boundary (PostHog tracking)
 │   │   ├── globals.css                    # Global styles, CSS variables
 │   │   ├── demo/
 │   │   │   ├── page.tsx                   # Demo intake flow (9-step)
+│   │   │   ├── error.tsx                  # Demo error boundary
+│   │   │   ├── loading.tsx                # Demo loading spinner
 │   │   │   └── preview/
 │   │   │       ├── page.tsx               # Assembled site preview with viewport controls
+│   │   │       ├── error.tsx              # Preview error boundary
+│   │   │       ├── loading.tsx            # Preview loading spinner
 │   │   │       └── render/page.tsx        # Iframe render target (PostMessage protocol)
 │   │   ├── docs/page.tsx                  # Documentation page (redirects to /, future Clerk admin)
 │   │   ├── api/screenshot/route.ts        # Playwright server-side screenshot API
@@ -664,6 +664,7 @@ easywebsitebuild/
 │   │   │   │   ├── PreviewToolbar.tsx     # Viewport controls toolbar
 │   │   │   │   ├── DevPanel.tsx           # Developer diagnostic panel (6 tabs)
 │   │   │   │   └── FeedbackBanner.tsx     # Quick satisfaction rating banner
+│   │   │   │   └── CustomizationSidebar.tsx # Customization panel (presets, color, fonts, headlines, brand discovery)
 │   │   │   ├── intake/                    # Intake flow step components
 │   │   │   │   ├── Step5Emotion.tsx       # Emotional goals selection (Step 5)
 │   │   │   │   ├── Step6Voice.tsx         # Voice & narrative (Step 6)
@@ -671,8 +672,9 @@ easywebsitebuild/
 │   │   │   │   ├── Step5Discovery.tsx     # AI-powered discovery questionnaire (Step 8)
 │   │   │   │   ├── Step6Loading.tsx       # Animated generation loading screen (Step 9)
 │   │   │   │   └── index.ts
-│   │   └── library/                       # Website component library (18 components)
+│   │   └── library/                       # Website component library (24 components)
 │   │       ├── base.types.ts              # BaseComponentProps, ImageSource, LinkItem, CTAButton
+│   │       ├── spacing.ts                # Shared SPACING_MAP + SPACING_MAP_ELEMENT constants
 │   │       ├── index.ts                   # Barrel exports for all components
 │   │       ├── manifest-index.ts          # Manifest lookup/filter utilities
 │   │       ├── navigation/nav-sticky/     # NavSticky component
@@ -680,6 +682,7 @@ easywebsitebuild/
 │   │       │   ├── shared.tsx             # Shared constants + CTAButtonEl
 │   │       │   └── variants/              # with-bg-image.tsx, gradient-bg.tsx
 │   │       ├── hero/hero-split/           # HeroSplit component
+│   │       ├── hero/hero-video/           # HeroVideo component
 │   │       ├── content/content-features/  # ContentFeatures component
 │   │       ├── content/content-split/     # ContentSplit component
 │   │       ├── content/content-text/      # ContentText component
@@ -687,6 +690,11 @@ easywebsitebuild/
 │   │       ├── content/content-accordion/ # ContentAccordion component
 │   │       ├── content/content-timeline/  # ContentTimeline component
 │   │       ├── content/content-logos/     # ContentLogos component
+│   │       ├── content/content-steps/     # ContentSteps component
+│   │       ├── content/content-comparison/ # ContentComparison component
+│   │       ├── content/content-map/       # ContentMap component
+│   │       ├── commerce/pricing-table/    # PricingTable component
+│   │       ├── commerce/blog-preview/     # BlogPreview component
 │   │       ├── cta/cta-banner/            # CtaBanner component
 │   │       ├── forms/form-contact/        # FormContact component
 │   │       ├── social-proof/proof-testimonials/  # ProofTestimonials component
@@ -706,7 +714,7 @@ easywebsitebuild/
 │       ├── assembly/                      # Assembly engine
 │       │   ├── spec.types.ts              # SiteIntentDocument, PageSpec, ComponentPlacement
 │       │   ├── component-registry.ts      # componentId → React component mapping
-│       │   ├── font-loader.ts             # Runtime Google Fonts loader with deduplication
+│       │   ├── font-loader.ts             # Runtime Google Fonts loader (50-font cap, dedup, cleanup)
 │       │   ├── AssemblyRenderer.tsx        # Spec → live site renderer
 │       │   └── index.ts                   # Barrel export
 │       ├── export/                        # Export pipeline
@@ -733,8 +741,14 @@ easywebsitebuild/
 │       │   └── index.ts                   # Barrel export
 │       ├── hooks/
 │       │   └── use-is-mobile.ts           # Debounced mobile viewport detection hook
+│       ├── sanitize.ts                    # DOMPurify HTML sanitizer (SSR-safe, strips tags on server)
+│       ├── content/
+│       │   └── voice-keyed.ts             # Voice-keyed headline/CTA templates (canonical source)
+│       ├── share/
+│       │   └── generate-share-id.ts       # Cryptographic URL-safe share ID generator
 │       ├── stores/
-│       │   └── intake-store.ts            # Zustand store with localStorage persistence (9-step flow)
+│       │   ├── intake-store.ts            # Zustand store with localStorage persistence (9-step flow)
+│       │   └── customization-store.ts     # Post-gen customization store (presets, colors, fonts, brand)
 │       ├── types/
 │       │   └── brand-character.ts         # Brand character types + display constants
 │       └── theme/
@@ -743,16 +757,25 @@ easywebsitebuild/
 │           ├── generate-theme.ts          # Personality vector → ThemeTokens
 │           ├── emotional-overrides.ts      # Emotion/anti-reference → token adjustments
 │           ├── presets.ts                 # 7 curated presets
+│           ├── font-pairings.ts           # 14 font pairings + FREE_FONT_IDS + selection logic
+│           ├── derive-from-primary.ts     # Single hex → full palette derivation (chroma-js)
 │           ├── ThemeProvider.tsx           # React context provider + useTheme hook
 │           └── index.ts                   # Barrel export
+├── tests/                                 # Test suite (989 tests, 64 files)
+│   ├── setup.ts                           # Global test setup (jsdom, mocks)
+│   ├── helpers/                           # Fixtures, assertions, render-with-theme
+│   ├── unit/                              # Unit tests (components, assembly, theme, visuals, convex)
+│   ├── integration/                       # Integration tests (flows, postmessage, theme)
+│   └── e2e/                               # Playwright E2E specs
 └── convex/
-    ├── schema.ts                          # Database schema (9 tables)
+    ├── schema.ts                          # Database schema (10 tables)
     ├── siteSpecs.ts                       # Site spec CRUD (saveSiteSpec, getSiteSpec)
+    ├── sharedPreviews.ts                  # Share link CRUD (createShareLink, getByShareId)
     ├── vlmEvaluations.ts                  # VLM evaluation save/query
     ├── pipelineLogs.ts                    # Pipeline session logging
     ├── feedback.ts                        # User satisfaction ratings
     ├── testCases.ts                       # Named test case CRUD
-    └── ai/                                # AI integration actions
+    └── ai/                                # AI integration actions (XML prompt boundaries)
         ├── generateQuestions.ts            # Claude-powered discovery questions
-        └── generateSiteSpec.ts            # Claude-powered site spec generation
+        └── generateSiteSpec.ts            # Claude-powered site spec generation (24 components)
 ```

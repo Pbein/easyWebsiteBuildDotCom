@@ -5,7 +5,7 @@
 > - **87 CSS Custom Properties** across 6 categories (colors, typography, spacing, shape, shadows, animation)
 > - **Token map** (`src/lib/theme/token-map.ts`) — camelCase ↔ CSS variable mapping with `tokensToCSSProperties()` and `tokensToCSSString()` converters. Accepts `Partial<ThemeTokens>`.
 > - **Theme generation** (`src/lib/theme/generate-theme.ts`) — `generateThemeFromVector()` uses chroma-js for palette generation, 14 curated font pairings scored by personality fit + business type, industry color hue shifting, dark/light mode business bias
-> - **Emotional overrides** (`src/lib/theme/emotional-overrides.ts`) — Adjusts spacing, transitions, animation intensity, radius, AND colors based on emotional goals and anti-references
+> - **Emotional overrides** (`src/lib/theme/emotional-overrides.ts`) — Adjusts spacing (±40% clamped), transitions (±50% clamped), animation intensity, radius, AND colors based on emotional goals and anti-references. All adjustments are clamped to safe ranges to prevent extreme values.
 > - **Primary color derivation** (`src/lib/theme/derive-from-primary.ts`) — `deriveThemeFromPrimaryColor()` generates full palette from single hex using chroma-js
 > - **Font pairings** (`src/lib/theme/font-pairings.ts`) — 14 curated pairings, 5 free (`FREE_FONT_IDS`), `getFontPairingById()` lookup
 > - **ThemeProvider + useTheme** (`src/lib/theme/ThemeProvider.tsx`) — React context that injects tokens as CSS custom properties on a wrapper `<div>`, supports nested overrides
