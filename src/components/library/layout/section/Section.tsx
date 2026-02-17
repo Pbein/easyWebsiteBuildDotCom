@@ -6,15 +6,7 @@ import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
 import { SectionDivider } from "@/lib/visuals/section-dividers";
 import type { SectionProps } from "./section.types";
-
-/** Map spacing preset to CSS padding using theme tokens. */
-const SPACING_MAP: Record<NonNullable<SectionProps["spacing"]>, string> = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-component)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-};
+import { SPACING_MAP } from "@/components/library/spacing";
 
 /** Map background preset to CSS styles. */
 const BACKGROUND_MAP: Record<NonNullable<SectionProps["background"]>, React.CSSProperties> = {

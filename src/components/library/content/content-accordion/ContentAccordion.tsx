@@ -6,15 +6,8 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { SPACING_MAP } from "@/components/library/spacing";
 import type { ContentAccordionProps, AccordionItem } from "./content-accordion.types";
-
-const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-component)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
 
 /* ------------------------------------------------------------------ */
 /*  AccordionItemRow — individual expandable row                       */

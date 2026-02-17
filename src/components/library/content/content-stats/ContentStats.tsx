@@ -5,15 +5,8 @@ import { motion, useInView } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
+import { SPACING_MAP } from "@/components/library/spacing";
 import type { ContentStatsProps } from "./content-stats.types";
-
-const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-component)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
 
 const COLUMNS_MAP = {
   2: "md:grid-cols-2",

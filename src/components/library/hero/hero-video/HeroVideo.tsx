@@ -8,14 +8,7 @@ import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
 import { ImagePlaceholder } from "@/lib/visuals/image-placeholder";
 import type { HeroVideoProps } from "./hero-video.types";
-
-const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-element)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
+import { SPACING_MAP_ELEMENT as SPACING_MAP } from "@/components/library/spacing";
 
 /**
  * VideoPlaceholder — a themed placeholder representing the video area.

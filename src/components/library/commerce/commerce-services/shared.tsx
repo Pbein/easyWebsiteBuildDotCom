@@ -3,14 +3,6 @@
 import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 
-export const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-component)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
-
 export const COLUMNS_MAP = {
   2: "md:grid-cols-2",
   3: "md:grid-cols-2 lg:grid-cols-3",

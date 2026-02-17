@@ -7,6 +7,7 @@
  */
 
 import type { SiteIntentDocument, ComponentPlacement } from "./spec.types";
+import { getVoiceKeyedHeadline, getVoiceKeyedCtaText } from "@/lib/content/voice-keyed";
 
 /* ────────────────────────────────────────────────────────────
  * Industry-specific content
@@ -592,99 +593,8 @@ const INDUSTRY_CONTENT: Record<string, IndustryContent> = {
   },
 };
 
-/* ────────────────────────────────────────────────────────────
- * Exported helper functions
- * ──────────────────────────────────────────────────────────── */
-
-export function getVoiceKeyedHeadline(
-  businessName: string,
-  siteType: string,
-  voiceTone: "warm" | "polished" | "direct"
-): string {
-  const headlinesByVoice: Record<string, Record<string, string>> = {
-    warm: {
-      business: `Hey, welcome to ${businessName} — we're glad you're here`,
-      portfolio: `${businessName} — Let's create something beautiful together`,
-      ecommerce: `${businessName} — Find something you'll love`,
-      booking: `${businessName} — Your next great experience starts here`,
-      blog: `${businessName} — Pull up a chair, let's talk`,
-      personal: `Hey, I'm ${businessName} — nice to meet you`,
-      educational: `${businessName} — Learn at your own pace, your own way`,
-      nonprofit: `${businessName} — Together, we're making it happen`,
-      event: `${businessName} — Come be part of something special`,
-      landing: `${businessName} — We think you'll love this`,
-    },
-    polished: {
-      business: `${businessName} — Where Excellence Meets Precision`,
-      portfolio: `${businessName} — Refined Creative Vision`,
-      ecommerce: `${businessName} — A Curated Collection Awaits`,
-      booking: `${businessName} — Reserve Your Premium Experience`,
-      blog: `${businessName} — Perspectives Worth Your Attention`,
-      personal: `${businessName} — Crafting Impact Through Expertise`,
-      educational: `${businessName} — Elevating Skills, Transforming Careers`,
-      nonprofit: `${businessName} — Measurable Impact, Meaningful Change`,
-      event: `${businessName} — An Experience Designed to Inspire`,
-      landing: `${businessName} — The Intelligent Choice`,
-    },
-    direct: {
-      business: `${businessName}. Better results, less hassle.`,
-      portfolio: `${businessName}. Work that speaks for itself.`,
-      ecommerce: `${businessName}. Quality products. Fair prices. Done.`,
-      booking: `${businessName}. Book it. Show up. Love it.`,
-      blog: `${businessName}. No fluff. Just substance.`,
-      personal: `I'm ${businessName}. Let's get to work.`,
-      educational: `${businessName}. Learn what matters. Skip what doesn't.`,
-      nonprofit: `${businessName}. Real impact. Real numbers.`,
-      event: `${businessName}. Show up. Be changed.`,
-      landing: `${businessName}. See why thousands switched.`,
-    },
-  };
-
-  return headlinesByVoice[voiceTone]?.[siteType] || headlinesByVoice.polished.business;
-}
-
-export function getVoiceKeyedCtaText(
-  goal: string,
-  voiceTone: "warm" | "polished" | "direct",
-  antiRefs: string[]
-): string {
-  const isSalesy = antiRefs.includes("salesy");
-
-  const ctasByVoice: Record<string, Record<string, string>> = {
-    warm: {
-      contact: "Let's chat",
-      book: isSalesy ? "See what's available" : "Book your spot",
-      showcase: "Take a look around",
-      sell: isSalesy ? "Browse the collection" : "Shop now",
-      hire: "Let's work together",
-      attention: "See the work",
-      audience: "Come along",
-      convert: "Join us",
-    },
-    polished: {
-      contact: "Schedule a Consultation",
-      book: "Reserve Your Experience",
-      showcase: "Explore Our Portfolio",
-      sell: "Shop the Collection",
-      hire: "Discuss Your Project",
-      attention: "View Selected Works",
-      audience: "Subscribe",
-      convert: "Get Started",
-    },
-    direct: {
-      contact: "Get in touch",
-      book: "Book now",
-      showcase: "See the work",
-      sell: "Shop now",
-      hire: "Hire me",
-      attention: "See portfolio",
-      audience: "Follow",
-      convert: "Sign up",
-    },
-  };
-
-  return ctasByVoice[voiceTone]?.[goal] || ctasByVoice.polished.contact || "Get Started";
-}
+/* Re-export voice-keyed functions from canonical source for backwards compatibility */
+export { getVoiceKeyedHeadline, getVoiceKeyedCtaText } from "@/lib/content/voice-keyed";
 
 export function getStatsForSiteType(
   siteType: string

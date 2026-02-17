@@ -5,7 +5,8 @@ import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { tokensToCSSProperties } from "@/lib/theme/token-map";
 import type { HeroCenteredProps } from "./hero-centered.types";
-import { HEIGHT_MAP, SPACING_MAP, CTAButtonEl } from "./shared";
+import { SPACING_MAP_ELEMENT as SPACING_MAP } from "@/components/library/spacing";
+import { HEIGHT_MAP, CTAButtonEl } from "./shared";
 import { WithBgImage } from "./variants/with-bg-image";
 import { GradientBg } from "./variants/gradient-bg";
 

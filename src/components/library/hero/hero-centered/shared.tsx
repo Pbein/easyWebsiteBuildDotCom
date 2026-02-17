@@ -6,14 +6,6 @@ export const HEIGHT_MAP = {
   medium: "60vh",
 } as const;
 
-export const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-element)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
-
 export function CTAButtonEl({
   text,
   href,

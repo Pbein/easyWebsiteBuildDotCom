@@ -2,14 +2,6 @@
 
 import { motion } from "framer-motion";
 
-export const SPACING_MAP = {
-  none: "0",
-  sm: "var(--space-tight)",
-  md: "var(--space-component)",
-  lg: "var(--space-section)",
-  xl: "calc(var(--space-section) * 1.5)",
-} as const;
-
 export const COLUMNS_MAP = {
   2: "grid-cols-1 sm:grid-cols-2",
   3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
