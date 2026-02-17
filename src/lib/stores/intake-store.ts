@@ -75,8 +75,7 @@ export interface IntakeActions {
   reset: () => void;
 }
 
-const generateSessionId = (): string =>
-  `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+const generateSessionId = (): string => `session_${crypto.randomUUID()}`;
 
 const initialState: IntakeState = {
   currentStep: 1,

@@ -54,7 +54,7 @@ function RenderContent(): React.ReactElement {
   useEffect(() => {
     if (spec && !readySentRef.current) {
       readySentRef.current = true;
-      window.parent.postMessage({ type: "ewb:render-ready" }, "*");
+      window.parent.postMessage({ type: "ewb:render-ready" }, window.location.origin);
     }
   }, [spec]);
 
@@ -64,14 +64,17 @@ function RenderContent(): React.ReactElement {
     if (!element) {
       window.parent.postMessage(
         { type: "ewb:screenshot-error", requestId, error: "Render element not found" },
-        "*"
+        window.location.origin
       );
       return;
     }
 
     try {
       const result = await capturePreviewScreenshot(element);
-      window.parent.postMessage({ type: "ewb:screenshot-result", requestId, result }, "*");
+      window.parent.postMessage(
+        { type: "ewb:screenshot-result", requestId, result },
+        window.location.origin
+      );
     } catch (err) {
       window.parent.postMessage(
         {
@@ -79,7 +82,7 @@ function RenderContent(): React.ReactElement {
           requestId,
           error: err instanceof Error ? err.message : "Screenshot capture failed",
         },
-        "*"
+        window.location.origin
       );
     }
   }, []);
