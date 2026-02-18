@@ -169,6 +169,20 @@ export const unpublishProject = mutation({
 });
 
 /**
+ * Get a published project by ID — public, no auth required.
+ * Used by published site renderer and SEO metadata generation.
+ * Only returns projects with publishStatus === "published".
+ */
+export const getPublishedProject = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, { projectId }) => {
+    const project = await ctx.db.get(projectId);
+    if (!project || project.publishStatus !== "published") return null;
+    return project;
+  },
+});
+
+/**
  * Check if the current user already has a project for this session.
  */
 export const getProjectBySession = query({

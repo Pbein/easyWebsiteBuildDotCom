@@ -43,6 +43,7 @@ import { MakeItYoursModal } from "@/components/platform/preview/MakeItYoursModal
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { useIntakeStore } from "@/lib/stores/intake-store";
 import { useCustomizationStore } from "@/lib/stores/customization-store";
+import { useSubscription } from "@/lib/hooks/use-subscription";
 import { useRouter } from "next/navigation";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import {
@@ -78,6 +79,7 @@ function PreviewContent(): React.ReactElement {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
   const expressMode = useIntakeStore((s) => s.expressMode);
+  const { plan, ownItPurchased } = useSubscription();
 
   const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [sidebarOpen, setSidebarOpen] = useState(false); // starts closed for immersive reveal
@@ -156,8 +158,9 @@ function PreviewContent(): React.ReactElement {
           import("@/lib/export/generate-project"),
           import("@/lib/export/create-zip"),
         ]);
+        const isPaidExport = plan === "starter" || plan === "pro" || ownItPurchased;
         const result: ExportResult = generateProject(specToExport, {
-          includeBadge: true,
+          includeBadge: !isPaidExport,
           themeTokens,
         });
         const blob = await createProjectZip(result);
@@ -169,7 +172,7 @@ function PreviewContent(): React.ReactElement {
           site_type: specToExport.siteType,
           business_name: specToExport.businessName,
           file_count: result.files.length,
-          include_badge: true,
+          include_badge: !isPaidExport,
         });
       } catch (err) {
         posthog.capture("export_failed", {
@@ -180,7 +183,7 @@ function PreviewContent(): React.ReactElement {
         setIsExporting(false);
       }
     },
-    [sessionId]
+    [sessionId, plan, ownItPurchased]
   );
 
   // Loading

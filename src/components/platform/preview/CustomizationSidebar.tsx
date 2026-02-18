@@ -19,6 +19,7 @@ import type { SiteIntentDocument } from "@/lib/assembly";
 import type { ThemeTokens } from "@/lib/theme";
 import { THEME_PRESETS, FONT_PAIRINGS, FREE_FONT_IDS } from "@/lib/theme";
 import type { FontPairing } from "@/lib/theme";
+import { useSubscription } from "@/lib/hooks/use-subscription";
 import {
   EMOTIONAL_OUTCOMES,
   VOICE_TONE_CARDS,
@@ -263,16 +264,20 @@ function FontSelector({
   activeFontId,
   aiFontPairingId,
   onFontChange,
+  userPlan = "free",
 }: {
   activeFontId: string | null;
   aiFontPairingId: string | null;
   onFontChange: (id: string | null) => void;
+  userPlan?: "free" | "starter" | "pro";
 }): React.ReactElement {
   const [upgradeNudgeId, setUpgradeNudgeId] = useState<string | null>(null);
+  const hasProAccess = userPlan === "pro";
 
   const handleClick = useCallback(
     (pairing: FontPairing): void => {
-      const isFree = FREE_FONT_IDS.has(pairing.id) || pairing.id === aiFontPairingId;
+      const isFree =
+        hasProAccess || FREE_FONT_IDS.has(pairing.id) || pairing.id === aiFontPairingId;
       if (!isFree) {
         setUpgradeNudgeId((prev) => (prev === pairing.id ? null : pairing.id));
         return;
@@ -285,7 +290,7 @@ function FontSelector({
       }
       setUpgradeNudgeId(null);
     },
-    [activeFontId, aiFontPairingId, onFontChange]
+    [activeFontId, aiFontPairingId, onFontChange, hasProAccess]
   );
 
   return (
@@ -293,7 +298,8 @@ function FontSelector({
       <SectionHeader icon={Palette} title="Font Pairing" />
       <div className="max-h-[240px] space-y-1 overflow-y-auto pr-1">
         {FONT_PAIRINGS.map((pairing) => {
-          const isFree = FREE_FONT_IDS.has(pairing.id) || pairing.id === aiFontPairingId;
+          const isFree =
+            hasProAccess || FREE_FONT_IDS.has(pairing.id) || pairing.id === aiFontPairingId;
           const isActive =
             activeFontId === pairing.id ||
             (activeFontId === null && pairing.id === aiFontPairingId);
@@ -849,6 +855,8 @@ export function CustomizationSidebar({
   onArchetypeChange,
   onAntiRefChange,
 }: CustomizationSidebarProps): React.ReactElement {
+  const { plan } = useSubscription();
+
   // Build editable headlines from spec
   const headlines: EditableHeadline[] = [];
   const firstPage = spec.pages.find((p) => p.slug === activePage) ?? spec.pages[0];
@@ -919,6 +927,7 @@ export function CustomizationSidebar({
           activeFontId={fontPairingId}
           aiFontPairingId={aiFontPairingId}
           onFontChange={onFontChange}
+          userPlan={plan}
         />
 
         {/* 4. Brand Discovery */}

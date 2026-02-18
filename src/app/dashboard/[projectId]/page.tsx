@@ -2,21 +2,40 @@
 
 import { use, useState } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
-import { Loader2, ArrowLeft, ExternalLink, Pencil, Globe, Rocket } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Loader2,
+  ArrowLeft,
+  ExternalLink,
+  Pencil,
+  Globe,
+  Rocket,
+  CheckCircle2,
+  XCircle,
+  Crown,
+  Search,
+} from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { MakeItYoursModal } from "@/components/platform/preview/MakeItYoursModal";
 import { DomainSearchModal } from "@/components/platform/preview/DomainSearchModal";
+import { useSubscription } from "@/lib/hooks/use-subscription";
 
 function ProjectDetailContent({ projectId }: { projectId: string }): React.ReactElement {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { plan, isActive } = useSubscription();
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showDomainModal, setShowDomainModal] = useState(false);
+  const paymentParam = searchParams.get("payment");
+  const [dismissed, setDismissed] = useState(false);
+  const paymentBanner =
+    !dismissed && (paymentParam === "success" || paymentParam === "canceled") ? paymentParam : null;
   const publishProject = useMutation(api.projects.publishProject);
 
   const project = useQuery(
@@ -70,6 +89,16 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
       ? "bg-[#3ecfb4]/10 text-[#3ecfb4]"
       : "bg-[#6b6d80]/10 text-[#9496a8]";
 
+  const hasPaidPlan = plan === "starter" || plan === "pro";
+
+  const planLabel = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free";
+  const planColor =
+    plan === "pro"
+      ? "bg-[#e8a849]/10 text-[#e8a849]"
+      : plan === "starter"
+        ? "bg-[#3ecfb4]/10 text-[#3ecfb4]"
+        : "bg-[#6b6d80]/10 text-[#9496a8]";
+
   return (
     <div className="mx-auto max-w-4xl px-6 pt-24 pb-16">
       {/* Back link */}
@@ -80,6 +109,58 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
         <ArrowLeft className="h-4 w-4" />
         Back to Dashboard
       </Link>
+
+      {/* Payment success/cancel banner */}
+      <AnimatePresence>
+        {paymentBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className={`mb-6 flex items-center gap-3 rounded-xl border p-4 ${
+              paymentBanner === "success"
+                ? "border-[#3ecfb4]/30 bg-[#3ecfb4]/5"
+                : "border-[var(--color-border)] bg-[var(--color-bg-card)]"
+            }`}
+          >
+            {paymentBanner === "success" ? (
+              <>
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-[#3ecfb4]" />
+                <div>
+                  <p className="text-sm font-semibold text-[#3ecfb4]">Payment successful!</p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Your {planLabel} plan is active. You can now publish with a custom domain.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDomainModal(true)}
+                  className="ml-auto shrink-0 rounded-lg bg-[#3ecfb4] px-4 py-2 text-xs font-semibold text-[var(--color-bg-primary)] transition-transform hover:scale-[1.02]"
+                >
+                  Choose Domain
+                </button>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-5 w-5 shrink-0 text-[var(--color-text-tertiary)]" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                    Payment canceled
+                  </p>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    No charge was made. You can try again anytime.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDismissed(true)}
+                  className="ml-auto shrink-0 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
+                >
+                  Dismiss
+                </button>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Project header */}
       <div className="mb-8 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
@@ -102,6 +183,13 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
             <div className="flex items-center gap-3">
               <span className="rounded-full bg-[var(--color-accent)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-accent)] capitalize">
                 {project.siteType}
+              </span>
+              {/* Plan tier badge */}
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${planColor}`}
+              >
+                {plan === "pro" && <Crown className="h-3 w-3" />}
+                {planLabel} Plan
               </span>
               {project.publishedDomain && (
                 <a
@@ -146,21 +234,33 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
           </Link>
         )}
 
-        {/* Publish */}
+        {/* Publish — different depending on plan */}
         {project.publishStatus !== "published" && (
           <button
             className="group flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-left transition-colors hover:border-[#3ecfb4]/30"
-            onClick={() => setShowPricingModal(true)}
+            onClick={() => {
+              if (hasPaidPlan && isActive) {
+                setShowDomainModal(true);
+              } else {
+                setShowPricingModal(true);
+              }
+            }}
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#3ecfb4]/10">
-              <Rocket className="h-5 w-5 text-[#3ecfb4]" />
+              {hasPaidPlan ? (
+                <Search className="h-5 w-5 text-[#3ecfb4]" />
+              ) : (
+                <Rocket className="h-5 w-5 text-[#3ecfb4]" />
+              )}
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-                Publish with Custom Domain
+                {hasPaidPlan ? "Choose Your Domain" : "Publish with Custom Domain"}
               </h3>
               <p className="mt-0.5 text-xs text-[var(--color-text-secondary)]">
-                Go live at your own URL — starting at $12/mo
+                {hasPaidPlan
+                  ? "Search for a domain and go live"
+                  : "Go live at your own URL — starting at $12/mo"}
               </p>
             </div>
           </button>
