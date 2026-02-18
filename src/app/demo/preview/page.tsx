@@ -757,9 +757,14 @@ function PreviewLayout({
 
   const handleSaveProject = useCallback(async (): Promise<void> => {
     if (!sessionId || isSaving || savedProjectId) return;
+    if (!isSignedIn) {
+      setShowSavePrompt(true);
+      return;
+    }
     setIsSaving(true);
-    try {
-      const id = await createProject({
+
+    const attemptSave = async (): Promise<Id<"projects">> => {
+      return await createProject({
         sessionId,
         name: spec.businessName,
         siteType: spec.siteType,
@@ -777,6 +782,22 @@ function PreviewLayout({
             }
           : undefined,
       });
+    };
+
+    try {
+      let id: Id<"projects">;
+      try {
+        id = await attemptSave();
+      } catch (firstErr) {
+        // Auth token may not have propagated to Convex yet after sign-in.
+        // Wait briefly and retry once.
+        if (firstErr instanceof Error && firstErr.message.includes("Not authenticated")) {
+          await new Promise((r) => setTimeout(r, 1500));
+          id = await attemptSave();
+        } else {
+          throw firstErr;
+        }
+      }
       setSavedProjectId(id);
       setShowSavePrompt(false);
       posthog.capture("project_saved", {
@@ -785,6 +806,10 @@ function PreviewLayout({
         business_name: spec.businessName,
       });
     } catch (err) {
+      // If still not authenticated after retry, show sign-in prompt
+      if (err instanceof Error && err.message.includes("Not authenticated")) {
+        setShowSavePrompt(true);
+      }
       posthog.capture("project_save_failed", {
         session_id: sessionId,
         error: err instanceof Error ? err.message : "Unknown error",
@@ -796,6 +821,7 @@ function PreviewLayout({
     sessionId,
     isSaving,
     savedProjectId,
+    isSignedIn,
     createProject,
     spec,
     custHasChanges,
@@ -808,6 +834,21 @@ function PreviewLayout({
     custBrandArchetype,
     custAntiReferences,
   ]);
+
+  // Auto-save after sign-in: when the user signs in while the save prompt
+  // was showing, dismiss the prompt and save after a brief delay to let
+  // the Convex auth token propagate from Clerk.
+  const prevSignedIn = useRef(isSignedIn);
+  useEffect(() => {
+    if (!prevSignedIn.current && isSignedIn && showSavePrompt && !savedProjectId && !isSaving) {
+      setShowSavePrompt(false);
+      const timer = setTimeout(() => {
+        void handleSaveProject();
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+    prevSignedIn.current = isSignedIn;
+  }, [isSignedIn, showSavePrompt, savedProjectId, isSaving, handleSaveProject]);
 
   // Detect AI-selected font pairing
   const aiFontPairingId = useMemo(
@@ -1747,6 +1788,13 @@ function PreviewLayout({
 
         {/* Feedback Banner — positioned above tab bar */}
         {sessionId && !isRevealing && <FeedbackBanner sessionId={sessionId} isMobile />}
+
+        {/* Pricing / upgrade modal — must render in mobile layout too */}
+        <MakeItYoursModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
+          projectId={savedProjectId ?? undefined}
+        />
       </div>
     );
   }
