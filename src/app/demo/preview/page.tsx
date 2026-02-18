@@ -38,6 +38,8 @@ import { CustomizationSidebar } from "@/components/platform/preview/Customizatio
 import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
 import { FeedbackBanner } from "@/components/platform/preview/FeedbackBanner";
+import { DesignChat } from "@/components/platform/preview/DesignChat";
+import { MakeItYoursModal } from "@/components/platform/preview/MakeItYoursModal";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { useIntakeStore } from "@/lib/stores/intake-store";
 import { useCustomizationStore } from "@/lib/stores/customization-store";
@@ -62,6 +64,8 @@ import {
   Share2,
   Save,
   Check,
+  Rocket,
+  MessageSquare,
 } from "lucide-react";
 
 const VIEWPORT_WIDTHS: Record<string, string> = {
@@ -86,6 +90,10 @@ function PreviewContent(): React.ReactElement {
   const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
   const [isRevealing, setIsRevealing] = useState(true);
   const revealCompleted = useRef(false);
+
+  // Design chat + pricing modal
+  const [chatOpen, setChatOpen] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Dev panel: visible via ?dev=true, localStorage, or Ctrl+Shift+D
   const isDevParam = searchParams.get("dev") === "true";
@@ -284,6 +292,10 @@ function PreviewContent(): React.ReactElement {
       setIsRevealing={setIsRevealing}
       revealCompleted={revealCompleted}
       expressMode={expressMode}
+      chatOpen={chatOpen}
+      setChatOpen={setChatOpen}
+      showPricingModal={showPricingModal}
+      setShowPricingModal={setShowPricingModal}
     />
   );
 }
@@ -650,6 +662,10 @@ function PreviewLayout({
   setIsRevealing,
   revealCompleted,
   expressMode,
+  chatOpen,
+  setChatOpen,
+  showPricingModal,
+  setShowPricingModal,
 }: {
   spec: SiteIntentDocument;
   viewport: "desktop" | "tablet" | "mobile";
@@ -676,6 +692,10 @@ function PreviewLayout({
   setIsRevealing: (v: boolean) => void;
   revealCompleted: React.MutableRefObject<boolean>;
   expressMode: boolean;
+  chatOpen: boolean;
+  setChatOpen: (v: boolean) => void;
+  showPricingModal: boolean;
+  setShowPricingModal: (v: boolean) => void;
 }): React.ReactElement {
   const isMobile = useIsMobile();
   const router = useRouter();
@@ -1613,6 +1633,13 @@ function PreviewLayout({
                   </Link>
                 )}
                 <button
+                  onClick={() => setShowPricingModal(true)}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)]"
+                >
+                  <Rocket className="h-5 w-5 text-[#3ecfb4]" />
+                  Publish with Custom Domain
+                </button>
+                <button
                   onClick={() => void handleShare()}
                   disabled={isGeneratingShareLink}
                   className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-[#c0c1cc] transition-colors active:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
@@ -1903,6 +1930,49 @@ function PreviewLayout({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Publish + AI Chat action buttons — floating bottom-left on desktop */}
+      {!isMobile && !isRevealing && (
+        <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
+          <button
+            onClick={() => setShowPricingModal(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-[#3ecfb4]/30 bg-[var(--color-bg-elevated)] px-4 py-2 text-xs font-semibold text-[#3ecfb4] shadow-lg transition-all hover:border-[#3ecfb4]/60 hover:shadow-xl"
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            Publish
+          </button>
+          <button
+            onClick={() => setChatOpen(!chatOpen)}
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold shadow-lg transition-all hover:shadow-xl ${
+              chatOpen
+                ? "border-[var(--color-accent)]/60 bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
+                : "border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+            }`}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            AI Chat
+          </button>
+        </div>
+      )}
+
+      {/* Design Chat panel — slides in from right */}
+      {chatOpen && sessionId && (
+        <DesignChat
+          spec={spec}
+          sessionId={sessionId}
+          onApplyPatches={() => {
+            // Patches apply via spec updates — placeholder for now
+          }}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
+
+      {/* Pricing / upgrade modal */}
+      <MakeItYoursModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        projectId={savedProjectId ?? undefined}
+      />
 
       {/* Dev Panel — bottom drawer */}
       {devPanelOpen && sessionId && (

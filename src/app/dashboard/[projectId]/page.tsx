@@ -1,18 +1,23 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { Loader2, ArrowLeft, ExternalLink, Pencil, Globe, Rocket } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { MakeItYoursModal } from "@/components/platform/preview/MakeItYoursModal";
+import { DomainSearchModal } from "@/components/platform/preview/DomainSearchModal";
 
 function ProjectDetailContent({ projectId }: { projectId: string }): React.ReactElement {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const publishProject = useMutation(api.projects.publishProject);
 
   const project = useQuery(
     api.projects.getProject,
@@ -145,10 +150,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
         {project.publishStatus !== "published" && (
           <button
             className="group flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-5 text-left transition-colors hover:border-[#3ecfb4]/30"
-            onClick={() => {
-              // Will open MakeItYoursModal in Phase 2
-              alert("Publishing requires a paid plan. Stripe integration coming soon!");
-            }}
+            onClick={() => setShowPricingModal(true)}
           >
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#3ecfb4]/10">
               <Rocket className="h-5 w-5 text-[#3ecfb4]" />
@@ -187,6 +189,27 @@ function ProjectDetailContent({ projectId }: { projectId: string }): React.React
           </a>
         )}
       </div>
+
+      {/* Pricing / upgrade modal */}
+      <MakeItYoursModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        projectId={projectId}
+      />
+
+      {/* Domain search modal */}
+      <DomainSearchModal
+        isOpen={showDomainModal}
+        onClose={() => setShowDomainModal(false)}
+        onDomainSelected={async (domain) => {
+          await publishProject({
+            projectId: projectId as Id<"projects">,
+            domain,
+          });
+          setShowDomainModal(false);
+        }}
+        projectId={projectId}
+      />
     </div>
   );
 }
