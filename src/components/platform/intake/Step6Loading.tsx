@@ -24,16 +24,30 @@ const DEEP_BUILDING_STEPS = [
   { text: "Adding social proof...", block: "proof", delay: 10000 },
   { text: "Composing call-to-action...", block: "cta", delay: 11600 },
   { text: "Assembling footer...", block: "footer", delay: 13200 },
-  { text: "Applying final polish...", block: "polish", delay: 14800 },
-  { text: "Almost there...", block: "done", delay: 16400 },
 ];
 
 const EXPRESS_BUILDING_STEPS = [
   { text: "Analyzing your business...", block: "analyze", delay: 0 },
   { text: "Selecting components...", block: "components", delay: 800 },
   { text: "Building your site...", block: "build", delay: 1600 },
-  { text: "Adding finishing touches...", block: "polish", delay: 2400 },
-  { text: "Almost ready...", block: "done", delay: 3200 },
+];
+
+/* ────────────────────────────────────────────────────────────
+ * Refining phase — cycles continuously while waiting for AI
+ * These replace the progress bar once all blocks are assembled.
+ * ──────────────────────────────────────────────────────────── */
+
+const REFINING_MESSAGES = [
+  "Fine-tuning typography balance...",
+  "Harmonizing color transitions...",
+  "Refining content hierarchy...",
+  "Perfecting visual rhythm...",
+  "Balancing whitespace proportions...",
+  "Calibrating contrast ratios...",
+  "Polishing micro-interactions...",
+  "Optimizing readability flow...",
+  "Adjusting tonal harmony...",
+  "Aligning design elements...",
 ];
 
 /* ────────────────────────────────────────────────────────────
@@ -187,6 +201,7 @@ export function Step6Loading(): React.ReactElement {
   const [isGenerating, setIsGenerating] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const startTime = useRef(Date.now());
+  const [refiningIndex, setRefiningIndex] = useState(0);
 
   const generateSiteSpec = useAction(api.ai.generateSiteSpec.generateSiteSpec);
   const captureLead = useMutation(api.leads.captureLead);
@@ -316,6 +331,31 @@ export function Step6Loading(): React.ReactElement {
   // Which wireframe blocks are visible based on current step
   const visibleBlocks = WIREFRAME_BLOCKS.filter((b) => b.appearsAt <= activeStep);
 
+  // Refining phase — all blocks assembled, waiting for AI to finish
+  const isRefining = activeStep >= BUILDING_STEPS.length - 1;
+
+  // Cycle through refining messages every 3.5s
+  useEffect(() => {
+    if (!isRefining || error) return;
+    const interval = setInterval(() => {
+      setRefiningIndex((prev) => (prev + 1) % REFINING_MESSAGES.length);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isRefining, error]);
+
+  // Inject shimmer keyframes for the indeterminate progress bar
+  useEffect(() => {
+    const id = "ewb-shimmer-sweep";
+    if (document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = `@keyframes shimmer-sweep{0%{background-position:100% 0}100%{background-position:-100% 0}}`;
+    document.head.appendChild(style);
+    return () => {
+      style.remove();
+    };
+  }, []);
+
   if (error) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center">
@@ -363,7 +403,35 @@ export function Step6Loading(): React.ReactElement {
       <div className="flex flex-col items-center gap-8 md:flex-row md:items-start md:gap-10">
         {/* Wireframe assembly preview */}
         <div className="w-full max-w-[200px] shrink-0 md:max-w-[180px]">
-          <div className="overflow-hidden rounded-lg border border-white/[0.08] bg-[#0d0e14] p-2 shadow-xl">
+          <motion.div
+            className="relative overflow-hidden rounded-lg border bg-[#0d0e14] p-2"
+            animate={
+              isRefining
+                ? {
+                    borderColor: [
+                      "rgba(255,255,255,0.08)",
+                      "rgba(232,168,73,0.2)",
+                      "rgba(62,207,180,0.15)",
+                      "rgba(232,168,73,0.2)",
+                      "rgba(255,255,255,0.08)",
+                    ],
+                    boxShadow: [
+                      "0 4px 24px rgba(0,0,0,0.3)",
+                      "0 4px 32px rgba(232,168,73,0.08)",
+                      "0 4px 32px rgba(62,207,180,0.06)",
+                      "0 4px 32px rgba(232,168,73,0.08)",
+                      "0 4px 24px rgba(0,0,0,0.3)",
+                    ],
+                  }
+                : {
+                    borderColor: "rgba(255,255,255,0.08)",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+                  }
+            }
+            transition={
+              isRefining ? { duration: 4, repeat: Infinity, ease: "easeInOut" } : { duration: 0.3 }
+            }
+          >
             {/* Fake browser chrome */}
             <div className="mb-2 flex items-center gap-1 px-1">
               <div className="h-1.5 w-1.5 rounded-full bg-red-400/40" />
@@ -389,23 +457,64 @@ export function Step6Loading(): React.ReactElement {
                 />
               )}
             </div>
-          </div>
+
+            {/* Refining phase — subtle scan line sweeps over wireframe */}
+            {isRefining && (
+              <motion.div
+                className="pointer-events-none absolute inset-0 rounded-lg"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 0%, rgba(232,168,73,0.03) 45%, rgba(62,207,180,0.04) 55%, transparent 100%)",
+                  backgroundSize: "100% 200%",
+                }}
+                animate={{ backgroundPosition: ["0% 0%", "0% 100%", "0% 0%"] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+          </motion.div>
 
           {/* Block counter */}
-          <p className="mt-2 text-center text-[10px] font-medium text-[var(--color-text-tertiary)]">
-            {visibleBlocks.length} / {WIREFRAME_BLOCKS.length} sections placed
-          </p>
+          <AnimatePresence mode="wait">
+            {isRefining ? (
+              <motion.p
+                key="complete"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 text-center text-[10px] font-medium text-[#3ecfb4]"
+              >
+                <Check className="mr-1 inline h-3 w-3" />
+                All sections assembled
+              </motion.p>
+            ) : (
+              <motion.p
+                key="counting"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="mt-2 text-center text-[10px] font-medium text-[var(--color-text-tertiary)]"
+              >
+                {visibleBlocks.length} / {WIREFRAME_BLOCKS.length} sections placed
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Status text + progress */}
         <div className="flex flex-1 flex-col items-center text-center md:items-start md:pt-4 md:text-left">
-          {/* Heading */}
-          <h2
-            className="mb-1 text-lg font-bold text-[var(--color-text-primary)] md:text-xl"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            Building your site
-          </h2>
+          {/* Heading — transitions from building to refining */}
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={isRefining ? "refining" : "building"}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.4 }}
+              className="mb-1 text-lg font-bold text-[var(--color-text-primary)] md:text-xl"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              {isRefining ? "Refining your design" : "Building your site"}
+            </motion.h2>
+          </AnimatePresence>
 
           {/* Business name callout */}
           {businessName && (
@@ -414,32 +523,82 @@ export function Step6Loading(): React.ReactElement {
             </p>
           )}
 
-          {/* Active phase text */}
+          {/* Active phase text — building steps OR cycling refine messages */}
           <AnimatePresence mode="wait">
-            <motion.p
-              key={activeStep}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              className="mb-6 min-h-[1.5rem] text-sm text-[var(--color-text-secondary)]"
-            >
-              {BUILDING_STEPS[activeStep]?.text}
-            </motion.p>
+            {isRefining ? (
+              <motion.p
+                key={`refine-${refiningIndex}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="mb-6 min-h-[1.5rem] text-sm text-[var(--color-text-secondary)]"
+              >
+                {REFINING_MESSAGES[refiningIndex]}
+              </motion.p>
+            ) : (
+              <motion.p
+                key={`build-${activeStep}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="mb-6 min-h-[1.5rem] text-sm text-[var(--color-text-secondary)]"
+              >
+                {BUILDING_STEPS[activeStep]?.text}
+              </motion.p>
+            )}
           </AnimatePresence>
 
-          {/* Progress bar — never resets, logarithmic curve */}
+          {/* Progress indicator — determinate bar OR indeterminate shimmer */}
           <div className="w-full max-w-xs">
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-tertiary)]">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-teal)]"
-                style={{ width: `${progress}%` }}
-                transition={{ duration: 0.3, ease: "linear" }}
-              />
+              {isRefining ? (
+                /* Indeterminate shimmer — elegant sweeping gradient */
+                <motion.div
+                  className="h-full w-full rounded-full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, var(--color-accent) 0%, var(--color-teal) 30%, var(--color-accent) 50%, var(--color-teal) 70%, var(--color-accent) 100%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer-sweep 2.5s ease-in-out infinite",
+                  }}
+                />
+              ) : (
+                /* Determinate fill — logarithmic curve */
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-teal)]"
+                  style={{ width: `${progress}%` }}
+                  transition={{ duration: 0.3, ease: "linear" }}
+                />
+              )}
             </div>
-            <p className="mt-2 text-[11px] text-[var(--color-text-tertiary)] tabular-nums">
-              {Math.round(progress)}%
-            </p>
+
+            {/* Percentage fades out, replaced by subtle context in refining phase */}
+            <AnimatePresence mode="wait">
+              {isRefining ? (
+                <motion.p
+                  key="refining-hint"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="mt-2 text-[11px] text-[var(--color-text-tertiary)]"
+                >
+                  Putting the finishing touches on your site
+                </motion.p>
+              ) : (
+                <motion.p
+                  key="percentage"
+                  exit={{ opacity: 0 }}
+                  className="mt-2 text-[11px] text-[var(--color-text-tertiary)] tabular-nums"
+                >
+                  {Math.round(progress)}%
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Email capture — appears after 40% progress */}
