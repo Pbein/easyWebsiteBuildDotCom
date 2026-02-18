@@ -16,7 +16,7 @@ interface ChatMessage {
   applied?: boolean;
 }
 
-interface DesignPatch {
+export interface DesignPatch {
   type: "adjust_theme" | "rewrite_copy" | "add_component" | "remove_component";
   description: string;
   payload: Record<string, unknown>;

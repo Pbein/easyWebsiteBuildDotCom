@@ -16,7 +16,6 @@ import {
   FileText,
   LayoutList,
   Globe,
-  Star,
   ChevronRight,
   Zap,
   MessageSquare,
@@ -130,8 +129,8 @@ function HeroSection(): React.ReactElement {
           className="mx-auto mt-20 grid max-w-lg grid-cols-3 gap-8"
         >
           {[
-            { value: "50+", label: "Components" },
-            { value: "10", label: "Theme Presets" },
+            { value: "24", label: "Components" },
+            { value: "7", label: "Theme Presets" },
             { value: "13", label: "Site Types" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
@@ -270,7 +269,7 @@ const differentiators = [
     icon: Blocks,
     title: "Not Templates — Assembled",
     description:
-      "Every website is composed from a modular library of 50+ components with multiple variants. No two sites share the same layout.",
+      "Every website is composed from a modular library of 24 components with multiple variants. No two sites share the same layout.",
     gradient: "from-[#e8a849]/10 to-[#d4943d]/5",
   },
   {
@@ -422,31 +421,28 @@ function SiteTypesSection(): React.ReactElement {
 /*  Social Proof Section                                               */
 /* ------------------------------------------------------------------ */
 
-const testimonials = [
+const capabilities = [
   {
-    quote:
-      "The site it assembled for my med spa looked like it cost $15k. The AI understood my luxury brand perfectly from just a few questions.",
-    name: "Dr. Sarah Chen",
-    role: "Founder, Lumiere Med Spa",
-    rating: 5,
+    stat: "~90s",
+    label: "Express Build",
+    description:
+      "Answer 3 questions and see a fully assembled website preview in under 90 seconds.",
   },
   {
-    quote:
-      "I've used Squarespace, Wix, and WordPress. This is the first builder that actually produced something that doesn't look like a template.",
-    name: "Marcus Rivera",
-    role: "Photographer & Creative Director",
-    rating: 5,
+    stat: "24",
+    label: "Components",
+    description:
+      "Hero sections, pricing tables, testimonials, galleries, contact forms — each with multiple variants.",
   },
   {
-    quote:
-      "Got my bakery website live in under 20 minutes. The brand personality quiz really nailed the warm, inviting feel I was going for.",
-    name: "Emma Thornton",
-    role: "Owner, Golden Crust Bakery",
-    rating: 5,
+    stat: "6-Axis",
+    label: "Brand Personality",
+    description:
+      "Our personality capture system ensures every site reflects your unique brand identity, not a generic style.",
   },
 ];
 
-function SocialProofSection(): React.ReactElement {
+function CapabilitiesSection(): React.ReactElement {
   return (
     <section className="relative py-32">
       <div className="mx-auto max-w-6xl px-6">
@@ -455,43 +451,35 @@ function SocialProofSection(): React.ReactElement {
             className="mb-4 block text-xs font-semibold tracking-[0.2em] text-[var(--color-teal)] uppercase"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Early Access Feedback
+            See It In Action
           </span>
           <h2
             className="text-3xl font-bold text-[var(--color-text-primary)] md:text-5xl"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Loved by Early Users
+            Built for Speed &amp; Quality
           </h2>
         </AnimatedSection>
 
         <StaggerContainer className="grid grid-cols-1 gap-6 md:grid-cols-3" staggerDelay={0.15}>
-          {testimonials.map((t) => (
-            <StaggerItem key={t.name}>
+          {capabilities.map((c) => (
+            <StaggerItem key={c.label}>
               <div className="gradient-border flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-8">
-                {/* Stars */}
-                <div className="mb-5 flex gap-1">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-[var(--color-accent)] text-[var(--color-accent)]"
-                    />
-                  ))}
+                <div
+                  className="mb-4 text-4xl font-bold text-[var(--color-accent)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  {c.stat}
                 </div>
-
-                <p className="mb-6 flex-1 leading-relaxed text-[var(--color-text-secondary)]">
-                  &ldquo;{t.quote}&rdquo;
+                <h3
+                  className="mb-3 text-lg font-semibold text-[var(--color-text-primary)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
+                >
+                  {c.label}
+                </h3>
+                <p className="flex-1 leading-relaxed text-[var(--color-text-secondary)]">
+                  {c.description}
                 </p>
-
-                <div>
-                  <p
-                    className="text-sm font-semibold text-[var(--color-text-primary)]"
-                    style={{ fontFamily: "var(--font-heading)" }}
-                  >
-                    {t.name}
-                  </p>
-                  <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">{t.role}</p>
-                </div>
               </div>
             </StaggerItem>
           ))}
@@ -754,7 +742,7 @@ export default function HomePage(): React.ReactElement {
       <DifferentiatorsSection />
       <SiteTypesSection />
       <PricingSection />
-      <SocialProofSection />
+      <CapabilitiesSection />
       <CTASection />
     </>
   );

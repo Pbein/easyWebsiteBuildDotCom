@@ -248,6 +248,17 @@ export default defineSchema({
     periodStart: v.number(),
   }).index("by_user", ["userId"]),
 
+  leads: defineTable({
+    email: v.string(),
+    sessionId: v.optional(v.string()),
+    source: v.string(), // "loading_screen" | "post_preview" | etc.
+    siteType: v.optional(v.string()),
+    businessName: v.optional(v.string()),
+    createdAt: v.float64(),
+  })
+    .index("by_email", ["email"])
+    .index("by_source", ["source"]),
+
   sharedPreviews: defineTable({
     shareId: v.string(),
     sessionId: v.string(),

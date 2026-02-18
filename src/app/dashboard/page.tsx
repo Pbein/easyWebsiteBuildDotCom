@@ -1,16 +1,29 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { motion } from "framer-motion";
-import { Plus, Globe, Pencil, Trash2, ExternalLink, Loader2, Sparkles, Clock } from "lucide-react";
+import {
+  Plus,
+  Globe,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+  Clock,
+  CreditCard,
+  Crown,
+  Settings,
+} from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { formatDistanceToNow } from "date-fns";
+import { useSubscription } from "@/lib/hooks/use-subscription";
 
 const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -174,6 +187,118 @@ function EmptyState(): React.ReactElement {
   );
 }
 
+const PLAN_LABELS: Record<string, { label: string; color: string }> = {
+  free: { label: "Free", color: "var(--color-text-secondary)" },
+  starter: { label: "Starter", color: "#3ecfb4" },
+  pro: { label: "Pro", color: "var(--color-accent)" },
+};
+
+function BillingSection(): React.ReactElement {
+  const {
+    plan,
+    isActive,
+    isLoaded,
+    ownItPurchased,
+    currentPeriodEnd,
+    subscriptionStatus,
+    stripeCustomerId,
+  } = useSubscription();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  if (!isLoaded) return <></>;
+
+  const planInfo = PLAN_LABELS[plan] ?? PLAN_LABELS.free;
+  const renewalDate = currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : null;
+
+  const handleManageBilling = async (): Promise<void> => {
+    if (!stripeCustomerId || isRedirecting) return;
+    setIsRedirecting(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stripeCustomerId }),
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setIsRedirecting(false);
+    }
+  };
+
+  return (
+    <div className="mt-12 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6">
+      <div className="mb-4 flex items-center gap-2">
+        <CreditCard className="h-4 w-4 text-[var(--color-text-tertiary)]" />
+        <h2
+          className="text-base font-semibold text-[var(--color-text-primary)]"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          Billing
+        </h2>
+      </div>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          {/* Current plan badge */}
+          <div className="flex items-center gap-2">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-lg"
+              style={{ backgroundColor: `color-mix(in srgb, ${planInfo.color} 12%, transparent)` }}
+            >
+              <Crown className="h-4 w-4" style={{ color: planInfo.color }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                {planInfo.label} Plan
+              </p>
+              {isActive && renewalDate && (
+                <p className="text-[11px] text-[var(--color-text-tertiary)]">
+                  {subscriptionStatus === "canceled"
+                    ? `Cancels ${renewalDate.toLocaleDateString()}`
+                    : `Renews ${renewalDate.toLocaleDateString()}`}
+                </p>
+              )}
+              {!isActive && plan === "free" && (
+                <p className="text-[11px] text-[var(--color-text-tertiary)]">
+                  {ownItPurchased ? "Own It purchased" : "No active subscription"}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          {stripeCustomerId && (
+            <button
+              onClick={() => void handleManageBilling()}
+              disabled={isRedirecting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-4 py-2 text-xs font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-accent)] hover:text-[var(--color-text-primary)] disabled:opacity-50"
+            >
+              {isRedirecting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Settings className="h-3.5 w-3.5" />
+              )}
+              Manage Billing
+            </button>
+          )}
+          {plan === "free" && !ownItPurchased && (
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-accent)] px-4 py-2 text-xs font-semibold text-[var(--color-bg-primary)] transition-transform hover:scale-[1.02]"
+            >
+              Upgrade
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DashboardContent(): React.ReactElement {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
@@ -270,6 +395,9 @@ function DashboardContent(): React.ReactElement {
           ))}
         </div>
       )}
+
+      {/* Billing & Subscription Management */}
+      <BillingSection />
     </div>
   );
 }

@@ -59,10 +59,10 @@ Respond with JSON in this exact format:
   ]
 }
 
-For adjust_theme: payload should have CSS custom property names and values.
-For rewrite_copy: payload should have componentIndex, field, and newValue.
-For add_component: payload should have componentId, variant, order, and content.
-For remove_component: payload should have componentIndex.
+For adjust_theme: payload should have ThemeTokens keys (camelCase) and CSS values. Valid keys include: colorPrimary, colorPrimaryLight, colorPrimaryDark, colorSecondary, colorAccent, colorBackground, colorSurface, colorSurfaceElevated, colorText, colorTextSecondary, colorBorder, fontHeading, fontBody, radiusSm, radiusMd, radiusLg, radiusXl, spaceSection, spaceComponent, transitionFast, transitionBase, transitionSlow. Example: {"colorBackground": "#0a0a0a", "colorText": "#f5f5f5"}
+For rewrite_copy: payload should have componentIndex (0-based number matching component order), field (the content field name like "headline", "subheadline", "body", "ctaText"), and newValue (the new string).
+For add_component: payload should have componentId, variant, order, and content (not yet supported, will be deferred).
+For remove_component: payload should have componentIndex (not yet supported, will be deferred).
 
 Keep changes focused and minimal. Only change what the user asks for.
 </system>
@@ -164,10 +164,10 @@ function generateDeterministicResponse(message: string): {
       patches: [
         {
           type: "adjust_theme",
-          description: "Increase heading weight",
+          description: "Increase heading size and weight",
           payload: {
-            fontWeightHeading: "800",
-            fontSizeH1: "clamp(2.5rem, 5vw, 4rem)",
+            text5xl: "clamp(2.5rem, 5vw, 4rem)",
+            text6xl: "clamp(3rem, 6vw, 4.5rem)",
           },
         },
       ],

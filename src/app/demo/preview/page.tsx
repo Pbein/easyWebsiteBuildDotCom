@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import posthog from "posthog-js";
+import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { generateShareId } from "@/lib/share";
@@ -39,6 +40,7 @@ import { PreviewToolbar } from "@/components/platform/preview/PreviewToolbar";
 import { DevPanel } from "@/components/platform/preview/DevPanel";
 import { FeedbackBanner } from "@/components/platform/preview/FeedbackBanner";
 import { DesignChat } from "@/components/platform/preview/DesignChat";
+import type { DesignPatch } from "@/components/platform/preview/DesignChat";
 import { MakeItYoursModal } from "@/components/platform/preview/MakeItYoursModal";
 import { useIsMobile } from "@/lib/hooks/use-is-mobile";
 import { useIntakeStore } from "@/lib/stores/intake-store";
@@ -979,6 +981,57 @@ function PreviewLayout({
     const overrides = mapAdjustmentsToTokenOverrides(adjustments);
     setVlmOverrides(overrides);
   }, []);
+
+  // AI Design Chat — apply patches to live preview
+  const handleApplyPatches = useCallback(
+    (patches: DesignPatch[]) => {
+      for (const patch of patches) {
+        switch (patch.type) {
+          case "adjust_theme": {
+            // Payload keys are ThemeTokens keys (e.g. colorBackground, colorText)
+            // Merge them into vlmOverrides so they layer into the 5-layer theme
+            const themeUpdate: Record<string, string> = {};
+            for (const [key, val] of Object.entries(patch.payload)) {
+              if (typeof val === "string") {
+                themeUpdate[key] = val;
+              }
+            }
+            setVlmOverrides((prev) => ({ ...prev, ...themeUpdate }) as Partial<ThemeTokens>);
+            break;
+          }
+          case "rewrite_copy": {
+            const { componentIndex, field, newValue } = patch.payload as {
+              componentIndex?: number;
+              field?: string;
+              newValue?: string;
+            };
+            if (
+              typeof componentIndex === "number" &&
+              typeof field === "string" &&
+              typeof newValue === "string"
+            ) {
+              custSetContentOverride(componentIndex, field, newValue);
+            }
+            break;
+          }
+          case "add_component":
+          case "remove_component":
+            // Component add/remove requires spec mutation — notify user
+            toast.info("Component changes will be available in a future update.", {
+              description: patch.description,
+            });
+            break;
+        }
+      }
+
+      posthog.capture("design_chat_patches_applied", {
+        session_id: sessionId,
+        patch_count: patches.length,
+        patch_types: patches.map((p) => p.type),
+      });
+    },
+    [sessionId, custSetContentOverride]
+  );
 
   const previewRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -1963,9 +2016,7 @@ function PreviewLayout({
         <DesignChat
           spec={spec}
           sessionId={sessionId}
-          onApplyPatches={() => {
-            // Patches apply via spec updates — placeholder for now
-          }}
+          onApplyPatches={handleApplyPatches}
           onClose={() => setChatOpen(false)}
         />
       )}

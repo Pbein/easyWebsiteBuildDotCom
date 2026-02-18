@@ -13,6 +13,7 @@ export interface SubscriptionStatus {
   ownItPurchased: boolean;
   currentPeriodEnd: number | null;
   subscriptionStatus: string | null;
+  stripeCustomerId: string | null;
 }
 
 /**
@@ -32,6 +33,7 @@ export function useSubscription(): SubscriptionStatus {
       ownItPurchased: false,
       currentPeriodEnd: null,
       subscriptionStatus: null,
+      stripeCustomerId: null,
     };
   }
 
@@ -44,6 +46,7 @@ export function useSubscription(): SubscriptionStatus {
       ownItPurchased: false,
       currentPeriodEnd: null,
       subscriptionStatus: null,
+      stripeCustomerId: null,
     };
   }
 
@@ -59,5 +62,6 @@ export function useSubscription(): SubscriptionStatus {
     ownItPurchased: user.ownItPurchased ?? false,
     currentPeriodEnd: user.currentPeriodEnd ?? null,
     subscriptionStatus: user.subscriptionStatus ?? null,
+    stripeCustomerId: user.stripeCustomerId ?? null,
   };
 }

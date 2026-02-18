@@ -18,6 +18,7 @@ import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as imageCache from "../imageCache.js";
 import type * as intakeResponses from "../intakeResponses.js";
+import type * as leads from "../leads.js";
 import type * as pipelineLogs from "../pipelineLogs.js";
 import type * as projects from "../projects.js";
 import type * as sharedPreviews from "../sharedPreviews.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   imageCache: typeof imageCache;
   intakeResponses: typeof intakeResponses;
+  leads: typeof leads;
   pipelineLogs: typeof pipelineLogs;
   projects: typeof projects;
   sharedPreviews: typeof sharedPreviews;

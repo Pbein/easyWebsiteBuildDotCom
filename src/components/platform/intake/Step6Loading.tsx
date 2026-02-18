@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, RotateCcw } from "lucide-react";
-import { useAction } from "convex/react";
+import { AlertCircle, RotateCcw, Mail, Check } from "lucide-react";
+import { useAction, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { api } from "../../../../convex/_generated/api";
@@ -189,6 +189,38 @@ export function Step6Loading(): React.ReactElement {
   const startTime = useRef(Date.now());
 
   const generateSiteSpec = useAction(api.ai.generateSiteSpec.generateSiteSpec);
+  const captureLead = useMutation(api.leads.captureLead);
+
+  // Email capture state
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+
+  const handleEmailSubmit = useCallback(async (): Promise<void> => {
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setEmailError(true);
+      return;
+    }
+    setEmailError(false);
+    try {
+      await captureLead({
+        email: trimmed,
+        sessionId: sessionId || undefined,
+        source: "loading_screen",
+        siteType: siteType || undefined,
+        businessName: businessName || undefined,
+      });
+      setEmailSubmitted(true);
+      posthog.capture("email_captured", {
+        source: "loading_screen",
+        session_id: sessionId,
+      });
+    } catch {
+      // Silently fail — don't interrupt generation
+      setEmailSubmitted(true);
+    }
+  }, [email, captureLead, sessionId, siteType, businessName]);
 
   const startGeneration = useCallback(async (): Promise<void> => {
     if (isGenerating) return;
@@ -409,6 +441,71 @@ export function Step6Loading(): React.ReactElement {
               {Math.round(progress)}%
             </p>
           </div>
+
+          {/* Email capture — appears after 40% progress */}
+          <AnimatePresence>
+            {progress > 40 && !emailSubmitted && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+                className="mt-6 w-full max-w-xs"
+              >
+                <p className="mb-2 text-xs text-[var(--color-text-secondary)]">
+                  Get notified when your site is ready to publish
+                </p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void handleEmailSubmit();
+                        }
+                      }}
+                      placeholder="you@email.com"
+                      className={`w-full rounded-lg border bg-[var(--color-bg-elevated)] py-2 pr-3 pl-8 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none ${
+                        emailError
+                          ? "border-red-400/60 focus:border-red-400"
+                          : "border-[var(--color-border)] focus:border-[var(--color-accent)]/50"
+                      }`}
+                    />
+                  </div>
+                  <button
+                    onClick={() => void handleEmailSubmit()}
+                    className="shrink-0 rounded-lg bg-[var(--color-accent)] px-3 py-2 text-xs font-semibold text-[var(--color-bg-primary)] transition-transform hover:scale-105"
+                  >
+                    Notify Me
+                  </button>
+                </div>
+                {emailError && (
+                  <p className="mt-1 text-[10px] text-red-400">
+                    Please enter a valid email address
+                  </p>
+                )}
+              </motion.div>
+            )}
+            {emailSubmitted && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-6 flex w-full max-w-xs items-center gap-2 rounded-lg border border-[#3ecfb4]/20 bg-[#3ecfb4]/5 px-3 py-2"
+              >
+                <Check className="h-3.5 w-3.5 shrink-0 text-[#3ecfb4]" />
+                <p className="text-xs text-[#3ecfb4]">
+                  We&apos;ll let you know when it&apos;s time to go live
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
